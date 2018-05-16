@@ -1,8 +1,8 @@
 import {ISubscription} from 'autobahn';
+import {pathOr} from 'rambda';
 import {ChartApi, ChartDataFeed, PriceApi} from '../api';
 import {CHART_DEFAULT_SETTINGS} from '../constants/chartDefaultSettings';
 import {timeZones} from '../constants/chartTimezones';
-import {InstrumentModel} from '../models/index';
 import {dateFns} from '../utils/index';
 import {BaseStore, RootStore} from './index';
 
@@ -13,7 +13,6 @@ export const LINESTYLE_LARGE_DASHED = 3;
 
 const timezone = dateFns.getTimeZone(timeZones);
 const defaultSettings = CHART_DEFAULT_SETTINGS;
-defaultSettings.charts[0].timezone = timezone;
 
 class ChartStore extends BaseStore {
   static readonly config = {
@@ -58,13 +57,16 @@ class ChartStore extends BaseStore {
     });
   };
 
-  renderChart = async (instrument: InstrumentModel) => {
+  renderChart = async () => {
     await this.unsubscribeFromCandle();
     this.shouldHandleOutsideClick = false;
+
+    const instrument = this.rootStore.uiStore.selectedInstrument;
     const chartContainerExists = document.getElementById('tv_chart_container');
-    if (!chartContainerExists || !(window as any).TradingView) {
+    if (!chartContainerExists || !(window as any).TradingView || !instrument) {
       return;
     }
+
     this.widget = new (window as any).TradingView.widget({
       customFormatters: {
         timeFormatter: {
@@ -75,12 +77,12 @@ class ChartStore extends BaseStore {
         }
       },
       autosize: true,
-      symbol: instrument.displayName,
+      symbol: instrument!.displayName,
       interval: '60',
       container_id: 'tv_chart_container',
       datafeed: new ChartDataFeed(
         ChartStore.config,
-        instrument,
+        instrument!,
         new PriceApi(this),
         this.getWs(),
         this.subscribeToCandlesWithResolutions
@@ -138,15 +140,14 @@ class ChartStore extends BaseStore {
           .then((res: any) => {
             if (res && res.Data) {
               const settings = JSON.parse(res.Data);
-              settings.charts[0].timezone = timezone;
 
-              this.widget.load(settings);
+              this.widget.load(this.updateSettings(settings));
             }
             chartContainerExists.style.display = 'block';
           })
           .catch(err => {
             if (err.status === 404) {
-              this.widget.load(defaultSettings);
+              this.widget.load(this.updateSettings(defaultSettings));
             }
             chartContainerExists.style.display = 'block';
           });
@@ -157,7 +158,7 @@ class ChartStore extends BaseStore {
     } else {
       this.widget.onChartReady(() => {
         this.bindClickOutside();
-        this.widget.load(CHART_DEFAULT_SETTINGS);
+        this.widget.load(this.updateSettings(defaultSettings));
 
         chartContainerExists.style.display = 'block';
       });
@@ -172,7 +173,7 @@ class ChartStore extends BaseStore {
 
   resetToDefault = () => {
     if (this.widget) {
-      this.widget.load(defaultSettings);
+      this.widget.load(this.updateSettings(defaultSettings));
     }
   };
 
@@ -192,6 +193,19 @@ class ChartStore extends BaseStore {
 
   reset = () => {
     this.unsubscribeFromCandle();
+  };
+
+  private updateSettings = (settings: any) => {
+    const instrument = this.rootStore.uiStore.selectedInstrument;
+
+    settings.charts[0].timezone = timezone;
+    settings.charts[0].panes[0].sources[1].state.precision = pathOr(
+      0,
+      ['accuracy'],
+      instrument!.baseAsset
+    );
+
+    return settings;
   };
 }
 
