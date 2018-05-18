@@ -7,6 +7,7 @@ import {AuthStore, BalanceListStore, ReferenceStore} from '../../stores';
 import {StorageUtils} from '../../utils/index';
 import Backdrop from '../Backdrop/Backdrop';
 import {Header} from '../Header';
+import CommonLoader from '../Loader/СommonLoader';
 import Modal from '../Modal/Modal';
 import {MyWallets} from '../MyWallets';
 import {NotificationList} from '../Notification';
@@ -91,7 +92,8 @@ class Terminal extends React.Component<TerminalProps, {}> {
         splitPercentage: MAX_RIGHT_PADDING
       },
       splitPercentage: MAX_LEFT_PADDING
-    }
+    },
+    hasAccess: false
   };
 
   private authStore: AuthStore = this.props.rootStore.authStore;
@@ -101,7 +103,7 @@ class Terminal extends React.Component<TerminalProps, {}> {
 
   componentDidMount() {
     this.start().then(resp => {
-      if (!resp) {
+      if (!this.state.hasAccess) {
         return;
       }
       const layout = layoutStorage.get();
@@ -165,9 +167,11 @@ class Terminal extends React.Component<TerminalProps, {}> {
       ]);
 
       if (this.authStore.noKycAndFunds) {
+        this.setState({hasAccess: false});
         this.props.history.push(paths.kycAndFundsCheck);
         return false;
       } else {
+        this.setState({hasAccess: true});
         this.props.rootStore.start();
       }
     } else {
@@ -177,7 +181,7 @@ class Terminal extends React.Component<TerminalProps, {}> {
   }
 
   render() {
-    return (
+    return this.state.hasAccess ? (
       <Shell>
         <NotificationList />
         {this.props.rootStore.modalStore.isModals ? (
@@ -197,6 +201,8 @@ class Terminal extends React.Component<TerminalProps, {}> {
           initialValue={this.state.initialValue}
         />
       </Shell>
+    ) : (
+      <CommonLoader loadingDescription={'Check user data...'} />
     );
   }
 }
