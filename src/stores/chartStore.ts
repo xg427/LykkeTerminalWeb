@@ -3,6 +3,7 @@ import {pathOr} from 'rambda';
 import {ChartApi, ChartDataFeed, PriceApi} from '../api';
 import {CHART_DEFAULT_SETTINGS} from '../constants/chartDefaultSettings';
 import {timeZones} from '../constants/chartTimezones';
+import {InstrumentModel} from '../models/index';
 import {dateFns} from '../utils/index';
 import {BaseStore, RootStore} from './index';
 
@@ -35,8 +36,11 @@ class ChartStore extends BaseStore {
   };
 
   private widget: any;
+  private settings: any = defaultSettings;
   private shouldHandleOutsideClick = false;
   private subscriptions: Set<ISubscription> = new Set();
+
+  private isAuth: boolean = this.rootStore.authStore.isAuth;
 
   constructor(store: RootStore, private readonly api: ChartApi) {
     super(store);
@@ -67,6 +71,89 @@ class ChartStore extends BaseStore {
       return;
     }
 
+    chartContainerExists.style.display = 'none';
+
+    this.settings = this.updateSettings(defaultSettings);
+    if (this.isAuth) {
+      await this.load()
+        .then((res: any) => {
+          this.settings = this.updateSettings(JSON.parse(res.Data));
+        })
+        .catch(err => {
+          if (err.status === 404) {
+            this.settings = this.updateSettings(defaultSettings);
+          }
+        });
+    }
+
+    this.createWidget(instrument);
+
+    this.widget.onChartReady(() => {
+      this.bindClickOutside();
+
+      if (this.isAuth) {
+        this.widget.subscribe('onAutoSaveNeeded', () => {
+          this.widget.save(this.save);
+        });
+
+        this.widget.subscribe('onIntervalChange', () => {
+          setTimeout(() => this.widget.save(this.save), 1000);
+        });
+      }
+
+      chartContainerExists.style.display = 'block';
+    });
+  };
+
+  save = (settings: any) => {
+    this.api.save({Data: JSON.stringify(settings)});
+  };
+
+  load = () => this.api.load();
+
+  resetToDefault = () => {
+    if (this.widget) {
+      this.widget.load(this.updateSettings(defaultSettings));
+    }
+  };
+
+  subscribeToCandlesWithResolutions = (s: ISubscription) =>
+    this.subscriptions.add(s);
+
+  unsubscribeFromCandle = async () => {
+    const subscriptions = Array.from(this.subscriptions).map(s => {
+      // tslint:disable-next-line:no-unused-expression
+      this.getWs() && this.getWs().unsubscribe(s);
+    });
+    await Promise.all(subscriptions);
+    if (this.subscriptions.size > 0) {
+      this.subscriptions.clear();
+    }
+  };
+
+  reset = () => {
+    this.unsubscribeFromCandle();
+  };
+
+  private updateSettings = (settings: any) => {
+    const instrument = this.rootStore.uiStore.selectedInstrument;
+
+    settings.charts[0].timezone = timezone;
+    settings.charts[0].panes[0].sources[1].state.precision = pathOr(
+      0,
+      ['accuracy'],
+      instrument!.baseAsset
+    );
+
+    return settings;
+  };
+
+  private createWidget = (instrument: InstrumentModel) => {
+    const rightOffset =
+      this.settings.charts[0].timeScale.m_rightOffset < 0
+        ? this.settings.charts[0].timeScale.m_rightOffset
+        : 0;
+
     this.widget = new (window as any).TradingView.widget({
       customFormatters: {
         timeFormatter: {
@@ -77,7 +164,7 @@ class ChartStore extends BaseStore {
         }
       },
       autosize: true,
-      symbol: instrument!.displayName,
+      symbol: instrument.displayName,
       interval: '60',
       container_id: 'tv_chart_container',
       datafeed: new ChartDataFeed(
@@ -127,85 +214,12 @@ class ChartStore extends BaseStore {
           'rgba(140, 148, 160, 0.4)',
         'mainSeriesProperties.candleStyle.barColorsOnPrevClose': false,
 
-        'timeScale.rightOffset': 0,
+        'timeScale.rightOffset': rightOffset,
         timezone
       },
-      custom_css_url: process.env.PUBLIC_URL + '/chart.css'
+      custom_css_url: process.env.PUBLIC_URL + '/chart.css',
+      saved_data: this.settings
     });
-    chartContainerExists.style.display = 'none';
-    if (this.rootStore.authStore.isAuth) {
-      this.widget.onChartReady(() => {
-        this.bindClickOutside();
-        this.load()
-          .then((res: any) => {
-            if (res && res.Data) {
-              const settings = JSON.parse(res.Data);
-
-              this.widget.load(this.updateSettings(settings));
-            }
-            chartContainerExists.style.display = 'block';
-          })
-          .catch(err => {
-            if (err.status === 404) {
-              this.widget.load(this.updateSettings(defaultSettings));
-            }
-            chartContainerExists.style.display = 'block';
-          });
-        this.widget.subscribe('onAutoSaveNeeded', () => {
-          this.widget.save(this.save);
-        });
-      });
-    } else {
-      this.widget.onChartReady(() => {
-        this.bindClickOutside();
-        this.widget.load(this.updateSettings(defaultSettings));
-
-        chartContainerExists.style.display = 'block';
-      });
-    }
-  };
-
-  save = (settings: any) => {
-    this.api.save({Data: JSON.stringify(settings)});
-  };
-
-  load = () => this.api.load();
-
-  resetToDefault = () => {
-    if (this.widget) {
-      this.widget.load(this.updateSettings(defaultSettings));
-    }
-  };
-
-  subscribeToCandlesWithResolutions = (s: ISubscription) =>
-    this.subscriptions.add(s);
-
-  unsubscribeFromCandle = async () => {
-    const subscriptions = Array.from(this.subscriptions).map(s => {
-      // tslint:disable-next-line:no-unused-expression
-      this.getWs() && this.getWs().unsubscribe(s);
-    });
-    await Promise.all(subscriptions);
-    if (this.subscriptions.size > 0) {
-      this.subscriptions.clear();
-    }
-  };
-
-  reset = () => {
-    this.unsubscribeFromCandle();
-  };
-
-  private updateSettings = (settings: any) => {
-    const instrument = this.rootStore.uiStore.selectedInstrument;
-
-    settings.charts[0].timezone = timezone;
-    settings.charts[0].panes[0].sources[1].state.precision = pathOr(
-      0,
-      ['accuracy'],
-      instrument!.baseAsset
-    );
-
-    return settings;
   };
 }
 
