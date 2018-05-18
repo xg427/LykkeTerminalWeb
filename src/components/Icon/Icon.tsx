@@ -1,28 +1,26 @@
-import {lighten} from 'polished';
 import * as React from 'react';
-import styled from '../styled';
+import Icons from '../../constants/icons';
+import {IconContainer, Img, StyledIcon} from './styles';
 
 interface IconProps {
   name: string;
   color?: string;
+  opacity?: any;
 }
-
-const StyledIcon = styled.i`
-  cursor: pointer;
-  color: ${(props: any) => props.color};
-  vertical-align: middle;
-  &:hover {
-    color: ${(props: any) => lighten(0.1, props.color || '#f5f6f7')};
-  }
-`;
-
-const Icon = ({name, color}: IconProps) => (
-  <StyledIcon color={color} className={`icon icon-${name}`} />
-);
 
 // TODO: temporary solution with font-awesome icons
 export const FAIcon = ({name, color}: IconProps) => (
   <StyledIcon color={color} className={`fa fa-${name}`} aria-hidden="true" />
+);
+
+const Icon = ({name, opacity}: IconProps) => (
+  <IconContainer className={'icon'} opacity={opacity}>
+    <Img
+      src={`assets/icons/${Icons[name].src}.svg`}
+      alt={Icons[name].title}
+      title={Icons[name].title}
+    />
+  </IconContainer>
 );
 
 export default Icon;
