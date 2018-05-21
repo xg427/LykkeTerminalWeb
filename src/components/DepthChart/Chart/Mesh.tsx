@@ -97,7 +97,8 @@ class Mesh extends React.Component<MeshProps> {
     for (let i = 0; i < chart.mesh.horizontalLinesAmount; i++) {
       labels.push(
         (step * (i + 1) - step / 2).toLocaleString(undefined, {
-          maximumFractionDigits: 2
+          maximumFractionDigits: this.props.baseAccuracy,
+          minimumFractionDigits: this.props.baseAccuracy
         })
       );
     }
