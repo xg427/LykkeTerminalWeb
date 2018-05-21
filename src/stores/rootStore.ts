@@ -119,6 +119,9 @@ class RootStore {
   start = async () => {
     const instruments = this.referenceStore.getInstruments();
 
+    const assets = this.referenceStore.getAssets();
+    this.marketStore.init(instruments, assets);
+
     this.referenceStore.fetchRates().catch(console.error);
 
     const defaultInstrument = this.referenceStore.getInstrumentById(
