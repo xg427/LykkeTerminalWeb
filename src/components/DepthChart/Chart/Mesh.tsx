@@ -55,12 +55,16 @@ class Mesh extends React.Component<MeshProps> {
   generateBidsLabels = (): string[] => {
     const bidsLabels = [];
     if (this.bids.length > 0) {
+      const mid =
+        this.mid > this.bids[0].price
+          ? this.mid
+          : this.bids[0].price + this.bids[0].price / 2;
       const step =
-        (this.mid - this.bids[this.bids.length - 1].price) /
+        (mid - this.bids[this.bids.length - 1].price) /
         chart.mesh.verticalLinesAmount;
       for (let i = chart.mesh.verticalLinesAmount; i > 0; i--) {
         if (i % 2 === 1) {
-          const label = (this.mid - step * i).toLocaleString(undefined, {
+          const label = (mid - step * i).toLocaleString(undefined, {
             maximumFractionDigits: this.props.priceAccuracy,
             minimumFractionDigits: this.props.priceAccuracy
           });
