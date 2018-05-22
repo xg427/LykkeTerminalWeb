@@ -53,8 +53,12 @@ class Mesh extends React.Component<MeshProps> {
   generateBidsLabels = (): string[] => {
     const bidsLabels = [];
     if (this.bids.length > 0) {
+      const mid =
+        this.mid > this.bids[0].price
+          ? this.mid
+          : this.bids[0].price + this.bids[0].price / 2;
       const step =
-        (this.mid - this.bids[this.bids.length - 1].price) /
+        (mid - this.bids[this.bids.length - 1].price) /
         chart.mesh.verticalLinesAmount;
       for (let i = chart.mesh.verticalLinesAmount; i > 0; i--) {
         if (i % 2 === 1) {
@@ -189,14 +193,13 @@ class Mesh extends React.Component<MeshProps> {
     }
   };
 
-  setHorizontalLabelsBarWidth = (longestLabel: string) => {
-    this.props.setLabelsWidth(
-      measureText(
-        longestLabel,
-        chart.mesh.horizontalFontSize,
-        chart.mesh.fontFamily
-      ) + 20
+  setHorizontalLabelsBarWidth = (labels: string[]) => {
+    const longestLabelWidth = Math.max(
+      ...labels.map(label =>
+        measureText(label, chart.mesh.horizontalFontSize, chart.mesh.fontFamily)
+      )
     );
+    this.props.setLabelsWidth(longestLabelWidth + 10);
   };
 
   drawHorizontalLabels = () => {
@@ -204,7 +207,7 @@ class Mesh extends React.Component<MeshProps> {
     const startHorizontal = stepHorizontal / 2;
     const labels = this.generateHorizontalLabels();
     if (labels.length > 0) {
-      this.setHorizontalLabelsBarWidth(labels[0]);
+      this.setHorizontalLabelsBarWidth(labels);
       for (
         let startY = startHorizontal, index = 0;
         startY < this.height;
