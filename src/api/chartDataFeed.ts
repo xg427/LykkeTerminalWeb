@@ -8,6 +8,7 @@ import {
 } from 'date-fns';
 import {uniq} from 'rambda';
 import * as topics from '../api/topics';
+import {candlesLimit} from '../constants/chartDefaultSettings';
 import {
   InstrumentModel,
   Interval,
@@ -47,12 +48,25 @@ const addTick = (d: Date, interval: Interval) => {
   }
 };
 
+interface TimeRangeProps {
+  barsCount: number;
+  isLimitReached: boolean;
+  resolution: string;
+  symbol: string;
+}
+
 class ChartDataFeed {
   constructor(
     private readonly config: any,
     private readonly instrument: InstrumentModel,
     private readonly priceApi: PriceApi,
-    private readonly session: any
+    private readonly session: any,
+    private timeRange: TimeRangeProps = {
+      barsCount: 0,
+      isLimitReached: false,
+      resolution: '',
+      symbol: ''
+    }
   ) {}
 
   onReady = (cb: any) => {
@@ -86,17 +100,23 @@ class ChartDataFeed {
     onErrorCallback: any,
     firstDataRequest: any
   ) => {
-    const correctFrom = dateFns.candlesLimit(
-      from * 1000,
-      to * 1000,
-      resolution
-    );
-    const timePeriods = dateFns.splitter(correctFrom, to * 1000, resolution);
+    if (
+      resolution !== this.timeRange.resolution ||
+      symbolInfo.name !== this.timeRange.symbol
+    ) {
+      this.resetTimeRange(symbolInfo.name, resolution);
+    }
+
+    if (this.timeRange.isLimitReached) {
+      return;
+    }
+
     const interval = mappers.mapChartResolutionToWampInterval(resolution);
+    const timePeriods = dateFns.splitter(from * 1000, to * 1000, resolution);
     const promises = timePeriods!.map(period =>
       this.priceApi.fetchCandles(
         this.instrument.id,
-        new Date(correctFrom),
+        new Date(from * 1000),
         addTick(firstDataRequest ? new Date() : new Date(to * 1000), interval),
         interval
       )
@@ -110,9 +130,7 @@ class ChartDataFeed {
 
         let bars = resp.map(mappers.mapToBarFromRest);
 
-        bars = bars.filter(x => {
-          return x.volume !== 0;
-        });
+        bars = this.filterAndLimitBars(bars);
 
         if (bars.length > 0) {
           // tslint:disable-next-line:no-unused-expression
@@ -176,6 +194,32 @@ class ChartDataFeed {
 
   getServerTime = (cb: any) => {
     cb(Math.round(Date.now() / 1000));
+  };
+
+  private filterAndLimitBars = (bars: any[]) => {
+    let brs = bars.filter(x => {
+      return x.volume !== 0;
+    });
+
+    if (this.timeRange.barsCount + brs.length >= candlesLimit) {
+      brs = brs.splice(brs.length - (candlesLimit - this.timeRange.barsCount));
+    }
+
+    // console.log(brs.map(i => new Date(i.time)));
+
+    this.timeRange.barsCount += brs.length;
+    this.timeRange.isLimitReached = this.timeRange.barsCount >= candlesLimit;
+
+    return brs;
+  };
+
+  private resetTimeRange = (symbol: string, resolution: string) => {
+    this.timeRange = {
+      barsCount: 0,
+      isLimitReached: false,
+      resolution,
+      symbol
+    };
   };
 }
 
