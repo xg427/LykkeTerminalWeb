@@ -89,8 +89,6 @@ class ChartStore extends BaseStore {
     this.createWidget(instrument);
 
     this.widget.onChartReady(() => {
-      // const visibleRange = this.settings.charts[0].visibleRange;
-
       this.bindClickOutside();
 
       if (this.isAuth) {
@@ -101,9 +99,9 @@ class ChartStore extends BaseStore {
         this.widget.subscribe('onIntervalChange', () => {
           setTimeout(() => this.widget.save(this.save), 100);
         });
-
-        chartContainerExists.style.display = 'block';
       }
+
+      chartContainerExists.style.display = 'block';
     });
   };
 
