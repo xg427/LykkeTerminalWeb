@@ -1,7 +1,7 @@
+import {ChartDataFeed} from '../';
 import {candlesLimit} from '../../constants/chartDefaultSettings';
 import dates from '../../constants/dateKeys';
 import {InstrumentModel} from '../../models';
-import {ChartDataFeed} from '../';
 
 const api: any = {
   fetchCandles: jest.fn()
@@ -54,7 +54,7 @@ let barsQty: number;
 
 fdescribe('chart data feed', () => {
   beforeEach(() => {
-    chartDataFeed = new ChartDataFeed(config, instrument, api, null);
+    chartDataFeed = new ChartDataFeed(config, instrument, api, null, jest.fn());
   });
 
   it('getBars, filterAndLimitBars and resetTimeRange methods should be defined', () => {
