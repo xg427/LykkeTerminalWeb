@@ -165,7 +165,7 @@ class ChartStore extends BaseStore {
         }
       },
       autosize: true,
-      symbol: instrument.displayName,
+      symbol: instrument!.displayName,
       interval: '60',
       container_id: 'tv_chart_container',
       datafeed: new ChartDataFeed(
