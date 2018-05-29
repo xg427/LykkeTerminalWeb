@@ -40,7 +40,17 @@ class Mesh extends React.Component<MeshProps> {
       const minAskPrice = Math.min(...this.asks.map(a => a.price));
       const maxAskPrice = Math.max(...this.asks.map(a => a.price));
       const start = (minAskPrice + this.mid) / 2;
-      const step = (maxAskPrice - start) / chart.mesh.verticalLinesAmount;
+      const end = maxAskPrice;
+      // const priceDifference =
+      //  this.asks.length > 1
+      //    ? this.asks[this.asks.length - 2].price - start
+      //    : 1;
+      // const priceRange = end - start;
+      // const asksWidth = this.width / 2;
+      // const length = asksWidth * priceDifference / priceRange;
+      // const price = asksWidth * maxAskPrice / length;
+      // console.log(price);
+      const step = (end - start) / chart.mesh.verticalLinesAmount;
       for (let i = 0; i < chart.mesh.verticalLinesAmount; i++) {
         if (i % 2 === 1) {
           const label = (start + step * i).toLocaleString(undefined, {
@@ -95,16 +105,18 @@ class Mesh extends React.Component<MeshProps> {
 
   generateHorizontalLabels = () => {
     const labels = [];
-    const maximum = this.calculateMaxDepth() / chart.scaleFactor;
 
-    const step = maximum / chart.mesh.horizontalLinesAmount;
-    for (let i = 0; i < chart.mesh.horizontalLinesAmount; i++) {
-      labels.push(
-        (step * (i + 1) - step / 2).toLocaleString(undefined, {
-          maximumFractionDigits: this.props.baseAccuracy,
-          minimumFractionDigits: this.props.baseAccuracy
-        })
-      );
+    if (this.asks.length > 0 || this.bids.length > 0) {
+      const maximum = this.calculateMaxDepth() / chart.scaleFactor;
+      const step = maximum / chart.mesh.horizontalLinesAmount;
+      for (let i = 0; i < chart.mesh.horizontalLinesAmount; i++) {
+        labels.push(
+          (step * (i + 1) - step / 2).toLocaleString(undefined, {
+            maximumFractionDigits: this.props.baseAccuracy,
+            minimumFractionDigits: this.props.baseAccuracy
+          })
+        );
+      }
     }
     return labels.reverse();
   };
