@@ -46,16 +46,17 @@ class Chart extends React.Component<ChartProps> {
   }
 
   calculateAsksStepLength(ask: Order, index: number) {
-    ask.price === 0 ? (ask.price = 1) : (ask.price = ask.price);
-    const prevPrice = this.asks[index - 1]
-      ? this.asks[index - 1].price
-      : this.mid;
-    const length =
-      (Math.log10(ask.price + 1) - Math.log10(prevPrice + 1)) *
-      this.midXAsks /
-      (Math.log10(this.asks[this.asks.length - 1].price + 1) -
-        Math.log10(this.mid + 1));
-    return length;
+    const minAskPrice = Math.min(...this.asks.map(a => a.price));
+    const maxAskPrice = Math.max(...this.asks.map(a => a.price));
+    const start = minAskPrice;
+    const end = maxAskPrice;
+    const priceDifference = this.asks[index + 1]
+      ? this.asks[index + 1].price - start
+      : this.asks[index].price - start;
+    const priceRange = end - start;
+    const asksWidth = this.width - this.midXAsks;
+    const length = asksWidth * priceDifference / priceRange;
+    return isNaN(length) ? asksWidth : length;
   }
 
   calculateAsksStepHeight(ask: Order) {
@@ -66,19 +67,14 @@ class Chart extends React.Component<ChartProps> {
     let currentX = this.midXAsks;
     let newX = this.midXAsks;
     let newY = this.midY;
-    const points = [currentX, this.midY];
+    const points = [this.midXAsks, this.midY];
 
     for (let index = 0; index < this.asks.length; index++) {
-      const length = this.calculateAsksStepLength(this.asks[index], index);
-      if (length > 0) {
-        newX = currentX + length;
-        newY = this.midY - this.calculateAsksStepHeight(this.asks[index]);
-        points.push(currentX, newY, newX, newY);
-
-        currentX = newX;
-      } else {
-        return;
-      }
+      newX =
+        this.midXAsks + this.calculateAsksStepLength(this.asks[index], index);
+      newY = this.midY - this.calculateAsksStepHeight(this.asks[index]);
+      points.push(currentX, newY, newX, newY);
+      currentX = newX;
     }
     this.pointsAsks = points;
   };
@@ -131,18 +127,17 @@ class Chart extends React.Component<ChartProps> {
   };
 
   calculateBidsStepLength(bid: Order, index: number) {
-    bid.price === 0 ? (bid.price = 1) : (bid.price = bid.price);
-    const mid =
-      this.mid > this.bids[0].price
-        ? this.mid
-        : this.bids[0].price + this.bids[0].price / 2;
-    const prevPrice = this.bids[index - 1] ? this.bids[index - 1].price : mid;
-    const length =
-      (Math.log10(bid.price + 1) - Math.log10(prevPrice + 1)) *
-      this.midXBids /
-      (Math.log10(this.bids[this.bids.length - 1].price + 1) -
-        Math.log10(mid + 1));
-    return length;
+    const minBidPrice = Math.min(...this.bids.map(a => a.price));
+    const maxBidPrice = Math.max(...this.bids.map(a => a.price));
+    const start = maxBidPrice;
+    const end = minBidPrice;
+    const priceDifference = this.bids[index + 1]
+      ? start - this.bids[index + 1].price
+      : start - this.bids[index].price;
+    const priceRange = start - end;
+    const bidsWidth = this.midXBids;
+    const length = bidsWidth * priceDifference / priceRange;
+    return isNaN(length) ? bidsWidth : length;
   }
 
   calculateBidsStepHeight(bid: Order) {
@@ -153,20 +148,14 @@ class Chart extends React.Component<ChartProps> {
     let currentX = this.midXBids;
     let newX = this.midXBids;
     let newY = this.midY;
-    const points = [currentX, this.midY];
+    const points = [this.midXBids, this.midY];
 
     for (let index = 0; index < this.bids.length; index++) {
-      const length = this.calculateBidsStepLength(this.bids[index], index);
-      if (length > 0) {
-        newX = currentX - length;
-        newY = this.midY - this.calculateBidsStepHeight(this.bids[index]);
-
-        points.push(currentX, newY, newX, newY);
-
-        currentX = newX;
-      } else {
-        return;
-      }
+      newX =
+        this.midXBids - this.calculateBidsStepLength(this.bids[index], index);
+      newY = this.midY - this.calculateBidsStepHeight(this.bids[index]);
+      points.push(currentX, newY, newX, newY);
+      currentX = newX;
     }
     this.pointsBids = points;
   };

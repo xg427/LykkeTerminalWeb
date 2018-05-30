@@ -35,12 +35,15 @@ class Mesh extends React.Component<MeshProps> {
   generateAsksLabels = (): string[] => {
     const asksLabels = [];
     if (this.asks.length > 0) {
-      const step =
-        (this.asks[0].price - this.mid) / chart.mesh.verticalLinesAmount;
+      const minAskPrice = Math.min(...this.asks.map(a => a.price));
+      const maxAskPrice = Math.max(...this.asks.map(a => a.price));
+      const start = minAskPrice;
+      const end = maxAskPrice;
+      const step = (end - start) / chart.mesh.verticalLinesAmount;
       for (let i = 0; i < chart.mesh.verticalLinesAmount; i++) {
         if (i % 2 === 1) {
           const label = formattedNumber(
-            this.mid + step * i,
+            start + step * i,
             this.props.priceAccuracy
           );
           asksLabels.push(label);
@@ -53,17 +56,15 @@ class Mesh extends React.Component<MeshProps> {
   generateBidsLabels = (): string[] => {
     const bidsLabels = [];
     if (this.bids.length > 0) {
-      const mid =
-        this.mid > this.bids[0].price
-          ? this.mid
-          : this.bids[0].price + this.bids[0].price / 2;
-      const step =
-        (mid - this.bids[this.bids.length - 1].price) /
-        chart.mesh.verticalLinesAmount;
+      const minBidPrice = Math.min(...this.bids.map(a => a.price));
+      const maxBidPrice = Math.max(...this.bids.map(a => a.price));
+      const start = maxBidPrice;
+      const end = minBidPrice;
+      const step = (start - end) / chart.mesh.verticalLinesAmount;
       for (let i = chart.mesh.verticalLinesAmount; i > 0; i--) {
         if (i % 2 === 1) {
           const label = formattedNumber(
-            this.mid - step * i,
+            start - step * i,
             this.props.priceAccuracy
           );
           bidsLabels.push(label);
@@ -93,13 +94,15 @@ class Mesh extends React.Component<MeshProps> {
 
   generateHorizontalLabels = () => {
     const labels = [];
-    const maximum = this.calculateMaxDepth() / chart.scaleFactor;
 
-    const step = maximum / chart.mesh.horizontalLinesAmount;
-    for (let i = 0; i < chart.mesh.horizontalLinesAmount; i++) {
-      labels.push(
-        formattedNumber(step * (i + 1) - step / 2, this.props.baseAccuracy)
-      );
+    if (this.asks.length > 0 || this.bids.length > 0) {
+      const maximum = this.calculateMaxDepth() / chart.scaleFactor;
+      const step = maximum / chart.mesh.horizontalLinesAmount;
+      for (let i = 0; i < chart.mesh.horizontalLinesAmount; i++) {
+        labels.push(
+          formattedNumber(step * (i + 1) - step / 2, this.props.baseAccuracy)
+        );
+      }
     }
     return labels.reverse();
   };
