@@ -36,11 +36,9 @@ class ChartStore extends BaseStore {
   };
 
   private widget: any;
-  private settings: any = defaultSettings;
+  private settings: any;
   private shouldHandleOutsideClick = false;
   private subscriptions: Set<ISubscription> = new Set();
-
-  private isAuth: boolean = this.rootStore.authStore.isAuth;
 
   constructor(store: RootStore, private readonly api: ChartApi) {
     super(store);
@@ -74,7 +72,7 @@ class ChartStore extends BaseStore {
     chartContainerExists.style.display = 'none';
 
     this.settings = this.updateSettings(defaultSettings);
-    if (this.isAuth) {
+    if (this.rootStore.authStore.isAuth) {
       await this.load()
         .then((res: any) => {
           this.settings = this.updateSettings(JSON.parse(res.Data));
@@ -91,7 +89,7 @@ class ChartStore extends BaseStore {
     this.widget.onChartReady(() => {
       this.bindClickOutside();
 
-      if (this.isAuth) {
+      if (this.rootStore.authStore.isAuth) {
         this.widget.subscribe('onAutoSaveNeeded', () =>
           this.widget.save(this.save)
         );
@@ -133,19 +131,6 @@ class ChartStore extends BaseStore {
 
   reset = () => {
     this.unsubscribeFromCandle();
-  };
-
-  private updateSettings = (settings: any) => {
-    const instrument = this.rootStore.uiStore.selectedInstrument;
-
-    settings.charts[0].timezone = timezone;
-    settings.charts[0].panes[0].sources[1].state.precision = pathOr(
-      0,
-      ['accuracy'],
-      instrument!.baseAsset
-    );
-
-    return settings;
   };
 
   private createWidget = (instrument: InstrumentModel) => {
@@ -224,6 +209,19 @@ class ChartStore extends BaseStore {
       auto_save_delay: 2,
       timezone
     });
+  };
+
+  private updateSettings = (settings: any) => {
+    const instrument = this.rootStore.uiStore.selectedInstrument;
+
+    settings.charts[0].timezone = timezone;
+    settings.charts[0].panes[0].sources[1].state.precision = pathOr(
+      0,
+      ['accuracy'],
+      instrument!.baseAsset
+    );
+
+    return settings;
   };
 }
 

@@ -51,7 +51,7 @@ const addTick = (d: Date, interval: Interval) => {
 
 interface TimeRangeProps {
   barsCount: number;
-  isLimitReached: boolean;
+  isCandlesLimitReached: boolean;
   resolution: string;
   symbol: string;
 }
@@ -59,7 +59,7 @@ interface TimeRangeProps {
 class ChartDataFeed {
   private timeRange: TimeRangeProps = {
     barsCount: 0,
-    isLimitReached: false,
+    isCandlesLimitReached: false,
     resolution: '',
     symbol: ''
   };
@@ -116,7 +116,7 @@ class ChartDataFeed {
       this.resetTimeRange(symbolInfo.name, resolution);
     }
 
-    if (this.timeRange.isLimitReached) {
+    if (this.timeRange.isCandlesLimitReached) {
       return;
     }
 
@@ -208,16 +208,15 @@ class ChartDataFeed {
   };
 
   filterAndLimitBars = (bars: any[]) => {
-    let brs = bars.filter(x => {
-      return x.volume !== 0;
-    });
+    let brs = bars.filter(x => x.volume !== 0);
 
     if (this.timeRange.barsCount + brs.length >= candlesLimit) {
       brs = brs.splice(brs.length - (candlesLimit - this.timeRange.barsCount));
     }
 
     this.timeRange.barsCount += brs.length;
-    this.timeRange.isLimitReached = this.timeRange.barsCount >= candlesLimit;
+    this.timeRange.isCandlesLimitReached =
+      this.timeRange.barsCount >= candlesLimit;
 
     return brs;
   };
@@ -225,7 +224,7 @@ class ChartDataFeed {
   resetTimeRange = (symbol: string, resolution: string) => {
     this.timeRange = {
       barsCount: 0,
-      isLimitReached: false,
+      isCandlesLimitReached: false,
       resolution,
       symbol
     };
