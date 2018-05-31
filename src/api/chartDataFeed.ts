@@ -120,16 +120,22 @@ class ChartDataFeed {
       return;
     }
 
+    const external =
+      process.env.REACT_APP_FETCH_CANDLES_STRATEGY === 'external';
     const interval = mappers.mapChartResolutionToWampInterval(resolution);
     const timePeriods = dateFns.splitter(from * 1000, to * 1000, resolution);
-    const promises = timePeriods!.map(period =>
-      this.priceApi.fetchCandles(
+    const promises = timePeriods!.map(period => {
+      const fetchCandles = external
+        ? this.priceApi.fetchCandlesMock
+        : this.priceApi.fetchCandles;
+
+      return fetchCandles(
         this.instrument.id,
         new Date(from * 1000),
         addTick(firstDataRequest ? new Date() : new Date(to * 1000), interval),
         interval
-      )
-    );
+      );
+    });
 
     await Promise.all(promises).then(
       resp => {
@@ -137,7 +143,9 @@ class ChartDataFeed {
           resp.reduce((prev, current) => prev.concat(current.History), [])
         );
 
-        let bars = resp.map(mappers.mapToBarFromRest);
+        let bars = resp.map(
+          external ? mappers.mapToBarFromRestExternal : mappers.mapToBarFromRest
+        );
 
         bars = this.filterAndLimitBars(bars);
 

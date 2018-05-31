@@ -234,3 +234,12 @@ export const mapToLevelCell = (lc: any) => {
     cellIndex
   };
 };
+
+export const mapToBarFromRestExternal = (candle: number[]) => ({
+  close: candle[4],
+  high: candle[2],
+  low: candle[3],
+  open: candle[1],
+  time: new Date(candle[0] * 1000).getTime(),
+  volume: candle[5]
+});
