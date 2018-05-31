@@ -54,7 +54,13 @@ let barsQty: number;
 
 describe('chart data feed', () => {
   beforeEach(() => {
-    chartDataFeed = new ChartDataFeed(config, instrument, api, null, jest.fn());
+    chartDataFeed = new ChartDataFeed(
+      config,
+      instrument,
+      api,
+      null,
+      () => null
+    );
   });
 
   it('getBars, filterAndLimitBars and resetTimeRange methods should be defined', () => {
