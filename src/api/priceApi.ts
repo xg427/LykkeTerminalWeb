@@ -21,7 +21,11 @@ class PriceApi extends RestApi {
     ) {
       resp = {History: candleMocks[instrument.toLowerCase()][interval]};
     } else {
-      resp = {History: []};
+      resp = {
+        History: [
+          [1527811200, 5575, 5718.17, 5541.04, 5687.96, 97.514915, 552254.1]
+        ]
+      };
     }
 
     return resp;
