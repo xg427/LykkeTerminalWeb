@@ -139,6 +139,10 @@ class ChartDataFeed {
 
     await Promise.all(promises).then(
       resp => {
+        if (external && !firstDataRequest) {
+          return onHistoryCallback && onHistoryCallback([], {noData: true});
+        }
+
         resp = uniq(
           resp.reduce((prev, current) => prev.concat(current.History), [])
         );
