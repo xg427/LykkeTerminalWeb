@@ -4,15 +4,17 @@ import ChartWrapper from './ChartWrapper';
 // tslint:disable:object-literal-sort-keys
 const ConnectedChart = connect(
   ({
-    depthChartStore: {asks, bids},
+    depthChartStore: {getAsks, getBids, setSpanChangeHandler},
     uiStore: {selectedInstrument},
-    orderBookStore: {setMidPriceUpdateHandler}
+    orderBookStore: {setMidPriceUpdateHandler, setDepthChartUpdatingHandler}
   }) => {
     return {
-      asks,
-      bids,
+      getAsks,
+      getBids,
       selectedInstrument,
-      setMidPriceUpdateHandler
+      setMidPriceUpdateHandler,
+      setDepthChartUpdatingHandler,
+      setSpanChangeHandler
     };
   },
   ChartWrapper

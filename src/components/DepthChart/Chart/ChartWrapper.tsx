@@ -1,34 +1,51 @@
-import * as React from 'react';
-
 import {observable} from 'mobx';
-
+import * as React from 'react';
 import {FastLayer, Layer, Stage} from 'react-konva';
-
 import Measure from 'react-measure';
-
+import {Order} from '../../../models/order';
 import Chart from './Chart';
+import chart from './chartConstants';
 import Mesh from './Mesh';
-
 import {ChartProps} from './Models';
 
-import chart from './chartConstants';
-
-interface ChartState {
-  mid: number;
+interface ChartWrapperProps extends ChartProps {
+  setDepthChartUpdatingHandler: (fn: () => void) => void;
+  setSpanChangeHandler: (fn: () => void) => void;
+  getAsks: () => Promise<Order[]>;
+  getBids: () => Promise<Order[]>;
 }
 
-class ChartWrapper extends React.Component<ChartProps, ChartState> {
+interface ChartWrapperState {
+  mid: number;
+  bids: Order[];
+  asks: Order[];
+}
+
+class ChartWrapper extends React.Component<
+  ChartWrapperProps,
+  ChartWrapperState
+> {
   @observable width: number = -1;
   @observable height: number = -1;
 
-  constructor(props: ChartProps) {
+  constructor(props: ChartWrapperProps) {
     super(props);
     this.state = {
-      mid: 0
+      mid: 0,
+      bids: [],
+      asks: []
     };
 
     this.props.setMidPriceUpdateHandler(this.handleMidPriceChange);
+    this.props.setDepthChartUpdatingHandler(this.handleDepthChartUpdates);
+    this.props.setSpanChangeHandler(this.handleDepthChartUpdates);
   }
+
+  handleDepthChartUpdates = async () => {
+    const bids = await this.props.getBids();
+    const asks = await this.props.getAsks();
+    this.setState({bids, asks});
+  };
 
   handleMidPriceChange = async (mid: () => number) => {
     const midPrice = await mid();
@@ -38,7 +55,8 @@ class ChartWrapper extends React.Component<ChartProps, ChartState> {
   };
 
   render() {
-    const {asks, bids, selectedInstrument} = this.props;
+    const {selectedInstrument} = this.props;
+    const {asks, bids, mid} = this.state;
 
     return (
       <Measure
@@ -60,7 +78,7 @@ class ChartWrapper extends React.Component<ChartProps, ChartState> {
                     key={1}
                     asks={asks}
                     bids={bids}
-                    mid={this.state.mid}
+                    mid={mid}
                     baseAsset={selectedInstrument!.baseAsset.name}
                     quoteAsset={selectedInstrument!.quoteAsset.name}
                     width={this.width - chart.labelsWidth}
@@ -76,7 +94,7 @@ class ChartWrapper extends React.Component<ChartProps, ChartState> {
                   <Chart
                     asks={asks}
                     bids={bids}
-                    mid={this.state.mid}
+                    mid={mid}
                     baseAsset={selectedInstrument!.baseAsset.name}
                     quoteAsset={selectedInstrument!.quoteAsset.name}
                     width={this.width - chart.labelsWidth}

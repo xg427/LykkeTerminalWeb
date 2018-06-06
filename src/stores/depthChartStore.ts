@@ -9,6 +9,7 @@ class DepthChartStore extends BaseStore {
   multiplers: number[] = [0, 1, 0.75, 0.5, 0.25, 0.1, 0.05, 0.025];
   maxMultiplier = this.multiplers.length - 1;
   @observable spanMultiplierIdx = 3;
+  handleSpanChanging: () => void;
 
   @computed
   get span() {
@@ -38,8 +39,7 @@ class DepthChartStore extends BaseStore {
     super(store);
   }
 
-  reduceBidsArray = (bids: Order[]) => {
-    const mid = 1;
+  reduceBidsArray = (bids: Order[], mid: number) => {
     const lowerBound = mid - mid * this.multiplers[this.spanMultiplierIdx];
     const filteredBids = bids.filter(bid => {
       return bid.price > lowerBound;
@@ -47,8 +47,7 @@ class DepthChartStore extends BaseStore {
     return filteredBids.length ? filteredBids : bids.slice(0, 1);
   };
 
-  reduceAsksArray = (asks: Order[]) => {
-    const mid = 1;
+  reduceAsksArray = (asks: Order[], mid: number) => {
     const upperBound = mid + mid * this.multiplers[this.spanMultiplierIdx];
     const filteredAsks = asks.filter(ask => {
       return ask.price < upperBound;
@@ -58,8 +57,8 @@ class DepthChartStore extends BaseStore {
       : asks.slice(asks.length - 1, asks.length);
   };
 
-  @computed
-  get bids() {
+  getBids = async () => {
+    const mid = await this.mid();
     const {
       orderListStore: {limitOrdersForThePair: limitOrders}
     } = this.rootStore;
@@ -69,12 +68,13 @@ class DepthChartStore extends BaseStore {
       false
     );
     return this.reduceBidsArray(
-      connectLimitOrders(aggregatedOrders, limitOrders, this.span, false)
+      connectLimitOrders(aggregatedOrders, limitOrders, this.span, false),
+      mid
     );
-  }
+  };
 
-  @computed
-  get asks() {
+  getAsks = async () => {
+    const mid = await this.mid();
     const {
       orderListStore: {limitOrdersForThePair: limitOrders}
     } = this.rootStore;
@@ -86,9 +86,12 @@ class DepthChartStore extends BaseStore {
     return this.reduceAsksArray(
       reverse(
         connectLimitOrders(aggregatedOrders, limitOrders, this.span, true)
-      )
+      ),
+      mid
     );
-  }
+  };
+
+  setSpanChangeHandler = (fn: () => void) => (this.handleSpanChanging = fn);
 
   mid = async () => await this.rootStore.orderBookStore.mid();
 
@@ -107,6 +110,7 @@ class DepthChartStore extends BaseStore {
   nextSpan = () => {
     if (this.spanMultiplierIdx < this.maxMultiplier) {
       this.spanMultiplierIdx++;
+      this.handleSpanChanging();
     }
   };
 
@@ -114,6 +118,7 @@ class DepthChartStore extends BaseStore {
   prevSpan = () => {
     if (this.spanMultiplierIdx > 1) {
       this.spanMultiplierIdx--;
+      this.handleSpanChanging();
     }
   };
 
