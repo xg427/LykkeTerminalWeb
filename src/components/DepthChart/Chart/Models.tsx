@@ -3,7 +3,6 @@ import {AssetModel, Order} from '../../../models';
 export interface ChartProps {
   asks: Order[];
   bids: Order[];
-  mid: number;
   baseAsset: AssetModel;
   quoteAsset: AssetModel;
   width: number;
@@ -12,6 +11,7 @@ export interface ChartProps {
   baseAccuracy: number;
   priceAccuracy: number;
   selectedInstrument?: any;
+  setMidPriceUpdateHandler?: any;
 }
 
 export interface PointerProps {

@@ -39,7 +39,7 @@ class DepthChartStore extends BaseStore {
   }
 
   reduceBidsArray = (bids: Order[]) => {
-    const mid = this.mid();
+    const mid = 1;
     const lowerBound = mid - mid * this.multiplers[this.spanMultiplierIdx];
     const filteredBids = bids.filter(bid => {
       return bid.price > lowerBound;
@@ -48,7 +48,7 @@ class DepthChartStore extends BaseStore {
   };
 
   reduceAsksArray = (asks: Order[]) => {
-    const mid = this.mid();
+    const mid = 1;
     const upperBound = mid + mid * this.multiplers[this.spanMultiplierIdx];
     const filteredAsks = asks.filter(ask => {
       return ask.price < upperBound;
@@ -90,15 +90,12 @@ class DepthChartStore extends BaseStore {
     );
   }
 
-  mid = () => this.rootStore.orderBookStore.mid();
+  mid = async () => await this.rootStore.orderBookStore.mid();
 
-  spread = () => {
-    return (
-      (this.rootStore.orderBookStore.bestAsk() -
-        this.rootStore.orderBookStore.bestBid()) /
-      this.rootStore.orderBookStore.bestAsk() *
-      100
-    );
+  spread = async () => {
+    const bestAsk = await this.rootStore.orderBookStore.bestAsk();
+    const bestBid = await this.rootStore.orderBookStore.bestBid();
+    return (bestAsk - bestBid) / bestAsk * 100;
   };
 
   lastTradePrice = () => {

@@ -3,14 +3,16 @@ import ChartWrapper from './ChartWrapper';
 
 // tslint:disable:object-literal-sort-keys
 const ConnectedChart = connect(
-  ({depthChartStore: {asks, bids, mid}, uiStore: {selectedInstrument}}) => {
-    const midPrice = mid();
-
+  ({
+    depthChartStore: {asks, bids},
+    uiStore: {selectedInstrument},
+    orderBookStore: {setMidPriceUpdateHandler}
+  }) => {
     return {
       asks,
       bids,
-      mid: midPrice,
-      selectedInstrument
+      selectedInstrument,
+      setMidPriceUpdateHandler
     };
   },
   ChartWrapper

@@ -9,7 +9,11 @@ import Pointer from './Pointer';
 
 import chart from './chartConstants';
 
-class Chart extends React.Component<ChartProps> {
+interface DepthChartProps extends ChartProps {
+  mid: number;
+}
+
+class Chart extends React.Component<DepthChartProps> {
   graphics: any[] = [];
   pointsAsks: number[] = [];
   pointsBids: number[] = [];
@@ -30,12 +34,12 @@ class Chart extends React.Component<ChartProps> {
 
   coef: number;
 
-  constructor(props: ChartProps) {
+  constructor(props: DepthChartProps) {
     super(props);
   }
 
   calculateAsksStepLength(ask: Order, index: number) {
-    ask.price === 0 ? (ask.price = 1) : (ask.price = ask.price);
+    ask.price = ask.price === 0 ? 1 : ask.price;
     const prevPrice = this.asks[index - 1]
       ? this.asks[index - 1].price
       : this.mid;

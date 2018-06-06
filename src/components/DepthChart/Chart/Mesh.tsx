@@ -5,7 +5,11 @@ import formattedNumber from '../../../utils/localFormatted/localFormatted';
 import chart from './chartConstants';
 import {ChartProps} from './Models';
 
-class Mesh extends React.Component<ChartProps> {
+interface MeshProps extends ChartProps {
+  mid: number;
+}
+
+class Mesh extends React.Component<MeshProps> {
   mid: number;
   asks: Order[];
   bids: Order[];
@@ -16,7 +20,7 @@ class Mesh extends React.Component<ChartProps> {
 
   emptyLabels: string[] = ['', '', '', ''];
 
-  constructor(props: ChartProps) {
+  constructor(props: MeshProps) {
     super(props);
   }
 
