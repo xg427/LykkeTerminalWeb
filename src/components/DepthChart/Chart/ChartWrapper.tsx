@@ -13,16 +13,32 @@ import {ChartProps} from './Models';
 
 import chart from './chartConstants';
 
-class ChartWrapper extends React.Component<ChartProps> {
+interface ChartState {
+  mid: number;
+}
+
+class ChartWrapper extends React.Component<ChartProps, ChartState> {
   @observable width: number = -1;
   @observable height: number = -1;
 
   constructor(props: ChartProps) {
     super(props);
+    this.state = {
+      mid: 0
+    };
+
+    this.props.setMidPriceUpdateHandler(this.handleMidPriceChange);
   }
 
+  handleMidPriceChange = async (mid: () => number) => {
+    const midPrice = await mid();
+    this.setState({
+      mid: midPrice
+    });
+  };
+
   render() {
-    const {asks, bids, mid, selectedInstrument} = this.props;
+    const {asks, bids, selectedInstrument} = this.props;
 
     return (
       <Measure
@@ -44,7 +60,7 @@ class ChartWrapper extends React.Component<ChartProps> {
                     key={1}
                     asks={asks}
                     bids={bids}
-                    mid={mid}
+                    mid={this.state.mid}
                     baseAsset={selectedInstrument!.baseAsset.name}
                     quoteAsset={selectedInstrument!.quoteAsset.name}
                     width={this.width - chart.labelsWidth}
@@ -60,7 +76,7 @@ class ChartWrapper extends React.Component<ChartProps> {
                   <Chart
                     asks={asks}
                     bids={bids}
-                    mid={mid}
+                    mid={this.state.mid}
                     baseAsset={selectedInstrument!.baseAsset.name}
                     quoteAsset={selectedInstrument!.quoteAsset.name}
                     width={this.width - chart.labelsWidth}

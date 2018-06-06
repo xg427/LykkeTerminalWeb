@@ -204,8 +204,9 @@ class UiOrderStore extends BaseStore {
           precisionFloor(+convertedBalance, this.quantityAccuracy);
   };
 
-  resetOrder = () => {
-    this.setPriceValueWithFixed(this.rootStore.orderBookStore.mid());
+  resetOrder = async () => {
+    const mid = await this.rootStore.orderBookStore.mid();
+    this.setPriceValueWithFixed(mid);
     this.setQuantityValueWithFixed(0);
   };
 

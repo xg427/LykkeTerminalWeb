@@ -246,7 +246,10 @@ class LevelList extends React.Component<LevelListProps> {
   }
 
   renderCanvas = (asks: Order[], bids: Order[], type: LevelType) => {
-    this.canvas!.width = this.canvas!.width;
+    if (this.canvas) {
+      this.canvas!.width = this.canvas!.width;
+    }
+
     this.drawLevels(asks, bids, type);
   };
 

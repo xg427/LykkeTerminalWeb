@@ -9,10 +9,11 @@ const formatWithAccuracy = (num: number, accuracy: number) =>
 
 const ConnectedDepthChart = connect(
   ({
-    depthChartStore: {mid, nextSpan, prevSpan},
+    depthChartStore: {nextSpan, prevSpan},
+    orderBookStore: {setMidPriceUpdateHandler},
     uiStore: {selectedInstrument}
   }) => ({
-    mid: mid(),
+    setMidPriceUpdateHandler,
     quoteAccuracy: pathOr(0, ['accuracy'], selectedInstrument),
     format: formatWithAccuracy,
     onNextSpan: nextSpan,
