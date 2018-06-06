@@ -20,7 +20,8 @@ import LevelType from '../../models/levelType';
 import OrderBookCellType from '../../models/orderBookCellType';
 import {FakeOrderBookStage} from './styles';
 
-const LEVELS_FONT = '12.25px Proxima Nova';
+const getFont = (ratio: number) =>
+  `${ratio === 1 ? 12.25 : 10 * ratio}px Proxima Nova`;
 
 const fillBySide = (side: Side) =>
   side === Side.Buy ? colors.buy : colors.sell;
@@ -59,7 +60,6 @@ class LevelList extends React.Component<LevelListProps> {
   levelsLength: number = 0;
   fakeStage: any;
   ratio: number = 1;
-
   memoWidth: number = 0;
 
   handleLevelsDrawing = (asks: Order[], bids: Order[], type: LevelType) => {
@@ -74,7 +74,9 @@ class LevelList extends React.Component<LevelListProps> {
       'pointer-events'
     ] = value);
 
-  handleRatioChange = (ratio: number) => (this.ratio = ratio);
+  handleRatioChange = (ratio: number) => {
+    this.ratio = ratio;
+  };
 
   componentDidMount() {
     const {setLevelsDrawingHandler} = this.props;
@@ -178,13 +180,13 @@ class LevelList extends React.Component<LevelListProps> {
         text: format(l.price, instrument.accuracy),
         x: LEFT_PADDING,
         y: canvasY - TOP_PADDING * this.ratio,
-        font: LEVELS_FONT,
+        font: getFont(this.ratio),
         align: 'start'
       });
       this.levelsCells.push({
         left: LEFT_PADDING,
         top: y,
-        width: width / 3 - LEFT_PADDING,
+        width: (width / 3 - LEFT_PADDING) * this.ratio,
         height: levelHeight,
         type: OrderBookCellType.Price,
         value: l.price,
@@ -197,13 +199,13 @@ class LevelList extends React.Component<LevelListProps> {
         text: format(l[displayType], instrument.baseAsset.accuracy),
         x: width / 3 + LEFT_PADDING,
         y: canvasY - TOP_PADDING * this.ratio,
-        font: LEVELS_FONT,
+        font: getFont(this.ratio),
         align: 'start'
       });
       this.levelsCells.push({
         left: width / 3,
         top: y,
-        width: width / 3,
+        width: width / 3 * this.ratio,
         height: levelHeight,
         type: getCellType(displayType),
         value: l.depth,
@@ -216,7 +218,7 @@ class LevelList extends React.Component<LevelListProps> {
         text: value,
         x: width,
         y: canvasY - TOP_PADDING * this.ratio,
-        font: LEVELS_FONT,
+        font: getFont(this.ratio),
         align: 'end'
       });
     });
