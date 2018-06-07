@@ -13,6 +13,8 @@ interface ChartWrapperProps extends ChartProps {
   setSpanChangeHandler: (fn: () => void) => void;
   getAsks: () => Promise<Order[]>;
   getBids: () => Promise<Order[]>;
+  mid: () => Promise<number>;
+  handleDepthChartUnmount: () => void;
 }
 
 interface ChartWrapperState {
@@ -27,6 +29,7 @@ class ChartWrapper extends React.Component<
 > {
   @observable width: number = -1;
   @observable height: number = -1;
+  private isUnMount: boolean;
 
   constructor(props: ChartWrapperProps) {
     super(props);
@@ -41,17 +44,48 @@ class ChartWrapper extends React.Component<
     this.props.setSpanChangeHandler(this.handleDepthChartUpdates);
   }
 
+  componentDidMount() {
+    this.isUnMount = false;
+    this.loadChartData().then(({mid, asks, bids}: any) => {
+      this.setState({mid, asks, bids});
+    });
+  }
+
+  componentWillUnmount() {
+    this.isUnMount = true;
+    this.props.handleDepthChartUnmount();
+  }
+
+  loadChartData = async () => {
+    const mid = await this.props.mid();
+    const asks = await this.props.getAsks();
+    const bids = await this.props.getBids();
+    return {mid, asks, bids};
+  };
+
   handleDepthChartUpdates = async () => {
     const bids = await this.props.getBids();
     const asks = await this.props.getAsks();
+    if (this.isUnMount) {
+      return;
+    }
     this.setState({bids, asks});
   };
 
   handleMidPriceChange = async (mid: () => number) => {
     const midPrice = await mid();
+    if (this.isUnMount) {
+      return;
+    }
     this.setState({
       mid: midPrice
     });
+  };
+
+  handleResize = (contentRect: any) => {
+    this.width = Math.ceil(contentRect.client!.width);
+    this.height = Math.ceil(contentRect.client!.height);
+    this.forceUpdate();
   };
 
   render() {
@@ -62,12 +96,7 @@ class ChartWrapper extends React.Component<
       <Measure
         // tslint:disable-next-line:jsx-boolean-value
         client
-        // tslint:disable-next-line:jsx-no-lambda
-        onResize={contentRect => {
-          this.width = Math.ceil(contentRect.client!.width);
-          this.height = Math.ceil(contentRect.client!.height);
-          this.forceUpdate();
-        }}
+        onResize={this.handleResize}
       >
         {({measureRef}) => (
           <div style={{height: '100%'}} ref={measureRef}>

@@ -9,7 +9,7 @@ const formatWithAccuracy = (num: number, accuracy: number) =>
 
 const ConnectedDepthChart = connect(
   ({
-    depthChartStore: {nextSpan, prevSpan},
+    depthChartStore: {nextSpan, prevSpan, mid},
     orderBookStore: {setMidPriceUpdateHandler},
     uiStore: {selectedInstrument}
   }) => ({
@@ -17,7 +17,8 @@ const ConnectedDepthChart = connect(
     quoteAccuracy: pathOr(0, ['accuracy'], selectedInstrument),
     format: formatWithAccuracy,
     onNextSpan: nextSpan,
-    onPrevSpan: prevSpan
+    onPrevSpan: prevSpan,
+    mid
   }),
   DepthChart
 );

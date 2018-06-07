@@ -6,6 +6,7 @@ import {AbsoluteCentered, Bar, Button, FillHeight} from './styles';
 
 interface DepthChartProps {
   setMidPriceUpdateHandler: (fn: (mid: () => number) => Promise<void>) => void;
+  mid: () => Promise<number>;
   quoteAccuracy: number;
   format: (num: number, accuracy: number) => string;
   onNextSpan: () => void;
@@ -24,6 +25,10 @@ class DepthChart extends React.Component<DepthChartProps, DepthChartState> {
     };
 
     this.props.setMidPriceUpdateHandler(this.handleMidPriceChange);
+  }
+
+  componentDidMount() {
+    this.props.mid().then((mid: number) => this.setState({mid}));
   }
 
   handleMidPriceChange = async (mid: () => number) => {
