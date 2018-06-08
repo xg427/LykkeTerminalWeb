@@ -1,13 +1,10 @@
+import {reverse} from 'rambda';
 import * as React from 'react';
-
 import {Line} from 'react-konva';
-
 import {Order} from '../../../models';
-
+import chart from './chartConstants';
 import {ChartProps} from './Models';
 import Pointer from './Pointer';
-
-import chart from './chartConstants';
 
 interface DepthChartProps extends ChartProps {
   mid: number;
@@ -220,7 +217,7 @@ class Chart extends React.Component<DepthChartProps> {
     this.midXAsks = this.width / 2 + Math.round(chart.strokeWidth / 2);
     this.midXBids = this.width / 2 - Math.round(chart.strokeWidth / 2);
     this.midY = this.height;
-    this.asks = this.props.asks.reverse();
+    this.asks = reverse(this.props.asks);
     this.bids = this.props.bids;
     this.mid = this.props.mid;
     this.minDepth = Math.min(...this.bids.concat(this.asks).map(x => x.depth));
