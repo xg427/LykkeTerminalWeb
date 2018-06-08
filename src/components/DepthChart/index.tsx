@@ -10,15 +10,17 @@ const formatWithAccuracy = (num: number, accuracy: number) =>
 const ConnectedDepthChart = connect(
   ({
     depthChartStore: {mid, nextSpan, prevSpan, isMaxZoom, isMinZoom},
-    uiStore: {selectedInstrument}
+    uiStore: {selectedInstrument},
+    orderBookStore: {setMidPriceUpdateHandler}
   }) => ({
-    mid: mid(),
+    setMidPriceUpdateHandler,
     quoteAccuracy: pathOr(0, ['accuracy'], selectedInstrument),
     format: formatWithAccuracy,
     zoomIn: nextSpan,
     zoomOut: prevSpan,
     isMaxZoom,
-    isMinZoom
+    isMinZoom,
+    mid
   }),
   DepthChart
 );

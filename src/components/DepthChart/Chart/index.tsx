@@ -21,9 +21,8 @@ const ConnectedChartWrapper: any = connect(
 const ConnectedMesh = connect(
   ({
     depthChartStore: {
-      asks,
-      bids,
-      mid,
+      getAsks,
+      getBids,
       height,
       width,
       setLabelsWidth,
@@ -32,9 +31,8 @@ const ConnectedMesh = connect(
     uiStore: {selectedInstrument}
   }) => {
     return {
-      asks,
-      bids,
-      mid: mid(),
+      asks: getAsks,
+      bids: getBids,
       height: height - chart.labelsHeight,
       width: width - labelsWidth,
       baseAsset: selectedInstrument!.baseAsset.name,
@@ -50,13 +48,12 @@ const ConnectedMesh = connect(
 
 const ConnectedChart = connect(
   ({
-    depthChartStore: {asks, bids, mid, height, width, labelsWidth},
+    depthChartStore: {getAsks, getBids, mid, height, width, labelsWidth},
     uiStore: {selectedInstrument}
   }) => {
     return {
-      asks,
-      bids,
-      mid: mid(),
+      asks: getAsks,
+      bids: getBids,
       height: height - chart.labelsHeight,
       width: width - labelsWidth,
       baseAsset: selectedInstrument!.baseAsset.name,
@@ -86,6 +83,31 @@ const ConnectedPointer = connect(
   },
   Pointer
 );
+
+// tslint:disable:object-literal-sort-keys
+// const ConnectedChart2 = connect(
+//   ({
+//      depthChartStore: {getAsks, getBids, setSpanChangeHandler, mid},
+//      uiStore: {selectedInstrument},
+//      orderBookStore: {
+//        setMidPriceUpdateHandler,
+//        setDepthChartUpdatingHandler,
+//        handleDepthChartUnmount
+//      }
+//    }) => {
+//     return {
+//       getAsks,
+//       getBids,
+//       selectedInstrument,
+//       setMidPriceUpdateHandler,
+//       setDepthChartUpdatingHandler,
+//       setSpanChangeHandler,
+//       mid,
+//       handleDepthChartUnmount
+//     };
+//   },
+//   ChartWrapper
+// );
 
 export default ConnectedChartWrapper;
 export {default as ChartWrapper} from './ChartWrapper';

@@ -13,7 +13,8 @@ class DepthChartStore extends BaseStore {
   @observable width: number = 1024;
   @observable height: number = 512;
   @observable labelsWidth: number = chart.labelsWidth;
-
+  @observable asks: Order[] = [];
+  @observable bids: Order[] = [];
   @computed
   get span() {
     return this.multiplers[this.spanMultiplierIdx] * 100;
@@ -65,12 +66,12 @@ class DepthChartStore extends BaseStore {
   };
 
   @computed
-  get bids() {
+  get getBids() {
     const {
       orderListStore: {limitOrdersForThePair: limitOrders}
     } = this.rootStore;
     const aggregatedOrders = aggregateOrders(
-      this.rootStore.orderBookStore.rawBids,
+      this.bids,
       this.instrumentSpan,
       false
     );
@@ -80,12 +81,12 @@ class DepthChartStore extends BaseStore {
   }
 
   @computed
-  get asks() {
+  get getAsks() {
     const {
       orderListStore: {limitOrdersForThePair: limitOrders}
     } = this.rootStore;
     const aggregatedOrders = aggregateOrders(
-      this.rootStore.orderBookStore.rawAsks,
+      this.asks,
       this.instrumentSpan,
       true
     );
@@ -96,15 +97,15 @@ class DepthChartStore extends BaseStore {
     );
   }
 
-  mid = () => this.rootStore.orderBookStore.mid();
+  updateAsks = (asks: Order[]) => (this.asks = asks);
+  updateBids = (bids: Order[]) => (this.bids = bids);
 
-  spread = () => {
-    return (
-      (this.rootStore.orderBookStore.bestAsk() -
-        this.rootStore.orderBookStore.bestBid()) /
-      this.rootStore.orderBookStore.bestAsk() *
-      100
-    );
+  mid = async () => await this.rootStore.orderBookStore.mid();
+
+  spread = async () => {
+    const bestAsk = await this.rootStore.orderBookStore.bestAsk();
+    const bestBid = await this.rootStore.orderBookStore.bestBid();
+    return (bestAsk - bestBid) / bestAsk * 100;
   };
 
   lastTradePrice = () => {
