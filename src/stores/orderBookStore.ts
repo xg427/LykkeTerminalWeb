@@ -12,7 +12,7 @@ import {BaseStore, RootStore} from './index';
 import {
   aggregateOrders,
   connectLimitOrders,
-  getLevel,
+  getSortedByPriceLevel,
   mapToOrder
 } from './orderBookHelpers';
 
@@ -21,13 +21,15 @@ const headArr: <T = Order>(l: T[]) => T = head;
 const sortByPrice = sortBy(x => x.price);
 
 class OrderBookStore extends BaseStore {
+  @observable bestAskPrice: number = 0;
+  @observable bestBidPrice: number = 0;
   rawBids: Order[] = [];
   rawAsks: Order[] = [];
   drawAsks: (asks: Order[], bids: Order[], type: LevelType) => void;
   drawBids: (asks: Order[], bids: Order[], type: LevelType) => void;
   spreadUpdateFn: () => void;
   midPriceUpdaters: any[] = [];
-  getLevel: (l: any[], idx: number) => Promise<Order>;
+  getSortedByPriceLevel: (l: any[], idx: number) => Promise<Order>;
   mapToOrderInWorker: (l: any[], side: Side) => Promise<OrderLevel[]>;
 
   @observable
@@ -75,6 +77,16 @@ class OrderBookStore extends BaseStore {
     return 0;
   }
 
+  @computed
+  get bestAsk() {
+    return this.bestAskPrice;
+  }
+
+  @computed
+  get bestBid() {
+    return this.bestBidPrice;
+  }
+
   private subscriptions: Set<ISubscription> = new Set();
 
   constructor(
@@ -83,7 +95,7 @@ class OrderBookStore extends BaseStore {
     private readonly worker: any
   ) {
     super(store);
-    this.getLevel = this.worker(getLevel);
+    this.getSortedByPriceLevel = this.worker(getSortedByPriceLevel);
     this.mapToOrderInWorker = this.worker(mapToOrder);
   }
 
@@ -118,25 +130,28 @@ class OrderBookStore extends BaseStore {
     );
   };
 
-  bestBid = async () => {
-    const bestBid = await this.getLevel(this.rawBids, this.rawBids.length - 1);
+  getBestBid = async () => {
+    const bestBid = await this.getSortedByPriceLevel(
+      this.rawBids,
+      this.rawBids.length - 1
+    );
     return !!bestBid ? bestBid.price : 0;
   };
 
-  bestAsk = async () => {
-    const bestAsk = await this.getLevel(this.rawAsks, 0);
+  getBestAsk = async () => {
+    const bestAsk = await this.getSortedByPriceLevel(this.rawAsks, 0);
     return !!bestAsk ? bestAsk.price : 0;
   };
 
   mid = async () => {
-    const bestAsk = await this.bestAsk();
-    const bestBid = await this.bestBid();
+    const bestAsk = await this.getBestAsk();
+    const bestBid = await this.getBestBid();
     return (bestAsk + bestBid) / 2;
   };
 
   getSpreadRelative = async () => {
-    const bestAsk = await this.bestAsk();
-    const bestBid = await this.bestBid();
+    const bestAsk = await this.getBestAsk();
+    const bestBid = await this.getBestBid();
     return (bestAsk - bestBid) / bestAsk;
   };
 
@@ -204,11 +219,13 @@ class OrderBookStore extends BaseStore {
         this.rawBids = bids.map((b: any) => Order.create(b));
         this.drawBids(this.getAsks(), this.getBids(), LevelType.Bids);
         this.rootStore.depthChartStore.updateBids(this.rawBids);
+        this.bestBidPrice = await this.getBestBid();
       } else {
         const asks = await this.mapToOrderInWorker(Levels, Side.Sell);
         this.rawAsks = asks.map((a: any) => Order.create(a));
         this.drawAsks(this.getAsks(), this.getBids(), LevelType.Asks);
         this.rootStore.depthChartStore.updateAsks(this.rawAsks);
+        this.bestAskPrice = await this.getBestAsk();
       }
       // tslint:disable:no-unused-expression
       this.spreadUpdateFn && this.spreadUpdateFn();
