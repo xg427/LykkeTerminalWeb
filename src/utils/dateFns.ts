@@ -1,4 +1,5 @@
 import dates from '../constants/dateKeys';
+import {switchcase} from './fn';
 
 export const splitter = (from: number, to: number, resolution: string) => {
   const requestLimit = 5000;
@@ -100,50 +101,35 @@ export const getDiffDays = (currentDate: number, previousDate: number) => {
   return Math.ceil(timeDiff / (1000 * 3600 * 24));
 };
 
-export const candlesLimit = (from: number, to: number, resolution: string) => {
-  let updatedFrom: number;
+export const getStartTimeForCandlesByResolution = (
+  to: number,
+  resolution: number | string,
+  limit: number
+) => to - limit * 60000 * Number(resolution);
 
-  switch (resolution) {
-    case '1':
-      updatedFrom = to - dates.day;
-      break;
-    case '5':
-      updatedFrom = to - dates.day * 2;
-      break;
-    case '15':
-      updatedFrom = to - dates.week;
-      break;
-    case '30':
-      updatedFrom = to - dates.week * 1.5;
-      break;
-    case '60':
-      updatedFrom = to - dates.week * 3;
-      break;
-    case '240':
-      updatedFrom = to - dates.month * 3;
-      break;
-    case '360':
-      updatedFrom = to - dates.month * 6;
-      break;
-    case '720':
-      updatedFrom = to - dates.month * 7;
-      break;
-    case 'D':
-    case '1D':
-      updatedFrom = to - dates.year * 1.5;
-      break;
-    case 'W':
-    case '1W':
-      updatedFrom = to - dates.year * 15;
-      break;
-    case 'M':
-    case '1M':
-      updatedFrom = to - dates.year * 15;
-      break;
-
-    default:
-      updatedFrom = from;
-  }
-
-  return updatedFrom;
-};
+export const getFromByCandlesLimit = (limit: number) => (
+  to: number,
+  resolution: string
+) =>
+  switchcase({
+    '1': getStartTimeForCandlesByResolution,
+    '5': getStartTimeForCandlesByResolution,
+    '15': getStartTimeForCandlesByResolution,
+    '30': getStartTimeForCandlesByResolution,
+    '60': getStartTimeForCandlesByResolution,
+    '240': getStartTimeForCandlesByResolution,
+    '360': getStartTimeForCandlesByResolution,
+    '720': getStartTimeForCandlesByResolution,
+    D: (t: number, r: number, l: number) =>
+      getStartTimeForCandlesByResolution(t, convertMsToMinutes(dates.day), l),
+    '1D': (t: number, r: number, l: number) =>
+      getStartTimeForCandlesByResolution(t, convertMsToMinutes(dates.day), l),
+    W: (t: number, r: number, l: number) =>
+      getStartTimeForCandlesByResolution(t, convertMsToMinutes(dates.week), l),
+    '1W': (t: number, r: number, l: number) =>
+      getStartTimeForCandlesByResolution(t, convertMsToMinutes(dates.week), l),
+    M: (t: number, r: number, l: number) =>
+      getStartTimeForCandlesByResolution(t, convertMsToMinutes(dates.month), l),
+    '1M': (t: number, r: number, l: number) =>
+      getStartTimeForCandlesByResolution(t, convertMsToMinutes(dates.month), l)
+  })(resolution)(to, resolution, limit);
