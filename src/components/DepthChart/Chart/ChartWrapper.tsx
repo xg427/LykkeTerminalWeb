@@ -39,7 +39,10 @@ class ChartWrapper extends React.Component<
       asks: []
     };
 
-    this.props.setMidPriceUpdateHandler(this.handleMidPriceChange);
+    this.props.setMidPriceUpdateHandler(
+      'chartWrapper',
+      this.handleMidPriceChange
+    );
     this.props.setDepthChartUpdatingHandler(this.handleDepthChartUpdates);
     this.props.setSpanChangeHandler(this.handleDepthChartUpdates);
   }
