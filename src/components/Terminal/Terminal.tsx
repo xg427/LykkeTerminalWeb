@@ -17,7 +17,7 @@ import {Orders} from '../OrderList';
 import {SessionNotificationComponent} from '../Session';
 import styled, {colors} from '../styled';
 import {ChartTabbedTile, TabbedTile, Tile} from '../Tile';
-import {TradeLog, Trades} from '../TradeList';
+import {Trades} from '../TradeList';
 import {TerminalProps} from './index';
 
 const Shell = styled.div`
@@ -51,7 +51,8 @@ const ELEMENT_MAP: {[viewId: string]: JSX.Element} = {
   ),
   [TradeListWidget]: (
     <Tile title="Trade log">
-      <TradeLog />
+      <div />
+      {/*<TradeLog />*/}
     </Tile>
   ),
   [OrderBookWidget]: (
