@@ -108,7 +108,6 @@ const ConnectedPointer = connect(
 //   },
 //   ChartWrapper
 // );
-
 export default ConnectedChartWrapper;
 export {default as ChartWrapper} from './ChartWrapper';
 export {ConnectedMesh as Mesh};

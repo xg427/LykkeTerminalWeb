@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Icon} from '../Icon';
+import Icon from '../Icon/Icon';
 import {Figure, FigureHint, FigureValue} from '../OrderBook/styles';
 import ChartWrapper from './Chart/index';
 import {AbsoluteCentered, Bar, Button, FillHeight} from './styles';

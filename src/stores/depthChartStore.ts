@@ -1,5 +1,4 @@
 import {action, computed, observable} from 'mobx';
-import {reverse} from 'rambda';
 import chart from '../components/DepthChart/Chart/chartConstants';
 import {Order, TradeModel} from '../models';
 import {precisionFloor} from '../utils/math';
@@ -91,9 +90,7 @@ class DepthChartStore extends BaseStore {
       true
     );
     return this.reduceAsksArray(
-      reverse(
-        connectLimitOrders(aggregatedOrders, limitOrders, this.span, true)
-      )
+      connectLimitOrders(aggregatedOrders, limitOrders, this.span, true)
     );
   }
 
