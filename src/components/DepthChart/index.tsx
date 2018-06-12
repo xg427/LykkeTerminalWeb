@@ -11,7 +11,7 @@ const ConnectedDepthChart = connect(
   ({
     depthChartStore: {mid, nextSpan, prevSpan, isMaxZoom, isMinZoom},
     uiStore: {selectedInstrument},
-    orderBookStore: {setMidPriceUpdateHandler}
+    orderBookStore: {setMidPriceUpdateHandler, removeMidPriceUpdateHandler}
   }) => ({
     setMidPriceUpdateHandler,
     quoteAccuracy: pathOr(0, ['accuracy'], selectedInstrument),
@@ -20,7 +20,8 @@ const ConnectedDepthChart = connect(
     zoomOut: prevSpan,
     isMaxZoom,
     isMinZoom,
-    mid
+    mid,
+    removeMidPriceUpdateHandler
   }),
   DepthChart
 );

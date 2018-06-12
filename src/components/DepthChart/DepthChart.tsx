@@ -5,7 +5,10 @@ import ChartWrapper from './Chart/index';
 import {AbsoluteCentered, Bar, Button, FillHeight} from './styles';
 
 interface DepthChartProps {
-  setMidPriceUpdateHandler: (fn: (mid: () => number) => Promise<void>) => void;
+  setMidPriceUpdateHandler: (
+    componentName: string,
+    fn: (mid: () => number) => Promise<void>
+  ) => void;
   mid: () => Promise<number>;
   quoteAccuracy: number;
   format: (num: number, accuracy: number) => string;
@@ -13,6 +16,7 @@ interface DepthChartProps {
   zoomOut: () => void;
   isMaxZoom: boolean;
   isMinZoom: boolean;
+  removeMidPriceUpdateHandler: (componentName: string) => void;
 }
 
 interface DepthChartState {
@@ -26,18 +30,27 @@ class DepthChart extends React.Component<DepthChartProps, DepthChartState> {
       mid: 0
     };
 
-    this.props.setMidPriceUpdateHandler(this.handleMidPriceChange);
+    this.props.setMidPriceUpdateHandler(
+      'depthChart',
+      this.handleMidPriceChange
+    );
   }
 
   componentDidMount() {
     this.props.mid().then((mid: number) => this.setState({mid}));
   }
 
+  componentWillUnmount() {
+    this.props.removeMidPriceUpdateHandler('depthChart');
+  }
+
   handleMidPriceChange = async (mid: () => number) => {
     const midPrice = await mid();
-    this.setState({
-      mid: midPrice
-    });
+    if (midPrice !== this.state.mid) {
+      this.setState({
+        mid: midPrice
+      });
+    }
   };
 
   render() {

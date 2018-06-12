@@ -28,7 +28,7 @@ class OrderBookStore extends BaseStore {
   drawAsks: (asks: Order[], bids: Order[], type: LevelType) => void;
   drawBids: (asks: Order[], bids: Order[], type: LevelType) => void;
   spreadUpdateFn: () => void;
-  midPriceUpdaters: any[] = [];
+  midPriceUpdaters: Map<string, () => void> = new Map();
   getSortedByPriceLevel: (l: any[], idx: number) => Promise<Order>;
   mapToOrderInWorker: (l: any[], side: Side) => Promise<OrderLevel[]>;
 
@@ -102,7 +102,15 @@ class OrderBookStore extends BaseStore {
   setAsksUpdatingHandler = (cb: any) => (this.drawAsks = cb);
   setBidsUpdatingHandler = (cb: any) => (this.drawBids = cb);
   setSpreadHandler = (cb: any) => (this.spreadUpdateFn = cb);
-  setMidPriceUpdateHandler = (cb: any) => this.midPriceUpdaters.push(cb);
+  setMidPriceUpdateHandler = (componentName: string, cb: any) =>
+    this.midPriceUpdaters.set(componentName, cb);
+  removeMidPriceUpdateHandler = (componentName: string) =>
+    this.midPriceUpdaters.delete(componentName);
+
+  drawOrderBook = () => {
+    this.drawBids(this.getAsks(), this.getBids(), LevelType.Bids);
+    this.drawAsks(this.getAsks(), this.getBids(), LevelType.Asks);
+  };
 
   getAsks = () => {
     const {limitOrdersForThePair: limitOrders} = this.rootStore.orderListStore;
@@ -160,8 +168,7 @@ class OrderBookStore extends BaseStore {
     if (this.spanMultiplierIdx < this.maxMultiplierIdx) {
       this.spanMultiplierIdx++;
     }
-    this.drawBids(this.getAsks(), this.getBids(), LevelType.Bids);
-    this.drawAsks(this.getAsks(), this.getBids(), LevelType.Asks);
+    this.drawOrderBook();
   };
 
   @action
@@ -169,8 +176,7 @@ class OrderBookStore extends BaseStore {
     if (this.spanMultiplierIdx > 0) {
       this.spanMultiplierIdx--;
     }
-    this.drawBids(this.getAsks(), this.getBids(), LevelType.Bids);
-    this.drawAsks(this.getAsks(), this.getBids(), LevelType.Asks);
+    this.drawOrderBook();
   };
 
   @action
