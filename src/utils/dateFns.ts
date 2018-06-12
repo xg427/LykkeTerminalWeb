@@ -1,4 +1,5 @@
 import dates from '../constants/dateKeys';
+import {switchcase} from './fn';
 
 export const splitter = (from: number, to: number, resolution: string) => {
   const requestLimit = 5000;
@@ -100,50 +101,41 @@ export const getDiffDays = (currentDate: number, previousDate: number) => {
   return Math.ceil(timeDiff / (1000 * 3600 * 24));
 };
 
-export const candlesLimit = (from: number, to: number, resolution: string) => {
-  let updatedFrom: number;
-
-  switch (resolution) {
-    case '1':
-      updatedFrom = to - dates.day;
-      break;
-    case '5':
-      updatedFrom = to - dates.day * 2;
-      break;
-    case '15':
-      updatedFrom = to - dates.week;
-      break;
-    case '30':
-      updatedFrom = to - dates.week * 1.5;
-      break;
-    case '60':
-      updatedFrom = to - dates.week * 3;
-      break;
-    case '240':
-      updatedFrom = to - dates.month * 3;
-      break;
-    case '360':
-      updatedFrom = to - dates.month * 6;
-      break;
-    case '720':
-      updatedFrom = to - dates.month * 7;
-      break;
-    case 'D':
-    case '1D':
-      updatedFrom = to - dates.year * 1.5;
-      break;
-    case 'W':
-    case '1W':
-      updatedFrom = to - dates.year * 15;
-      break;
-    case 'M':
-    case '1M':
-      updatedFrom = to - dates.year * 15;
-      break;
-
-    default:
-      updatedFrom = from;
+export const convertResolutionToMs = (resolution: string) => {
+  const resolutionNum = Number(resolution);
+  if (!isNaN(resolutionNum)) {
+    return convertMinutesToMs(resolutionNum);
   }
-
-  return updatedFrom;
+  return switchcase({
+    D: () => dates.day,
+    '1D': () => dates.day,
+    W: () => dates.week,
+    '1W': () => dates.week,
+    M: () => dates.month,
+    '1M': () => dates.month
+  })(resolution)();
 };
+
+export const getStartTimeForCandles = (to: number, ms: number, limit: number) =>
+  to - limit * ms;
+
+export const getFromByCandlesLimit = (limit: number) => (
+  to: number,
+  resolution: string
+) =>
+  switchcase({
+    '1': getStartTimeForCandles,
+    '5': getStartTimeForCandles,
+    '15': getStartTimeForCandles,
+    '30': getStartTimeForCandles,
+    '60': getStartTimeForCandles,
+    '240': getStartTimeForCandles,
+    '360': getStartTimeForCandles,
+    '720': getStartTimeForCandles,
+    D: getStartTimeForCandles,
+    '1D': getStartTimeForCandles,
+    W: getStartTimeForCandles,
+    '1W': getStartTimeForCandles,
+    M: getStartTimeForCandles,
+    '1M': getStartTimeForCandles
+  })(resolution)(to, convertResolutionToMs(resolution), limit);
