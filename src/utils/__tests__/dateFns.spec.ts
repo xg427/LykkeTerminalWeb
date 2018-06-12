@@ -4,10 +4,11 @@ import {
   convertMinutesToMs,
   convertMsToMinutes,
   convertMsToSeconds,
+  convertResolutionToMs,
   convertSecondsToMs,
   getDiffDays,
   getFromByCandlesLimit,
-  getStartTimeForCandlesByResolution
+  getStartTimeForCandles
 } from '../dateFns';
 import {dateFns} from '../index';
 
@@ -185,9 +186,9 @@ describe('Date functions', () => {
     const to = new Date().getTime();
     const resolution = '1';
     const limit = 500;
-    expect(getStartTimeForCandlesByResolution(to, resolution, limit)).toBe(
-      to - limit * 60000 * Number(resolution)
-    );
+    expect(
+      getStartTimeForCandles(to, convertResolutionToMs(resolution), limit)
+    ).toBe(to - limit * 60000 * Number(resolution));
   });
 
   describe('calculate "from" time for candles', () => {
@@ -199,90 +200,127 @@ describe('Date functions', () => {
     it('should return value for 1 minute', () => {
       resolution = '1';
       expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+        to - limit * convertResolutionToMs(resolution)
       );
     });
 
     it('should return value for 5 minute', () => {
       resolution = '5';
       expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+        to - limit * convertResolutionToMs(resolution)
       );
     });
 
     it('should return value for 15 minute', () => {
       resolution = '15';
       expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+        to - limit * convertResolutionToMs(resolution)
       );
     });
 
     it('should return value for 30 minute', () => {
       resolution = '30';
       expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+        to - limit * convertResolutionToMs(resolution)
       );
     });
 
     it('should return value for 60 minute', () => {
       resolution = '60';
       expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+        to - limit * convertResolutionToMs(resolution)
       );
     });
 
     it('should return value for 240 minute', () => {
       resolution = '240';
       expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+        to - limit * convertResolutionToMs(resolution)
       );
     });
 
     it('should return value for 360 minute', () => {
       resolution = '360';
       expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+        to - limit * convertResolutionToMs(resolution)
       );
     });
 
     it('should return value for 720 minute', () => {
       resolution = '720';
       expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+        to - limit * convertResolutionToMs(resolution)
       );
     });
 
     it('should return value for 1 day', () => {
       resolution = 'D';
       expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * convertMsToMinutes(dates.day)
+        to - limit * convertResolutionToMs(resolution)
       );
       resolution = '1D';
       expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * convertMsToMinutes(dates.day)
+        to - limit * convertResolutionToMs(resolution)
       );
     });
 
     it('should return value for 1 week', () => {
       resolution = 'W';
       expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * convertMsToMinutes(dates.week)
+        to - limit * convertResolutionToMs(resolution)
       );
       resolution = '1W';
       expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * convertMsToMinutes(dates.week)
+        to - limit * convertResolutionToMs(resolution)
       );
     });
 
     it('should return value for 1 month', () => {
       resolution = 'M';
       expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * convertMsToMinutes(dates.month)
+        to - limit * convertResolutionToMs(resolution)
       );
       resolution = '1M';
       expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * convertMsToMinutes(dates.month)
+        to - limit * convertResolutionToMs(resolution)
       );
+    });
+
+    it('should parse string to number and convert value into ms', () => {
+      const value = '123';
+      expect(convertResolutionToMs(value)).toBe(
+        convertMinutesToMs(Number(value))
+      );
+    });
+
+    it('should convert default value for D used as a resolution', () => {
+      const r = 'D';
+      expect(convertResolutionToMs(r)).toBe(dates.day);
+    });
+
+    it('should convert default value for 1D used as a resolution', () => {
+      const r = '1D';
+      expect(convertResolutionToMs(r)).toBe(dates.day);
+    });
+
+    it('should convert default value for M used as a resolution', () => {
+      const r = 'M';
+      expect(convertResolutionToMs(r)).toBe(dates.month);
+    });
+
+    it('should convert default value for 1M used as a resolution', () => {
+      const r = '1M';
+      expect(convertResolutionToMs(r)).toBe(dates.month);
+    });
+
+    it('should convert default value for D used as a resolution', () => {
+      const r = 'W';
+      expect(convertResolutionToMs(r)).toBe(dates.week);
+    });
+
+    it('should convert default value for 1D used as a resolution', () => {
+      const r = '1W';
+      expect(convertResolutionToMs(r)).toBe(dates.week);
     });
   });
 });

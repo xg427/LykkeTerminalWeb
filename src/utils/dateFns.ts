@@ -101,35 +101,41 @@ export const getDiffDays = (currentDate: number, previousDate: number) => {
   return Math.ceil(timeDiff / (1000 * 3600 * 24));
 };
 
-export const getStartTimeForCandlesByResolution = (
-  to: number,
-  resolution: number | string,
-  limit: number
-) => to - limit * 60000 * Number(resolution);
+export const convertResolutionToMs = (resolution: string) => {
+  const resolutionNum = Number(resolution);
+  if (!isNaN(resolutionNum)) {
+    return convertMinutesToMs(resolutionNum);
+  }
+  return switchcase({
+    D: () => dates.day,
+    '1D': () => dates.day,
+    W: () => dates.week,
+    '1W': () => dates.week,
+    M: () => dates.month,
+    '1M': () => dates.month
+  })(resolution)();
+};
+
+export const getStartTimeForCandles = (to: number, ms: number, limit: number) =>
+  to - limit * ms;
 
 export const getFromByCandlesLimit = (limit: number) => (
   to: number,
   resolution: string
 ) =>
   switchcase({
-    '1': getStartTimeForCandlesByResolution,
-    '5': getStartTimeForCandlesByResolution,
-    '15': getStartTimeForCandlesByResolution,
-    '30': getStartTimeForCandlesByResolution,
-    '60': getStartTimeForCandlesByResolution,
-    '240': getStartTimeForCandlesByResolution,
-    '360': getStartTimeForCandlesByResolution,
-    '720': getStartTimeForCandlesByResolution,
-    D: (t: number, r: number, l: number) =>
-      getStartTimeForCandlesByResolution(t, convertMsToMinutes(dates.day), l),
-    '1D': (t: number, r: number, l: number) =>
-      getStartTimeForCandlesByResolution(t, convertMsToMinutes(dates.day), l),
-    W: (t: number, r: number, l: number) =>
-      getStartTimeForCandlesByResolution(t, convertMsToMinutes(dates.week), l),
-    '1W': (t: number, r: number, l: number) =>
-      getStartTimeForCandlesByResolution(t, convertMsToMinutes(dates.week), l),
-    M: (t: number, r: number, l: number) =>
-      getStartTimeForCandlesByResolution(t, convertMsToMinutes(dates.month), l),
-    '1M': (t: number, r: number, l: number) =>
-      getStartTimeForCandlesByResolution(t, convertMsToMinutes(dates.month), l)
-  })(resolution)(to, resolution, limit);
+    '1': getStartTimeForCandles,
+    '5': getStartTimeForCandles,
+    '15': getStartTimeForCandles,
+    '30': getStartTimeForCandles,
+    '60': getStartTimeForCandles,
+    '240': getStartTimeForCandles,
+    '360': getStartTimeForCandles,
+    '720': getStartTimeForCandles,
+    D: getStartTimeForCandles,
+    '1D': getStartTimeForCandles,
+    W: getStartTimeForCandles,
+    '1W': getStartTimeForCandles,
+    M: getStartTimeForCandles,
+    '1M': getStartTimeForCandles
+  })(resolution)(to, convertResolutionToMs(resolution), limit);
