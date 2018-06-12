@@ -33,9 +33,11 @@ class DepthChart extends React.Component<DepthChartProps, DepthChartState> {
 
   handleMidPriceChange = async (mid: () => number) => {
     const midPrice = await mid();
-    this.setState({
-      mid: midPrice
-    });
+    if (midPrice !== this.state.mid) {
+      this.setState({
+        mid: midPrice
+      });
+    }
   };
 
   render() {
