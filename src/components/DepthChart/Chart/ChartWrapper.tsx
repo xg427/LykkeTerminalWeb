@@ -13,12 +13,11 @@ interface ChartWrapperProps extends ChartProps {
   setSpanChangeHandler: (fn: () => void) => void;
   getAsks: () => Promise<Order[]>;
   getBids: () => Promise<Order[]>;
-  mid: () => Promise<number>;
+  mid: number;
   handleDepthChartUnmount: () => void;
 }
 
 interface ChartWrapperState {
-  mid: number;
   bids: Order[];
   asks: Order[];
 }
@@ -34,23 +33,18 @@ class ChartWrapper extends React.Component<
   constructor(props: ChartWrapperProps) {
     super(props);
     this.state = {
-      mid: 0,
       bids: [],
       asks: []
     };
 
-    this.props.setMidPriceUpdateHandler(
-      'chartWrapper',
-      this.handleMidPriceChange
-    );
     this.props.setDepthChartUpdatingHandler(this.handleDepthChartUpdates);
     this.props.setSpanChangeHandler(this.handleDepthChartUpdates);
   }
 
   componentDidMount() {
     this.isUnMount = false;
-    this.loadChartData().then(({mid, asks, bids}: any) => {
-      this.setState({mid, asks, bids});
+    this.loadChartData().then(({asks, bids}: any) => {
+      this.setState({asks, bids});
     });
   }
 
@@ -60,10 +54,9 @@ class ChartWrapper extends React.Component<
   }
 
   loadChartData = async () => {
-    const mid = await this.props.mid();
     const asks = await this.props.getAsks();
     const bids = await this.props.getBids();
-    return {mid, asks, bids};
+    return {asks, bids};
   };
 
   handleDepthChartUpdates = async () => {
@@ -75,16 +68,6 @@ class ChartWrapper extends React.Component<
     this.setState({bids, asks});
   };
 
-  handleMidPriceChange = async (mid: () => number) => {
-    const midPrice = await mid();
-    if (this.isUnMount) {
-      return;
-    }
-    this.setState({
-      mid: midPrice
-    });
-  };
-
   handleResize = (contentRect: any) => {
     this.width = Math.ceil(contentRect.client!.width);
     this.height = Math.ceil(contentRect.client!.height);
@@ -92,8 +75,8 @@ class ChartWrapper extends React.Component<
   };
 
   render() {
-    const {selectedInstrument} = this.props;
-    const {asks, bids, mid} = this.state;
+    const {selectedInstrument, mid} = this.props;
+    const {asks, bids} = this.state;
 
     return (
       <Measure

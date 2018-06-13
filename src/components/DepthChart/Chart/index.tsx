@@ -7,19 +7,18 @@ const ConnectedChart = connect(
     depthChartStore: {getAsks, getBids, setSpanChangeHandler, mid},
     uiStore: {selectedInstrument},
     orderBookStore: {
-      setMidPriceUpdateHandler,
       setDepthChartUpdatingHandler,
-      handleDepthChartUnmount
+      handleDepthChartUnmount,
+      midPrice
     }
   }) => {
     return {
       getAsks,
       getBids,
       selectedInstrument,
-      setMidPriceUpdateHandler,
       setDepthChartUpdatingHandler,
       setSpanChangeHandler,
-      mid,
+      mid: midPrice,
       handleDepthChartUnmount
     };
   },
