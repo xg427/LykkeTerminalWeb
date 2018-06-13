@@ -7,9 +7,9 @@ class PriceApi extends RestApi {
       `/candlesHistory/spot/${instrument}/trades/${interval}/${from.toISOString()}/${to.toISOString()}`
     );
 
-  fetchBitfinexCandles = (from: number, to: number) =>
+  fetchBitfinexCandles = (from: number, to: number, resolution: string) =>
     this.customGet(
-      `https://api.bitfinex.com/v2/candles/trade:1m:tBTCUSD/hist?start=${from}&end=${to}&limit=1000`
+      `https://api.bitfinex.com/v2/candles/trade:${resolution}m:tBTCUSD/hist?start=${from}&end=${to}&limit=1000`
     );
 
   fetchCandlesMock = (
