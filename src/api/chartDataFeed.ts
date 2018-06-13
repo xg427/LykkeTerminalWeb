@@ -141,6 +141,12 @@ class ChartDataFeed {
       );
     });
 
+    const customTo = firstDataRequest ? new Date() : new Date(to * 1000);
+    this.priceApi.fetchBitfinexCandles(
+      getFromTime(to * 1000, resolution),
+      new Date(customTo).getTime()
+    );
+
     await Promise.all(promises).then(
       resp => {
         if (external && !firstDataRequest) {
