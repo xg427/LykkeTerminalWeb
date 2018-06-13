@@ -5,53 +5,19 @@ import ChartWrapper from './Chart/index';
 import {AbsoluteCentered, Bar, Button, FillHeight} from './styles';
 
 interface DepthChartProps {
-  setMidPriceUpdateHandler: (
-    componentName: string,
-    fn: (mid: () => number) => Promise<void>
-  ) => void;
-  mid: () => Promise<number>;
+  mid: number;
   quoteAccuracy: number;
   format: (num: number, accuracy: number) => string;
   zoomIn: () => void;
   zoomOut: () => void;
   isMaxZoom: boolean;
   isMinZoom: boolean;
-  removeMidPriceUpdateHandler: (componentName: string) => void;
 }
 
-interface DepthChartState {
-  mid: number;
-}
-
-class DepthChart extends React.Component<DepthChartProps, DepthChartState> {
+class DepthChart extends React.Component<DepthChartProps> {
   constructor(props: DepthChartProps) {
     super(props);
-    this.state = {
-      mid: 0
-    };
-
-    this.props.setMidPriceUpdateHandler(
-      'depthChart',
-      this.handleMidPriceChange
-    );
   }
-
-  componentDidMount() {
-    this.props.mid().then((mid: number) => this.setState({mid}));
-  }
-
-  componentWillUnmount() {
-    this.props.removeMidPriceUpdateHandler('depthChart');
-  }
-
-  handleMidPriceChange = async (mid: () => number) => {
-    const midPrice = await mid();
-    if (midPrice !== this.state.mid) {
-      this.setState({
-        mid: midPrice
-      });
-    }
-  };
 
   render() {
     const {
@@ -70,7 +36,7 @@ class DepthChart extends React.Component<DepthChartProps, DepthChartState> {
               <Icon name="minus" />
             </Button>
             <Figure>
-              <FigureValue>{format(this.state.mid, quoteAccuracy)}</FigureValue>
+              <FigureValue>{format(this.props.mid, quoteAccuracy)}</FigureValue>
               <FigureHint>Mid price</FigureHint>
             </Figure>
             <Button onClick={zoomIn} disabled={isMaxZoom}>

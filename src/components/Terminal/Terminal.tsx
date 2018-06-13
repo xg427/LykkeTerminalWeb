@@ -17,7 +17,7 @@ import {Orders} from '../OrderList';
 import {SessionNotificationComponent} from '../Session';
 import styled, {colors} from '../styled';
 import {ChartTabbedTile, TabbedTile, Tile} from '../Tile';
-import {Trades} from '../TradeList';
+import {TradeLog, Trades} from '../TradeList';
 import {TerminalProps} from './index';
 
 const Shell = styled.div`
@@ -51,8 +51,7 @@ const ELEMENT_MAP: {[viewId: string]: JSX.Element} = {
   ),
   [TradeListWidget]: (
     <Tile title="Trade log">
-      <div />
-      {/*<TradeLog />*/}
+      <TradeLog />
     </Tile>
   ),
   [OrderBookWidget]: (
@@ -108,6 +107,9 @@ class Terminal extends React.Component<TerminalProps, {}> {
   private visibility: string = VISIBLE;
 
   handleVisibilityChange = () => {
+    this.props.rootStore.uiStore.setPageVisibility(
+      document.visibilityState === HIDDEN
+    );
     if (this.visibility !== document.visibilityState) {
       switch (document.visibilityState) {
         case HIDDEN:

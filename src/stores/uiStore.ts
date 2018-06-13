@@ -33,6 +33,7 @@ class UiStore extends BaseStore {
   @observable orderbookDisplayType = OrderBookDisplayType.Volume;
   @observable isDisclaimerShown: boolean = false;
   @observable private isReadOnlyMode: boolean;
+  private isPageHidden: boolean = false;
 
   constructor(store: RootStore) {
     super(store);
@@ -42,7 +43,7 @@ class UiStore extends BaseStore {
         if (instrument) {
           this.toggleInstrumentPerformanceData(false);
 
-          const {reset, fetchAll, subscribe} = this.rootStore.orderBookStore;
+          const {reset, fetchAll} = this.rootStore.orderBookStore;
           reset();
 
           try {
@@ -51,7 +52,7 @@ class UiStore extends BaseStore {
             return;
           }
 
-          subscribe(this.getWs());
+          // subscribe(this.getWs());
 
           const {
             setQuantityAccuracy,
@@ -102,6 +103,9 @@ class UiStore extends BaseStore {
       }
     );
   }
+
+  setPageVisibility = (isHidden: boolean) => (this.isPageHidden = isHidden);
+  getPageVisibility = () => this.isPageHidden;
 
   hasAsset = (
     selectedInstrument: InstrumentModel,

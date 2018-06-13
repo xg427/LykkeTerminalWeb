@@ -48,7 +48,7 @@ const ConnectedMesh = connect(
 
 const ConnectedChart = connect(
   ({
-    depthChartStore: {getAsks, getBids, mid, height, width, labelsWidth},
+    depthChartStore: {getAsks, getBids, height, width, labelsWidth},
     uiStore: {selectedInstrument}
   }) => {
     return {
