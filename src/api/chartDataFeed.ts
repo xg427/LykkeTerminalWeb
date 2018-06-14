@@ -90,16 +90,10 @@ class ChartDataFeed {
     onErrorCallback: any,
     firstDataRequest: any
   ) => {
-    const correctFrom = dateFns.candlesLimit(
-      from * 1000,
-      to * 1000,
-      resolution
-    );
-
     const external =
       process.env.REACT_APP_FETCH_CANDLES_STRATEGY === 'external';
 
-    const timePeriods = dateFns.splitter(correctFrom, to * 1000, resolution);
+    const timePeriods = dateFns.splitter(from * 1000, to * 1000, resolution);
     const interval = mappers.mapChartResolutionToWampInterval(resolution);
     const promises = timePeriods!.map(period => {
       const fetchCandles = external
@@ -108,7 +102,7 @@ class ChartDataFeed {
 
       return fetchCandles(
         this.instrument.id,
-        new Date(correctFrom),
+        new Date(from * 1000),
         addTick(firstDataRequest ? new Date() : new Date(to * 1000), interval),
         interval
       );
