@@ -33,9 +33,6 @@ const MAX_LEFT_PADDING = 20;
 const MAX_RIGHT_PADDING = 75;
 const MIN_PANE_SIZE_PERCENTAGE = 20;
 
-const VISIBLE = 'visible';
-const HIDDEN = 'hidden';
-
 const {
   ChartWidget,
   OrderWidget,
@@ -102,23 +99,23 @@ class Terminal extends React.Component<TerminalProps, {}> {
     .balanceListStore;
   private referenceStore: ReferenceStore = this.props.rootStore.referenceStore;
 
-  private visibility: string = VISIBLE;
-
   handleVisibilityChange = () => {
-    if (this.visibility !== document.visibilityState) {
+    const visibilityStore = this.props.rootStore.visibilityStore;
+    if (visibilityStore.visibility !== document.visibilityState) {
       switch (document.visibilityState) {
-        case HIDDEN:
+        case visibilityStore.states.hidden:
           {
             this.props.rootStore.pause();
           }
           break;
-        case VISIBLE:
+        case visibilityStore.states.visible:
           {
             this.props.rootStore.continue();
           }
           break;
       }
-      this.visibility = document.visibilityState;
+      this.props.rootStore.visibilityStore.visibility =
+        document.visibilityState;
     }
   };
 
