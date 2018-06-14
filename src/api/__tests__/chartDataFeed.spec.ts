@@ -69,7 +69,7 @@ describe('chart data feed', () => {
     chartDataFeed.filterAndLimitBars(bars);
 
     expect(chartDataFeed.getTimeRange.barsCount).toBe(candlesLimit);
-    expect(chartDataFeed.getTimeRange.isCandlesLimitReached).toBeTruthy();
+    expect(chartDataFeed.getTimeRange.isLimitReached).toBeTruthy();
   });
 
   it('filterAndLimitBars method should count bars but limit is not reached', () => {
@@ -88,7 +88,7 @@ describe('chart data feed', () => {
     chartDataFeed.filterAndLimitBars(bars);
 
     expect(chartDataFeed.getTimeRange.barsCount).toBe(candlesLimit);
-    expect(chartDataFeed.getTimeRange.isCandlesLimitReached).toBeTruthy();
+    expect(chartDataFeed.getTimeRange.isLimitReached).toBeTruthy();
   });
 
   it('filterAndLimitBars method should set limit and count bars when getBars was called several times', () => {
@@ -111,7 +111,7 @@ describe('chart data feed', () => {
     chartDataFeed.resetTimeRange('BTC/USD', '1W');
 
     expect(chartDataFeed.getTimeRange.barsCount).toBe(0);
-    expect(chartDataFeed.getTimeRange.isCandlesLimitReached).toBeFalsy();
+    expect(chartDataFeed.getTimeRange.isLimitReached).toBeFalsy();
     expect(chartDataFeed.getTimeRange.symbol).toBe('BTC/USD');
     expect(chartDataFeed.getTimeRange.resolution).toBe('1W');
   });

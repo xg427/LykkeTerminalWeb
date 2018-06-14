@@ -101,7 +101,7 @@ export const getDiffDays = (currentDate: number, previousDate: number) => {
 };
 
 export const candlesLimit = (from: number, to: number, resolution: string) => {
-  let updatedFrom: number;
+  let updatedFrom: number = from;
 
   switch (resolution) {
     case '1':
@@ -134,15 +134,12 @@ export const candlesLimit = (from: number, to: number, resolution: string) => {
       break;
     case 'W':
     case '1W':
-      updatedFrom = to - dates.year * 15;
       break;
     case 'M':
     case '1M':
-      updatedFrom = to - dates.year * 15;
       break;
 
     default:
-      updatedFrom = from;
   }
 
   return updatedFrom;

@@ -51,24 +51,23 @@ const addTick = (d: Date, interval: Interval) => {
 
 interface TimeRangeProps {
   barsCount: number;
-  isCandlesLimitReached: boolean;
+  isLimitReached: boolean;
   resolution: string;
   symbol: string;
 }
 
 class ChartDataFeed {
-  private timeRange: TimeRangeProps = {
-    barsCount: 0,
-    isCandlesLimitReached: false,
-    resolution: '',
-    symbol: ''
-  };
-
   constructor(
     private readonly config: any,
     private readonly instrument: InstrumentModel,
     private readonly priceApi: PriceApi,
     private readonly session: any,
+    private timeRange: TimeRangeProps = {
+      barsCount: 0,
+      isLimitReached: false,
+      resolution: '',
+      symbol: ''
+    },
     private readonly subscribeToCandlesWithResolutions: (
       s: ISubscription
     ) => void
@@ -116,7 +115,7 @@ class ChartDataFeed {
       this.resetTimeRange(symbolInfo.name, resolution);
     }
 
-    if (this.timeRange.isCandlesLimitReached) {
+    if (this.timeRange.isLimitReached) {
       return;
     }
 
@@ -228,8 +227,7 @@ class ChartDataFeed {
     }
 
     this.timeRange.barsCount += brs.length;
-    this.timeRange.isCandlesLimitReached =
-      this.timeRange.barsCount >= candlesLimit;
+    this.timeRange.isLimitReached = this.timeRange.barsCount >= candlesLimit;
 
     return brs;
   };
@@ -237,7 +235,7 @@ class ChartDataFeed {
   resetTimeRange = (symbol: string, resolution: string) => {
     this.timeRange = {
       barsCount: 0,
-      isCandlesLimitReached: false,
+      isLimitReached: false,
       resolution,
       symbol
     };
