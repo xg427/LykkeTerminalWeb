@@ -17,7 +17,6 @@ import {
   PriceType
 } from '../models/index';
 import * as mappers from '../models/mappers/index';
-import {getFromByCandlesLimit} from '../utils/dateFns';
 import {dateFns} from '../utils/index';
 import {PriceApi} from './index';
 
@@ -123,8 +122,6 @@ class ChartDataFeed {
 
     const external =
       process.env.REACT_APP_FETCH_CANDLES_STRATEGY === 'external';
-    const limit = candlesLimit - this.timeRange.barsCount;
-    const getFromTime = getFromByCandlesLimit(limit);
 
     const interval = mappers.mapChartResolutionToWampInterval(resolution);
     const timePeriods = dateFns.splitter(from * 1000, to * 1000, resolution);
@@ -135,7 +132,7 @@ class ChartDataFeed {
 
       return fetchCandles(
         this.instrument.id,
-        new Date(getFromTime(to * 1000, resolution)),
+        new Date(from * 1000),
         addTick(firstDataRequest ? new Date() : new Date(to * 1000), interval),
         interval
       );

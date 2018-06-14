@@ -5,9 +5,7 @@ import {
   convertMsToMinutes,
   convertMsToSeconds,
   convertSecondsToMs,
-  getDiffDays,
-  getFromByCandlesLimit,
-  getStartTimeForCandlesByResolution
+  getDiffDays
 } from '../dateFns';
 import {dateFns} from '../index';
 
@@ -181,107 +179,95 @@ describe('Date functions', () => {
     expect(getDiffDays(currentDate, previousDate)).toBe(1);
   });
 
-  it('should return "from" time for candles by resolution', () => {
+  describe('Update from date to limit chart candles', () => {
     const to = new Date().getTime();
-    const resolution = '1';
-    const limit = 500;
-    expect(getStartTimeForCandlesByResolution(to, resolution, limit)).toBe(
-      to - limit * 60000 * Number(resolution)
-    );
-  });
+    const from = new Date().getTime() - dates.week * 5.5;
+    const updatedFromOptions = {
+      '1': to - dates.day,
+      '5': to - dates.day * 2,
+      '15': to - dates.week,
+      '30': to - dates.week * 1.5,
+      '60': to - dates.week * 3,
+      '240': to - dates.month * 3,
+      '360': to - dates.month * 6,
+      '720': to - dates.month * 7,
+      '1D': to - dates.year * 1.5,
+      '1W': to - dates.year * 15,
+      '1M': to - dates.year * 15
+    };
+    let resolution;
 
-  describe('calculate "from" time for candles', () => {
-    const limit = 500;
-    const getFromTime = getFromByCandlesLimit(limit);
-    const to = new Date().getTime();
-    let resolution: string = '';
+    it('date candlesLimit function should be defined', () => {
+      expect(dateFns.candlesLimit).toBeDefined();
+    });
 
-    it('should return value for 1 minute', () => {
+    it('range for 1 minute resolution should starts from 1 day before now', () => {
       resolution = '1';
-      expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+      expect(dateFns.candlesLimit(from, to, resolution)).toBe(
+        updatedFromOptions[1]
       );
     });
 
-    it('should return value for 5 minute', () => {
+    it('range for 5 minutes resolution should starts from 2 days before now', () => {
       resolution = '5';
-      expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+      expect(dateFns.candlesLimit(from, to, resolution)).toBe(
+        updatedFromOptions[5]
       );
     });
 
-    it('should return value for 15 minute', () => {
+    it('range for 15 minutes resolution should starts from 1 week before now', () => {
       resolution = '15';
-      expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+      expect(dateFns.candlesLimit(from, to, resolution)).toBe(
+        updatedFromOptions[15]
       );
     });
 
-    it('should return value for 30 minute', () => {
+    it('range for 30 minutes resolution should starts from 1.5 weeks before now', () => {
       resolution = '30';
-      expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+      expect(dateFns.candlesLimit(from, to, resolution)).toBe(
+        updatedFromOptions[30]
       );
     });
 
-    it('should return value for 60 minute', () => {
+    it('range for 60 minutes resolution should starts from 3 weeks before now', () => {
       resolution = '60';
-      expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+      expect(dateFns.candlesLimit(from, to, resolution)).toBe(
+        updatedFromOptions[60]
       );
     });
 
-    it('should return value for 240 minute', () => {
+    it('range for 240 minutes resolution should starts from 3 months before now', () => {
       resolution = '240';
-      expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+      expect(dateFns.candlesLimit(from, to, resolution)).toBe(
+        updatedFromOptions[240]
       );
     });
 
-    it('should return value for 360 minute', () => {
+    it('range for 360 minutes resolution should starts from 6 months before now', () => {
       resolution = '360';
-      expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+      expect(dateFns.candlesLimit(from, to, resolution)).toBe(
+        updatedFromOptions[360]
       );
     });
 
-    it('should return value for 720 minute', () => {
+    it('range for 720 minutes resolution should starts from 7 months before now', () => {
       resolution = '720';
-      expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * Number(resolution)
+      expect(dateFns.candlesLimit(from, to, resolution)).toBe(
+        updatedFromOptions[720]
       );
     });
 
-    it('should return value for 1 day', () => {
-      resolution = 'D';
-      expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * convertMsToMinutes(dates.day)
-      );
+    it('range for 1 day resolution should starts from 1.5 years before now', () => {
       resolution = '1D';
-      expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * convertMsToMinutes(dates.day)
+      expect(dateFns.candlesLimit(from, to, resolution)).toBe(
+        updatedFromOptions['1D']
       );
     });
 
-    it('should return value for 1 week', () => {
-      resolution = 'W';
-      expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * convertMsToMinutes(dates.week)
-      );
+    it('range for 1 week resolution should starts from 15 years before now', () => {
       resolution = '1W';
-      expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * convertMsToMinutes(dates.week)
-      );
-    });
-
-    it('should return value for 1 month', () => {
-      resolution = 'M';
-      expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * convertMsToMinutes(dates.month)
-      );
-      resolution = '1M';
-      expect(getFromTime(to, resolution)).toBe(
-        to - limit * 60000 * convertMsToMinutes(dates.month)
+      expect(dateFns.candlesLimit(from, to, resolution)).toBe(
+        updatedFromOptions['1W']
       );
     });
   });
