@@ -141,16 +141,6 @@ class ChartDataFeed {
       );
     });
 
-    const customTo = addTick(
-      firstDataRequest ? new Date() : new Date(to * 1000),
-      interval
-    );
-    this.priceApi.fetchBitfinexCandles(
-      getFromTime(to * 1000, resolution),
-      new Date(customTo).getTime(),
-      resolution
-    );
-
     await Promise.all(promises).then(
       resp => {
         if (external && !firstDataRequest) {

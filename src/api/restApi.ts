@@ -28,12 +28,6 @@ export class RestApi {
       .unauthorized((err: WretcherError) => this.catchUnauthorized(err))
       .json();
 
-  protected customGet = (url: string) =>
-    wretch()
-      .url(url)
-      .get()
-      .json();
-
   protected getWithQuery = <T = any>(
     url: string,
     query: {[key: string]: any}
