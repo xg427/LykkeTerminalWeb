@@ -120,7 +120,6 @@ export const candlesLimit = (from: number, to: number, resolution: string) => {
       updatedFrom = to - dates.week * 3;
       break;
     case '240':
-      updatedFrom = to - dates.month * 3;
       break;
     case '360':
       updatedFrom = to - dates.month * 6;
