@@ -64,7 +64,7 @@ class RootStore {
   readonly marketStore: MarketStore;
   readonly uiOrderBookStore: UiOrderBookStore;
 
-  private ws: WampApi;
+  private ws: WampApi = new WampApi();
 
   private readonly stores = new Set<BaseStore>();
 
@@ -125,6 +125,7 @@ class RootStore {
   };
 
   start = async () => {
+    this.ws = new WampApi();
     const instruments = this.referenceStore.getInstruments();
     const assets = this.referenceStore.getAssets();
 
@@ -148,7 +149,6 @@ class RootStore {
         this.balanceListStore.updateWalletBalances();
       }, reject => Promise.resolve)
       .then(async () => {
-        this.ws = new WampApi();
         await this.ws.connect(
           this.wampUrl,
           this.wampRealm,
@@ -187,21 +187,9 @@ class RootStore {
       });
   };
 
-  pause = () => {
-    if (this.ws) {
-      this.ws.pause();
-    }
-  };
+  pause = () => this.ws.pause();
 
-  continue = async () => {
-    if (this.ws) {
-      await this.ws.connect(
-        this.wampUrl,
-        this.wampRealm,
-        tokenStorage.get() as string
-      );
-    }
-  };
+  continue = () => this.ws.continue();
 
   registerStore = (store: BaseStore) => this.stores.add(store);
 
