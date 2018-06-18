@@ -197,7 +197,15 @@ class RootStore {
 
   pause = () => this.ws.pause();
 
-  continue = () => this.ws.continue();
+  continue = () => {
+    const isDebounced = this.ws.continue();
+    if (!isDebounced) {
+      this.balanceListStore.fetchAll();
+      this.orderListStore.fetchAll();
+      this.orderBookStore.fetchAll();
+      this.tradeStore.fetchPublicTrades();
+    }
+  };
 
   registerStore = (store: BaseStore) => this.stores.add(store);
 
