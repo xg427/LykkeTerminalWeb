@@ -4,13 +4,17 @@ import {
   InstrumentModel
 } from '../../models/index';
 import {ReferenceStore, RootStore} from '../index';
+import WatchlistStore from '../watchlistStore';
 
 // tslint:disable:object-literal-sort-keys
 describe('referenceStore', () => {
   const api: any = {
     fetchAll: jest.fn(),
+    fetchAssetById: jest.fn(),
     fetchAssetCategories: jest.fn(),
     fetchAssetInstruments: jest.fn(),
+    fetchAssetsDescriptions: jest.fn(),
+    fetchAssetDescriptionById: jest.fn(),
     fetchBaseAsset: jest.fn()
   };
   let assetStore: ReferenceStore;
@@ -103,11 +107,63 @@ describe('referenceStore', () => {
           ]
         })
       );
+      api.fetchAssetsDescriptions = jest.fn(() =>
+        Promise.resolve({
+          Descriptions: [
+            {
+              Id: '1',
+              FullName: 'Lykke'
+            },
+            {
+              Id: '2',
+              FullName: 'Lykke 2'
+            }
+          ]
+        })
+      );
 
       await assetStore.fetchAssets();
 
       expect(assetStore.getAssets()).not.toBeNull();
       expect(assetStore.getAssets().length).toBe(2);
+    });
+  });
+
+  describe('fetch asset by id', () => {
+    it('should call api get asset pairs', () => {
+      jest.resetAllMocks();
+
+      assetStore.fetchAssetById('1');
+
+      expect(api.fetchAssetById).toHaveBeenCalled();
+      expect(api.fetchAssetDescriptionById).toHaveBeenCalled();
+      expect(api.fetchAssetById).toHaveBeenCalledTimes(1);
+      expect(api.fetchAssetDescriptionById).toHaveBeenCalledTimes(1);
+    });
+
+    it('should map valid response to asset', async () => {
+      jest.resetAllMocks();
+      api.fetchAssetById = jest.fn(() =>
+        Promise.resolve({
+          Asset: {
+            Id: '1',
+            DisplayId: 'LKK',
+            Accuracy: 4,
+            CategoryId: 'ctg1'
+          }
+        })
+      );
+      api.fetchAssetDescriptionById = jest.fn(() =>
+        Promise.resolve({
+          Id: '1',
+          FullName: 'Lykke'
+        })
+      );
+
+      await assetStore.fetchAssetById('1');
+
+      expect(assetStore.getAssets()).not.toBeNull();
+      expect(assetStore.getAssets().length).toBe(1);
     });
   });
 
@@ -147,7 +203,8 @@ describe('referenceStore', () => {
         id: '1',
         name: 'LKK',
         accuracy: 2,
-        category: ctg
+        category: ctg,
+        fullName: 'Lykke'
       });
       jest.resetAllMocks();
       api.fetchAll = jest.fn(() =>
@@ -164,6 +221,17 @@ describe('referenceStore', () => {
           ]
         })
       );
+      api.fetchAssetsDescriptions = jest.fn(() =>
+        Promise.resolve({
+          Descriptions: [
+            {
+              Id: '1',
+              FullName: 'Lykke'
+            }
+          ]
+        })
+      );
+
       api.fetchAssetCategories = jest.fn(() =>
         Promise.resolve({
           AssetCategories: [{Id: '1', Name: 'Lykke'}]
@@ -185,6 +253,16 @@ describe('referenceStore', () => {
             {
               Id: '1',
               Name: name
+            }
+          ]
+        })
+      );
+      api.fetchAssetsDescriptions = jest.fn(() =>
+        Promise.resolve({
+          Descriptions: [
+            {
+              Id: '1',
+              FullName: 'Lykke'
             }
           ]
         })
@@ -276,6 +354,52 @@ describe('referenceStore', () => {
       expect(assetStore.getInstruments()[0].baseAsset.id).not.toBe('CHF');
       expect(assetStore.getInstruments()[0].quoteAsset.id).toBe('CHF');
       expect(assetStore.getInstruments()[0].quoteAsset.id).not.toBe('BTC');
+    });
+  });
+
+  describe('search for an instrument', () => {
+    it('should find instruments', async () => {
+      jest.resetAllMocks();
+      const rootStore = new RootStore(false);
+      const watchlistApi: any = {
+        fetchAll: jest.fn()
+      };
+      watchlistApi.getWatchlistByName = jest.fn();
+      rootStore.watchlistStore = new WatchlistStore(rootStore, watchlistApi);
+      const refStore = new ReferenceStore(rootStore, api);
+      refStore.addInstrument(
+        new InstrumentModel({
+          id: '1',
+          name: 'BTC/CHF',
+          baseAsset: {
+            id: '1',
+            name: 'BTC',
+            accuracy: 2,
+            category: expect.any(AssetCategoryModel),
+            fullName: 'Bitcoin'
+          },
+          quoteAsset: {
+            id: '2',
+            name: 'CHF',
+            accuracy: 2,
+            category: expect.any(AssetCategoryModel),
+            fullName: 'Swiss Franc'
+          },
+          accuracy: 3,
+          invertedAccuracy: 8,
+          price: 1000,
+          bid: 1,
+          ask: 1,
+          volumeInBase: 0,
+          change24h: 0,
+          volume: 0
+        })
+      );
+
+      expect(refStore.findInstruments('BTC', '').length).not.toEqual(0);
+      expect(refStore.findInstruments('Bitcoin', '').length).not.toEqual(0);
+      expect(refStore.findInstruments('Swiss Franc', '').length).toEqual(0);
+      expect(refStore.findInstruments('Randomness', '').length).toEqual(0);
     });
   });
 });
