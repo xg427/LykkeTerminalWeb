@@ -103,7 +103,7 @@ class Terminal extends React.Component<TerminalProps, {}> {
 
   handleVisibilityChange = () => {
     this.props.rootStore.uiStore.setPageVisibility(
-      document.visibilityState === 'hidden'
+      document.visibilityState === 'visible'
     );
     this.props.rootStore.uiStore.getPageVisibility()
       ? this.props.rootStore.pause()
@@ -112,6 +112,9 @@ class Terminal extends React.Component<TerminalProps, {}> {
 
   componentDidMount() {
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    this.props.rootStore.uiStore.setPageVisibility(
+      document.visibilityState === 'visible'
+    );
     this.start().then(resp => {
       if (!this.state.hasAccess) {
         return;
