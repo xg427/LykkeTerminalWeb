@@ -80,9 +80,9 @@ class Mesh extends React.Component<MeshProps> {
         ...this.props.bids.map(b => b.depth)
       );
     } else if (this.props.asks.length > 0) {
-      return this.props.asks[0].depth;
+      return Math.max(...this.props.asks.map(a => a.depth));
     } else if (this.props.bids.length > 0) {
-      return this.props.bids[this.props.bids.length - 1].depth;
+      return Math.max(...this.props.bids.map(b => b.depth));
     }
     return 1;
   };
