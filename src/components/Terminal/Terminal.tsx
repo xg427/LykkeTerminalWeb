@@ -102,28 +102,16 @@ class Terminal extends React.Component<TerminalProps, {}> {
   private referenceStore: ReferenceStore = this.props.rootStore.referenceStore;
 
   handleVisibilityChange = () => {
-    const visibilityStore = this.props.rootStore.visibilityStore;
-    if (visibilityStore.visibility !== document.visibilityState) {
-      switch (document.visibilityState) {
-        case visibilityStore.states.hidden:
-          {
-            this.props.rootStore.pause();
-          }
-          break;
-        case visibilityStore.states.visible:
-          {
-            this.props.rootStore.continue();
-          }
-          break;
-      }
-      this.props.rootStore.visibilityStore.visibility =
-        document.visibilityState;
-    }
+    this.props.rootStore.uiStore.setPageVisibility(
+      document.visibilityState === 'hidden'
+    );
+    this.props.rootStore.uiStore.getPageVisibility()
+      ? this.props.rootStore.pause()
+      : this.props.rootStore.continue();
   };
 
   componentDidMount() {
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
-
     this.start().then(resp => {
       if (!this.state.hasAccess) {
         return;

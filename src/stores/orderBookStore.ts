@@ -25,6 +25,7 @@ class OrderBookStore extends BaseStore {
   rawAsks: Order[] = [];
   drawAsks: (asks: Order[], bids: Order[], type: LevelType) => void;
   drawBids: (asks: Order[], bids: Order[], type: LevelType) => void;
+  updateDepthChart: any;
   getSortedByPriceLevel: (l: any[], idx: number) => Promise<Order>;
   mapToOrderInWorker: (l: any[], side: Side) => Promise<OrderLevel[]>;
 
@@ -210,7 +211,6 @@ class OrderBookStore extends BaseStore {
         this.rootStore.depthChartStore.updateAsks(this.rawAsks);
         this.bestAskPrice = await this.getBestAsk();
       }
-      // tslint:disable:no-unused-expression
       this.spread = (this.bestAskPrice - this.bestBidPrice) / this.bestAskPrice;
       this.midPrice = (this.bestAskPrice + this.bestBidPrice) / 2;
     }

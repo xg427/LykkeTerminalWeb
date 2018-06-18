@@ -39,7 +39,6 @@ import {
   UiStore,
   WatchlistStore
 } from './index';
-import VisibilityStore from './visibilityStore';
 
 const tokenStorage = StorageUtils(keys.token);
 const instrumentStorage = StorageUtils(keys.selectedInstrument);
@@ -65,7 +64,6 @@ class RootStore {
   readonly sessionStore: SessionStore;
   readonly priceStore: PriceStore;
   readonly marketStore: MarketStore;
-  readonly visibilityStore: VisibilityStore;
 
   private ws: WampApi = new WampApi();
 
@@ -101,7 +99,6 @@ class RootStore {
       this.sessionStore = new SessionStore(this, new SessionApi(this));
       this.priceStore = new PriceStore(this, new PriceApi());
       this.marketStore = new MarketStore(this);
-      this.visibilityStore = new VisibilityStore(this);
     }
   }
 
@@ -187,9 +184,7 @@ class RootStore {
         this.orderStore.subscribe(this.ws);
         this.balanceListStore.subscribe(this.ws);
 
-        if (
-          this.visibilityStore.visibility === this.visibilityStore.states.hidden
-        ) {
+        if (this.uiStore.getPageVisibility()) {
           this.pause();
         }
 
