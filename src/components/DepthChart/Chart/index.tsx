@@ -20,27 +20,19 @@ const ConnectedChartWrapper: any = connect(
 
 const ConnectedMesh = connect(
   ({
-    depthChartStore: {
-      getAsks,
-      getBids,
-      height,
-      width,
-      setLabelsWidth,
-      labelsWidth
-    },
+    depthChartStore: {getAsks, getBids, height, width},
     uiStore: {selectedInstrument}
   }) => {
     return {
       asks: getAsks,
       bids: getBids,
       height: height - chart.labelsHeight,
-      width: width - labelsWidth,
+      width: width - chart.labelsWidth,
       baseAsset: selectedInstrument!.baseAsset.name,
       quoteAsset: selectedInstrument!.quoteAsset.name,
       quoteAccuracy: selectedInstrument!.quoteAsset.accuracy,
       baseAccuracy: selectedInstrument!.baseAsset.accuracy,
-      priceAccuracy: selectedInstrument!.accuracy,
-      setLabelsWidth
+      priceAccuracy: selectedInstrument!.accuracy
     };
   },
   Mesh
@@ -48,14 +40,14 @@ const ConnectedMesh = connect(
 
 const ConnectedChart = connect(
   ({
-    depthChartStore: {getAsks, getBids, height, width, labelsWidth},
+    depthChartStore: {getAsks, getBids, height, width},
     uiStore: {selectedInstrument}
   }) => {
     return {
       asks: getAsks,
       bids: getBids,
       height: height - chart.labelsHeight,
-      width: width - labelsWidth,
+      width: width - chart.labelsWidth,
       baseAsset: selectedInstrument!.baseAsset.name,
       quoteAsset: selectedInstrument!.quoteAsset.name,
       quoteAccuracy: selectedInstrument!.quoteAsset.accuracy,
@@ -67,13 +59,10 @@ const ConnectedChart = connect(
 );
 
 const ConnectedPointer = connect(
-  ({
-    depthChartStore: {height, width, labelsWidth},
-    uiStore: {selectedInstrument}
-  }) => {
+  ({depthChartStore: {height, width}, uiStore: {selectedInstrument}}) => {
     return {
       height: height - chart.labelsHeight,
-      width: width - labelsWidth,
+      width: width - chart.labelsWidth,
       baseAsset: selectedInstrument!.baseAsset.name,
       quoteAsset: selectedInstrument!.quoteAsset.name,
       quoteAccuracy: selectedInstrument!.quoteAsset.accuracy,
