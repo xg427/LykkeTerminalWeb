@@ -124,13 +124,11 @@ class ReferenceStore extends BaseStore {
     return Promise.all(requests).then(data => {
       const assets = data[0];
       const descriptions = data[1];
-      if (
-        assets &&
-        descriptions &&
-        assets.Assets &&
-        descriptions.Descriptions
-      ) {
+      if (assets && descriptions && descriptions.Descriptions) {
         const dtoAssets = assets.Assets || assets;
+        if (!dtoAssets) {
+          return;
+        }
         runInAction(() => {
           this.assets = dtoAssets.map((asset: any) => {
             const description =
