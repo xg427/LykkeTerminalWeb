@@ -198,10 +198,10 @@ class RootStore {
   continue = () => {
     const isDebounced = this.ws.continue();
     if (!isDebounced) {
-      this.balanceListStore.fetchAll();
       this.orderListStore.fetchAll();
       this.orderBookStore.fetchAll();
       this.tradeStore.fetchPublicTrades();
+      this.balanceListStore.updateWalletBalances();
     }
   };
 
