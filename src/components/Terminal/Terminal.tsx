@@ -133,6 +133,8 @@ class Terminal extends React.Component<TerminalProps, {}> {
   }
 
   bindChartOverlayHandler() {
+    let timeout;
+
     const firstColSplitter = document.getElementsByClassName(
       'mosaic-split -column'
     )[0];
@@ -144,11 +146,21 @@ class Terminal extends React.Component<TerminalProps, {}> {
         e &&
           e.addEventListener('mouseup', () => {
             this.toggleChartOverlayHelper(false);
+            timeout = null;
           });
         // tslint:disable-next-line:no-unused-expression
         e &&
-          e.addEventListener('mousedown', () => {
+          e.addEventListener('mouseenter', () => {
             this.toggleChartOverlayHelper(true);
+            timeout = null;
+          });
+        // tslint:disable-next-line:no-unused-expression
+        e &&
+          e.addEventListener('mouseleave', () => {
+            timeout = setTimeout(
+              () => this.toggleChartOverlayHelper(false),
+              100
+            );
           });
       });
     }
