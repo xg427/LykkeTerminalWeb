@@ -130,8 +130,9 @@ class ReferenceStore extends BaseStore {
         assets.Assets &&
         descriptions.Descriptions
       ) {
+        const dtoAssets = assets.Assets || assets;
         runInAction(() => {
-          this.assets = assets.Assets.map((asset: any) => {
+          this.assets = dtoAssets.map((asset: any) => {
             const description =
               descriptions.Descriptions.find(
                 (desc: any) => desc.Id === asset.Id
@@ -151,12 +152,13 @@ class ReferenceStore extends BaseStore {
     ];
 
     return Promise.all(requests).then(data => {
-      const asset = data[0];
+      const respAsset = data[0];
       const description = data[1];
       let mappedAsset;
-      if (asset && description && asset.Asset) {
+      if (respAsset && description && respAsset.Asset) {
+        const dtoAsset = respAsset.Asset || respAsset;
         mappedAsset = mappers.mapToAsset(
-          asset.Asset,
+          dtoAsset,
           this.categories,
           description
         );
