@@ -182,7 +182,7 @@ class RootStore {
         this.orderStore.subscribe(this.ws);
         this.balanceListStore.subscribe(this.ws);
 
-        if (this.uiStore.getPageVisibility()) {
+        if (!this.uiStore.getPageVisibility()) {
           this.pause();
         }
 
