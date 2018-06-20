@@ -21,7 +21,6 @@ class UiStore extends BaseStore {
 
   static readonly DEFAULT_INSTRUMENT = 'BTCUSD';
 
-  @observable showAssetsSelect: boolean = false;
   @observable searchTerm: string = '';
   @observable searchWalletName: string = Watchlists.All;
   @observable selectedInstrument: InstrumentModel | null;
@@ -113,10 +112,6 @@ class UiStore extends BaseStore {
   ): boolean => {
     return selectedInstrument.displayName!.split('/').indexOf(assetId) !== -1;
   };
-
-  @action
-  readonly toggleAssetsSelect = () =>
-    (this.showAssetsSelect = !this.showAssetsSelect);
 
   @action
   readonly toggleInstrumentSelection = () =>
