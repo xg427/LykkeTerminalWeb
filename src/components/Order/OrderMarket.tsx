@@ -9,10 +9,14 @@ import OrderButton from './OrderButton';
 import OrderPercentage from './OrderPercentage';
 import {
   Action,
+  Amount,
   Available,
   InputControl,
   MarketConfirmButton,
-  Reset
+  OrderTitle,
+  Reset,
+  Total,
+  TotalHint
 } from './styles';
 
 // tslint:disable-next-line:no-var-requires
@@ -23,6 +27,8 @@ interface OrderMarketState {
 }
 
 export interface OrderMarketProps extends OrderBasicFormProps {
+  amount?: string;
+  countTotal: (volume: number, action: string) => any;
   onResetPercentage: any;
 }
 
@@ -73,6 +79,7 @@ class OrderMarket extends React.Component<
   };
 
   handleChange = () => (e: any) => {
+    this.props.countTotal(+e.target.value, this.props.action);
     this.props.onQuantityChange(e.target.value);
     this.props.updatePercentageState(OrderInputs.Quantity);
   };
@@ -82,7 +89,7 @@ class OrderMarket extends React.Component<
   };
 
   render() {
-    const {baseAssetName, quoteAssetName, balanceAccuracy} = this.props;
+    const {amount, baseAssetName, quoteAssetName, balanceAccuracy} = this.props;
     this.previousPropsAction = this.props.action;
     const {quantityAccuracy, quantity} = this.props;
 
@@ -117,6 +124,17 @@ class OrderMarket extends React.Component<
             />
           ))}
         </Flex>
+        <Total>
+          <OrderTitle>
+            Total
+            <TotalHint title={'Your order may execute at a different price'}>
+              Indicative price *
+            </TotalHint>
+          </OrderTitle>
+          <Amount>
+            {amount} {quoteAssetName}
+          </Amount>
+        </Total>
         <MarketConfirmButton>
           <OrderButton
             isDisable={this.props.isDisable}

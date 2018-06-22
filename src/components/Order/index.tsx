@@ -30,7 +30,7 @@ export interface OrderBasicFormProps {
 const ConnectedOrder = connect(
   ({
     balanceListStore: {tradingWalletBalances: balances},
-    orderBookStore: {bestAskPrice, bestBidPrice},
+    orderBookStore: {bestAskPrice, bestBidPrice, getEffectivePrice},
     orderStore: {placeOrder},
     uiStore: {selectedInstrument: instrument, readOnlyMode, isDisclaimerShown},
     referenceStore,
@@ -103,7 +103,8 @@ const ConnectedOrder = connect(
     isCurrentSideSell,
     setMarket,
     setSide,
-    isDisclaimerShown
+    isDisclaimerShown,
+    getEffectivePrice
   }),
   withAuth(Order)
 );

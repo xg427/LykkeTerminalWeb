@@ -137,6 +137,40 @@ class OrderBookStore extends BaseStore {
     return !!bestAsk ? bestAsk.price : 0;
   };
 
+  getEffectivePrice = (volume: number, type: Side) => {
+    let orders: Order[] = [];
+
+    switch (type) {
+      default:
+        break;
+      case Side.Sell:
+        orders = this.getAsks();
+        break;
+      case Side.Buy:
+        orders = this.getBids();
+        break;
+    }
+
+    if (orders.length === 0) {
+      return undefined;
+    }
+
+    const price: number = 0;
+    orders.reduce((sum, order) => {
+      if (sum < volume) {
+        if (order.volume < volume - sum) {
+          return sum;
+        } else {
+          return sum;
+        }
+      } else {
+        return sum;
+      }
+    }, 0);
+
+    return price;
+  };
+
   mid = async () => {
     const bestAsk = await this.getBestAsk();
     const bestBid = await this.getBestBid();

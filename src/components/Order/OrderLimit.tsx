@@ -11,10 +11,11 @@ import {
   Amount,
   Available,
   InputControl,
-  LimitTitle,
-  LimitTotal,
+  OrderTitle,
   Reset,
-  StyledOrderButton
+  StyledOrderButton,
+  Total,
+  TotalHint
 } from './styles';
 
 // tslint:disable-next-line:no-var-requires
@@ -78,7 +79,7 @@ const OrderLimit: React.SFC<OrderLimitProps> = ({
     <Form>
       <InputControl style={{borderBottom: '1px solid #333'}}>
         <Flex justify={'space-between'} style={{marginBottom: '7px'}}>
-          <LimitTitle>Price ({quoteAssetName})</LimitTitle>
+          <OrderTitle>Price ({quoteAssetName})</OrderTitle>
         </Flex>
         <NumberInput
           value={price}
@@ -113,12 +114,17 @@ const OrderLimit: React.SFC<OrderLimitProps> = ({
           />
         ))}
       </Flex>
-      <LimitTotal>
-        <LimitTitle>Total</LimitTitle>
+      <Total>
+        <OrderTitle>
+          Total
+          <TotalHint title={'Your order may execute at a different price'}>
+            Indicative price *
+          </TotalHint>
+        </OrderTitle>
         <Amount>
           {amount} {quoteAssetName}
         </Amount>
-      </LimitTotal>
+      </Total>
 
       <StyledOrderButton>
         <OrderButton

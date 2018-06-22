@@ -72,6 +72,7 @@ interface OrderProps {
   isCurrentSideSell: boolean;
   resetOrder: () => void;
   isDisclaimerShown: boolean;
+  getEffectivePrice: (volume: number, action: string) => any;
 }
 
 class Order extends React.Component<OrderProps, OrderState> {
@@ -259,7 +260,8 @@ class Order extends React.Component<OrderProps, OrderState> {
       ask,
       baseAssetId,
       quoteAssetId,
-      isDisclaimerShown
+      isDisclaimerShown,
+      getEffectivePrice
     } = this.props;
     const {
       priceValue,
@@ -368,6 +370,7 @@ class Order extends React.Component<OrderProps, OrderState> {
 
         {currentMarket === MARKET && (
           <OrderMarket
+            amount={formattedNumber(roundedAmount || 0, quoteAssetAccuracy)}
             quantityAccuracy={quantityAccuracy}
             action={isCurrentSideSell ? Side.Sell : Side.Buy}
             quantity={quantityValue}
@@ -387,6 +390,7 @@ class Order extends React.Component<OrderProps, OrderState> {
             balanceAccuracy={balanceAccuracy}
             onQuantityArrowClick={handleQuantityArrowClick}
             updatePercentageState={this.updatePercentageState}
+            countTotal={getEffectivePrice}
           />
         )}
         {this.state.isConfirmModalOpen && (
