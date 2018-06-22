@@ -41,3 +41,19 @@ export const onValueChange = (setValue: any, getAcc: any, value: string) => {
   const newVal = value === DEFAULT_INPUT_VALUE ? DEFAULT_INPUT_VALUE : value;
   setValue(newVal);
 };
+
+export const oneStepChange = (
+  value: string,
+  accuracy: number,
+  operation: ArrowDirection
+) => {
+  const val = value || '0';
+
+  switch (operation) {
+    case ArrowDirection.Up:
+      return parseFloat(val) + Math.pow(10, -1 * accuracy);
+    case ArrowDirection.Down:
+      const newVal = parseFloat(val) - Math.pow(10, -1 * accuracy);
+      return newVal <= 0 ? 0 : newVal;
+  }
+};

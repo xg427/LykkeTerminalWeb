@@ -1,7 +1,8 @@
 import {Form, FormikProps, withFormik} from 'formik';
 import * as React from 'react';
-import {OrderInputs} from '../../models';
+import {ArrowDirection, OrderInputs} from '../../models';
 import {capitalize} from '../../utils';
+import {oneStepChange} from '../../utils/inputNumber';
 import formattedNumber from '../../utils/localFormatted/localFormatted';
 import NumberInput from '../NumberInput/NumberInput';
 import {OrderBasicFormProps} from './index';
@@ -27,9 +28,10 @@ interface OrderMarketState {
 }
 
 export interface OrderMarketProps extends OrderBasicFormProps {
-  amount?: string;
-  countTotal: (volume: number, action: string) => any;
+  amount?: any;
+  countTotal: (volume?: number, action?: string, debounce?: boolean) => any;
   onResetPercentage: any;
+  notEnoughLiquidity: boolean;
 }
 
 class OrderMarket extends React.Component<
@@ -73,9 +75,18 @@ class OrderMarket extends React.Component<
     this.props.onReset();
   };
 
-  handleArrowClick = (operation: string) => () => {
+  handleArrowClick = (operation: ArrowDirection) => () => {
     this.props.onQuantityArrowClick(operation);
     this.props.updatePercentageState(OrderInputs.Quantity);
+    this.props.countTotal(
+      oneStepChange(
+        this.props.quantity,
+        this.props.quantityAccuracy,
+        operation
+      ),
+      this.props.action,
+      true
+    );
   };
 
   handleChange = () => (e: any) => {
@@ -89,7 +100,13 @@ class OrderMarket extends React.Component<
   };
 
   render() {
-    const {amount, baseAssetName, quoteAssetName, balanceAccuracy} = this.props;
+    const {
+      amount,
+      baseAssetName,
+      quoteAssetName,
+      balanceAccuracy,
+      notEnoughLiquidity
+    } = this.props;
     this.previousPropsAction = this.props.action;
     const {quantityAccuracy, quantity} = this.props;
 
@@ -131,7 +148,7 @@ class OrderMarket extends React.Component<
               Indicative price *
             </TotalHint>
           </OrderTitle>
-          <Amount>
+          <Amount style={{display: notEnoughLiquidity ? 'none' : 'block'}}>
             {amount} {quoteAssetName}
           </Amount>
         </Total>
