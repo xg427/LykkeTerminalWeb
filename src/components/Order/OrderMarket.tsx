@@ -1,7 +1,8 @@
 import {Form, FormikProps, withFormik} from 'formik';
 import * as React from 'react';
-import {OrderInputs} from '../../models';
+import {ArrowDirection, OrderInputs} from '../../models';
 import {capitalize} from '../../utils';
+import {oneStepChange} from '../../utils/inputNumber';
 import formattedNumber from '../../utils/localFormatted/localFormatted';
 import NumberInput from '../NumberInput/NumberInput';
 import {OrderBasicFormProps} from './index';
@@ -9,10 +10,14 @@ import OrderButton from './OrderButton';
 import OrderPercentage from './OrderPercentage';
 import {
   Action,
+  Amount,
   Available,
   InputControl,
   MarketConfirmButton,
-  Reset
+  OrderTitle,
+  Reset,
+  Total,
+  TotalHint
 } from './styles';
 
 // tslint:disable-next-line:no-var-requires
@@ -23,7 +28,10 @@ interface OrderMarketState {
 }
 
 export interface OrderMarketProps extends OrderBasicFormProps {
+  amount?: any;
+  countTotal: (volume?: number, action?: string, debounce?: boolean) => any;
   onResetPercentage: any;
+  notEnoughLiquidity: boolean;
 }
 
 class OrderMarket extends React.Component<
@@ -67,12 +75,22 @@ class OrderMarket extends React.Component<
     this.props.onReset();
   };
 
-  handleArrowClick = (operation: string) => () => {
+  handleArrowClick = (operation: ArrowDirection) => () => {
     this.props.onQuantityArrowClick(operation);
     this.props.updatePercentageState(OrderInputs.Quantity);
+    this.props.countTotal(
+      oneStepChange(
+        this.props.quantity,
+        this.props.quantityAccuracy,
+        operation
+      ),
+      this.props.action,
+      true
+    );
   };
 
   handleChange = () => (e: any) => {
+    this.props.countTotal(+e.target.value, this.props.action);
     this.props.onQuantityChange(e.target.value);
     this.props.updatePercentageState(OrderInputs.Quantity);
   };
@@ -82,7 +100,13 @@ class OrderMarket extends React.Component<
   };
 
   render() {
-    const {baseAssetName, quoteAssetName, balanceAccuracy} = this.props;
+    const {
+      amount,
+      baseAssetName,
+      quoteAssetName,
+      balanceAccuracy,
+      notEnoughLiquidity
+    } = this.props;
     this.previousPropsAction = this.props.action;
     const {quantityAccuracy, quantity} = this.props;
 
@@ -117,6 +141,17 @@ class OrderMarket extends React.Component<
             />
           ))}
         </Flex>
+        <Total>
+          <OrderTitle>
+            Total
+            <TotalHint title={'Your order may execute at a different price'}>
+              Indicative price *
+            </TotalHint>
+          </OrderTitle>
+          <Amount style={{display: notEnoughLiquidity ? 'none' : 'block'}}>
+            {amount} {quoteAssetName}
+          </Amount>
+        </Total>
         <MarketConfirmButton>
           <OrderButton
             isDisable={this.props.isDisable}

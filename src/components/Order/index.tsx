@@ -31,7 +31,7 @@ const ConnectedOrder = connect(
   ({
     balanceListStore: {tradingWalletBalances: balances},
     orderBookStore: {bestAskPrice, bestBidPrice},
-    orderStore: {placeOrder},
+    orderStore: {marketTotalPrice, placeOrder, setMarketTotal},
     uiStore: {selectedInstrument: instrument, readOnlyMode, isDisclaimerShown},
     referenceStore,
     uiOrderStore: {
@@ -103,7 +103,9 @@ const ConnectedOrder = connect(
     isCurrentSideSell,
     setMarket,
     setSide,
-    isDisclaimerShown
+    isDisclaimerShown,
+    setMarketTotal,
+    marketTotalPrice
   }),
   withAuth(Order)
 );
