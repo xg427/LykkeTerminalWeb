@@ -3,7 +3,7 @@ import * as React from 'react';
 import {InstrumentModel, TradeModel} from '../../models';
 import {LoaderProps} from '../Loader/withLoader';
 import {TableHeaderNoSort} from '../Table';
-import {PublicTradeList, PublicTradesCellWidth} from './';
+import {PublicTradeList} from './';
 
 export interface TradeLogProps extends LoaderProps {
   selectedInstrument: InstrumentModel;
@@ -20,12 +20,6 @@ const TradeLog: React.SFC<TradeLogProps> = ({selectedInstrument, trades}) => {
       className: 'right-align',
       key: 'volume',
       value: 'Trade size'
-    },
-    {
-      className: 'right-align',
-      key: 'side',
-      value: 'Side',
-      width: PublicTradesCellWidth.Side
     },
     {
       className: 'right-align',
