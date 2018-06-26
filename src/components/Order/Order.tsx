@@ -78,6 +78,7 @@ interface OrderProps {
     debounce?: boolean
   ) => any;
   marketTotalPrice: number;
+  resetMarketTotal: () => void;
 }
 
 class Order extends React.Component<OrderProps, OrderState> {
@@ -109,7 +110,6 @@ class Order extends React.Component<OrderProps, OrderState> {
     this.setState({
       percents: percentage
     });
-    this.props.setMarketTotal(0);
   };
 
   disableButton = (value: boolean) => {
@@ -245,6 +245,7 @@ class Order extends React.Component<OrderProps, OrderState> {
 
   reset = () => {
     resetPercentage(percentage);
+    this.props.resetMarketTotal();
     this.props.resetOrder();
     this.setState({
       percents: percentage

@@ -1,8 +1,7 @@
 import {computed, observable} from 'mobx';
 import {curry} from 'rambda';
-import {OrderType} from '../models';
-import ArrowDirection from '../models/arrowDirection';
-import Side from '../models/side';
+import {ArrowDirection, Order, OrderType, Side} from '../models';
+import {mapToMarketEffectivePrice} from '../models/mappers/orderMapper';
 import {
   DEFAULT_INPUT_VALUE,
   onArrowClick,
@@ -14,6 +13,8 @@ import {
   isAmountExceedLimitBalance
 } from '../utils/order';
 import {BaseStore, RootStore} from './index';
+
+const MARKET_TOTAL_DEBOUNCE = 1000;
 
 class UiOrderStore extends BaseStore {
   @computed
@@ -36,6 +37,11 @@ class UiOrderStore extends BaseStore {
     return this.side === Side.Sell;
   }
 
+  @computed
+  get marketTotalPrice() {
+    return this.marketTotal.price;
+  }
+
   handlePriceChange: (price: string) => void;
   handleQuantityChange: (price: string) => void;
   handlePriceArrowClick: (operation: ArrowDirection) => void;
@@ -46,6 +52,13 @@ class UiOrderStore extends BaseStore {
     side: Side
   ) => number;
 
+  @observable
+  marketTotal: any = {
+    canBeUpdated: true,
+    operationType: '',
+    operationVolume: 0,
+    price: 0
+  };
   @observable private priceValue: string = DEFAULT_INPUT_VALUE;
   @observable private quantityValue: string = DEFAULT_INPUT_VALUE;
   @observable private market: OrderType = OrderType.Limit;
@@ -136,7 +149,7 @@ class UiOrderStore extends BaseStore {
           baseAssetId
         )
       );
-      this.rootStore.orderStore.setMarketTotal(+this.quantityValue, this.side);
+      this.setMarketTotal(+this.quantityValue, this.side);
     }
   };
 
@@ -211,6 +224,61 @@ class UiOrderStore extends BaseStore {
       ? +this.quantityValue > baseAssetBalance
       : +this.quantityValue >
           precisionFloor(+convertedBalance, this.quantityAccuracy);
+  };
+
+  setMarketTotal = (
+    operationVolume?: number,
+    operationType?: Side,
+    debounce?: boolean
+  ) => {
+    if (
+      (!operationVolume && !operationType && !this.marketTotal.canBeUpdated) ||
+      (operationVolume &&
+        operationType &&
+        !this.marketTotal.canBeUpdated &&
+        debounce)
+    ) {
+      return;
+    } else if ((!operationVolume && !operationType) || debounce) {
+      this.marketTotal.canBeUpdated = false;
+      setTimeout(
+        () => (this.marketTotal.canBeUpdated = true),
+        MARKET_TOTAL_DEBOUNCE
+      );
+    }
+
+    if (operationVolume || operationVolume === 0) {
+      this.marketTotal.operationVolume = operationVolume;
+    }
+    if (operationType) {
+      this.marketTotal.operationType = operationType;
+    }
+
+    let orders: Order[] = [];
+
+    switch (this.marketTotal.operationType) {
+      case Side.Sell:
+        orders = this.rootStore.orderBookStore.getBids();
+        break;
+      case Side.Buy:
+        orders = this.rootStore.orderBookStore.getAsks();
+        break;
+      default:
+    }
+
+    this.marketTotal.price = mapToMarketEffectivePrice(
+      this.marketTotal.operationVolume,
+      orders
+    );
+  };
+
+  resetMarketTotal = () => {
+    this.marketTotal = {
+      canBeUpdated: true,
+      operationType: '',
+      operationVolume: 0,
+      price: 0
+    };
   };
 
   resetOrder = async () => {
