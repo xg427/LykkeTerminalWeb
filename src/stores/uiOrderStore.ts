@@ -136,6 +136,7 @@ class UiOrderStore extends BaseStore {
           baseAssetId
         )
       );
+      this.rootStore.orderStore.setMarketTotal(+this.quantityValue, this.side);
     }
   };
 
