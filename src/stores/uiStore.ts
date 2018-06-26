@@ -1,5 +1,6 @@
 import {action, computed, observable, reaction} from 'mobx';
 import {pathOr} from 'rambda';
+import logger from '../Logger';
 import {keys} from '../models';
 import {
   InstrumentModel,
@@ -48,7 +49,8 @@ class UiStore extends BaseStore {
 
           try {
             await fetchAll(); // should be waited for loading bids and asks
-          } catch (e) {
+          } catch (error) {
+            logger.logException(error);
             return;
           }
 

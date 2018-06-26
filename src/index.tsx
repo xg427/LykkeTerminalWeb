@@ -4,6 +4,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import App from './App';
 import './index.css';
+import './Logger';
 import {RootStore} from './stores/index';
 
 const rootStore = new RootStore(true, greenlet);
