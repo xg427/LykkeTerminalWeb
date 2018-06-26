@@ -193,15 +193,19 @@ class RootStore {
       });
   };
 
+  updateData = () => {
+    this.orderListStore.fetchAll();
+    this.orderBookStore.fetchAll();
+    this.tradeStore.updatePublicTrades();
+    this.balanceListStore.updateWalletBalances();
+  };
+
   pause = () => this.ws.pause();
 
   continue = () => {
-    const isDebounced = this.ws.continue();
-    if (!isDebounced) {
-      this.orderListStore.fetchAll();
-      this.orderBookStore.fetchAll();
-      this.tradeStore.fetchPublicTrades();
-      this.balanceListStore.updateWalletBalances();
+    this.ws.continue();
+    if (!this.ws.isThrottled) {
+      this.updateData();
     }
   };
 
