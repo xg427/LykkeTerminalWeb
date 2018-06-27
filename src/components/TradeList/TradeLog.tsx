@@ -13,27 +13,6 @@ export interface TradeLogProps extends LoaderProps {
 }
 
 class TradeLog extends React.Component<TradeLogProps> {
-  headers: any[] = [
-    {
-      key: 'price',
-      value: `Price (${pathOr(
-        '',
-        ['quoteAsset', 'name'],
-        this.props.selectedInstrument
-      )})`
-    },
-    {
-      className: 'right-align',
-      key: 'volume',
-      value: 'Trade size'
-    },
-    {
-      className: 'right-align',
-      key: 'timestamp',
-      value: 'Time'
-    }
-  ];
-
   componentDidUpdate() {
     const {getIsWampTradesProcessed, setIsWampTradesProcessed} = this.props;
     if (getIsWampTradesProcessed()) {
@@ -42,9 +21,30 @@ class TradeLog extends React.Component<TradeLogProps> {
   }
 
   render() {
+    const headers: any[] = [
+      {
+        key: 'price',
+        value: `Price (${pathOr(
+          '',
+          ['quoteAsset', 'name'],
+          this.props.selectedInstrument
+        )})`
+      },
+      {
+        className: 'right-align',
+        key: 'volume',
+        value: 'Trade size'
+      },
+      {
+        className: 'right-align',
+        key: 'timestamp',
+        value: 'Time'
+      }
+    ];
+
     return (
       <React.Fragment>
-        <TableHeaderNoSort headers={this.headers} />
+        <TableHeaderNoSort headers={headers} />
         <PublicTradeList
           trades={this.props.trades}
           isProcessingWampTrades={this.props.getIsWampTradesProcessed()}
