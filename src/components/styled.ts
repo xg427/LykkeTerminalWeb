@@ -27,6 +27,7 @@ export const colors = {
   lightGraphite: 'rgb(51, 51, 51)',
   lightGrey: 'rgba(245, 246, 247, 0.4)',
   graphiteBorder: 'rgba(0, 0, 0, 0.1)',
+  greyBorder: '#272727',
   white: 'rgb(245, 246, 247)',
   buy: rgb(70, 235, 106),
   sell: rgb(255, 97, 97),
@@ -37,7 +38,9 @@ export const colors = {
   mango: '#fb8f01',
   lightWhite: 'rgba(255, 255, 255, 0.4)',
   snowWhite: '#fff',
-  darkHover: '#2f2f2f'
+  darkHover: '#2f2f2f',
+  whiteText: '#f5f6f7',
+  graphiteBackground: '#3e3e3e'
 };
 
 export const buttonBackgrounds = {

@@ -72,12 +72,14 @@ interface OrderProps {
   isCurrentSideSell: boolean;
   resetOrder: () => void;
   isDisclaimerShown: boolean;
+  disclaimedAssets: string[];
   setMarketTotal: (
     operationVolume?: number,
     operationType?: string,
     debounce?: boolean
   ) => any;
   marketTotalPrice: number;
+  resetMarketTotal: () => void;
 }
 
 class Order extends React.Component<OrderProps, OrderState> {
@@ -109,7 +111,6 @@ class Order extends React.Component<OrderProps, OrderState> {
     this.setState({
       percents: percentage
     });
-    this.props.setMarketTotal(0);
   };
 
   disableButton = (value: boolean) => {
@@ -245,6 +246,7 @@ class Order extends React.Component<OrderProps, OrderState> {
 
   reset = () => {
     resetPercentage(percentage);
+    this.props.resetMarketTotal();
     this.props.resetOrder();
     this.setState({
       percents: percentage
@@ -268,6 +270,7 @@ class Order extends React.Component<OrderProps, OrderState> {
       baseAssetId,
       quoteAssetId,
       isDisclaimerShown,
+      disclaimedAssets,
       setMarketTotal,
       marketTotalPrice
     } = this.props;
@@ -315,7 +318,7 @@ class Order extends React.Component<OrderProps, OrderState> {
       ? baseAssetAccuracy
       : quoteAssetAccuracy;
 
-    const notEnoughLiquidity = marketTotalPrice === undefined;
+    const enoughLiquidity = marketTotalPrice !== undefined;
 
     return (
       <React.Fragment>
@@ -401,7 +404,7 @@ class Order extends React.Component<OrderProps, OrderState> {
             onQuantityArrowClick={handleQuantityArrowClick}
             updatePercentageState={this.updatePercentageState}
             countTotal={setMarketTotal}
-            notEnoughLiquidity={notEnoughLiquidity}
+            enoughLiquidity={enoughLiquidity}
           />
         )}
         {this.state.isConfirmModalOpen && (
@@ -419,7 +422,10 @@ class Order extends React.Component<OrderProps, OrderState> {
             message={this.getConfirmMessage()}
           />
         )}
-        {isDisclaimerShown && <Disclaimer />}
+        {isDisclaimerShown &&
+          disclaimedAssets.map((asset, index) => (
+            <Disclaimer asset={asset} key={`${asset}_${index}`} />
+          ))}
       </React.Fragment>
     );
   }
