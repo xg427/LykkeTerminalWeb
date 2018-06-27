@@ -316,7 +316,7 @@ class Order extends React.Component<OrderProps, OrderState> {
       ? baseAssetAccuracy
       : quoteAssetAccuracy;
 
-    const notEnoughLiquidity = marketTotalPrice === undefined;
+    const enoughLiquidity = marketTotalPrice !== undefined;
 
     return (
       <React.Fragment>
@@ -402,7 +402,7 @@ class Order extends React.Component<OrderProps, OrderState> {
             onQuantityArrowClick={handleQuantityArrowClick}
             updatePercentageState={this.updatePercentageState}
             countTotal={setMarketTotal}
-            notEnoughLiquidity={notEnoughLiquidity}
+            enoughLiquidity={enoughLiquidity}
           />
         )}
         {this.state.isConfirmModalOpen && (

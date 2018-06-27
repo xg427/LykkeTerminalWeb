@@ -8,14 +8,11 @@ import OrderButton from './OrderButton';
 import OrderPercentage from './OrderPercentage';
 import {
   Action,
-  Amount,
   Available,
   InputControl,
   OrderTitle,
   Reset,
-  StyledOrderButton,
-  Total,
-  TotalHint
+  StyledOrderButton
 } from './styles';
 
 // tslint:disable-next-line:no-var-requires
@@ -114,18 +111,6 @@ const OrderLimit: React.SFC<OrderLimitProps> = ({
           />
         ))}
       </Flex>
-      <Total>
-        <OrderTitle>
-          Total
-          <TotalHint title={'Your order may execute at a different price'}>
-            Indicative price *
-          </TotalHint>
-        </OrderTitle>
-        <Amount>
-          {amount} {quoteAssetName}
-        </Amount>
-      </Total>
-
       <StyledOrderButton>
         <OrderButton
           isDisable={isDisable}
