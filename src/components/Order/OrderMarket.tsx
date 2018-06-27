@@ -31,7 +31,7 @@ export interface OrderMarketProps extends OrderBasicFormProps {
   amount?: any;
   countTotal: (volume?: number, action?: string, debounce?: boolean) => any;
   onResetPercentage: any;
-  notEnoughLiquidity: boolean;
+  enoughLiquidity: boolean;
 }
 
 class OrderMarket extends React.Component<
@@ -105,7 +105,7 @@ class OrderMarket extends React.Component<
       baseAssetName,
       quoteAssetName,
       balanceAccuracy,
-      notEnoughLiquidity
+      enoughLiquidity
     } = this.props;
     this.previousPropsAction = this.props.action;
     const {quantityAccuracy, quantity} = this.props;
@@ -148,9 +148,11 @@ class OrderMarket extends React.Component<
               Indicative price *
             </TotalHint>
           </OrderTitle>
-          <Amount style={{display: notEnoughLiquidity ? 'none' : 'block'}}>
-            {amount} {quoteAssetName}
-          </Amount>
+          {enoughLiquidity && (
+            <Amount>
+              {amount} {quoteAssetName}
+            </Amount>
+          )}
         </Total>
         <MarketConfirmButton>
           <OrderButton

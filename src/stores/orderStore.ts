@@ -1,18 +1,14 @@
-import {computed, observable} from 'mobx';
 import OrderApi from '../api/orderApi';
 import * as topics from '../api/topics';
 import ModalMessages from '../constants/modalMessages';
 import messages from '../constants/notificationMessages';
 import {levels} from '../models';
-import {Order, OrderModel, OrderType, Side} from '../models';
-import {mapToMarketEffectivePrice} from '../models/mappers/orderMapper';
+import {OrderModel, OrderType} from '../models';
 import Types from '../models/modals';
 import {OrderStatus} from '../models/orderType';
 import {BaseStore, RootStore} from './index';
 import ModalStore from './modalStore';
 import NotificationStore from './notificationStore';
-
-const MARKET_TOTAL_DEBOUNCE = 1000;
 
 const errorOrNoop = (error: string) => {
   try {
@@ -29,14 +25,6 @@ enum Errors {
 
 // tslint:disable:no-console
 class OrderStore extends BaseStore {
-  @observable
-  marketTotal: any = {
-    canBeUpdated: true,
-    operationType: '',
-    operationVolume: 0,
-    price: 0
-  };
-
   private readonly modalStore: ModalStore;
   private readonly notificationStore: NotificationStore;
 
@@ -44,11 +32,6 @@ class OrderStore extends BaseStore {
     super(store);
     this.notificationStore = this.rootStore.notificationStore;
     this.modalStore = this.rootStore.modalStore;
-  }
-
-  @computed
-  get marketTotalPrice() {
-    return this.marketTotal.price;
   }
 
   placeOrder = async (orderType: string, body: any) => {
@@ -132,52 +115,6 @@ class OrderStore extends BaseStore {
         }
         break;
     }
-  };
-
-  setMarketTotal = (
-    operationVolume?: number,
-    operationType?: Side,
-    debounce?: boolean
-  ) => {
-    if (
-      (!operationVolume && !operationType && !this.marketTotal.canBeUpdated) ||
-      (operationVolume &&
-        operationType &&
-        !this.marketTotal.canBeUpdated &&
-        debounce)
-    ) {
-      return;
-    } else if ((!operationVolume && !operationType) || debounce) {
-      this.marketTotal.canBeUpdated = false;
-      setTimeout(
-        () => (this.marketTotal.canBeUpdated = true),
-        MARKET_TOTAL_DEBOUNCE
-      );
-    }
-
-    if (operationVolume || operationVolume === 0) {
-      this.marketTotal.operationVolume = operationVolume;
-    }
-    if (operationType) {
-      this.marketTotal.operationType = operationType;
-    }
-
-    let orders: Order[] = [];
-
-    switch (this.marketTotal.operationType) {
-      case Side.Sell:
-        orders = this.rootStore.orderBookStore.getBids();
-        break;
-      case Side.Buy:
-        orders = this.rootStore.orderBookStore.getAsks();
-        break;
-      default:
-    }
-
-    this.marketTotal.price = mapToMarketEffectivePrice(
-      this.marketTotal.operationVolume,
-      orders
-    );
   };
 
   reset = () => {
