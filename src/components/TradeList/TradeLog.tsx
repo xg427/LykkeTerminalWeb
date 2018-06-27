@@ -8,13 +8,19 @@ import {PublicTradeList} from './';
 export interface TradeLogProps extends LoaderProps {
   selectedInstrument: InstrumentModel;
   trades: TradeModel[];
+  getIsWampTradesProcessed: () => boolean;
+  setIsWampTradesProcessed: (isProcessing: boolean) => void;
 }
 
-const TradeLog: React.SFC<TradeLogProps> = ({selectedInstrument, trades}) => {
-  const headers: any[] = [
+class TradeLog extends React.Component<TradeLogProps> {
+  headers: any[] = [
     {
       key: 'price',
-      value: `Price (${pathOr('', ['quoteAsset', 'name'], selectedInstrument)})`
+      value: `Price (${pathOr(
+        '',
+        ['quoteAsset', 'name'],
+        this.props.selectedInstrument
+      )})`
     },
     {
       className: 'right-align',
@@ -28,12 +34,24 @@ const TradeLog: React.SFC<TradeLogProps> = ({selectedInstrument, trades}) => {
     }
   ];
 
-  return (
-    <React.Fragment>
-      <TableHeaderNoSort headers={headers} />
-      <PublicTradeList trades={trades} />
-    </React.Fragment>
-  );
-};
+  componentDidUpdate() {
+    const {getIsWampTradesProcessed, setIsWampTradesProcessed} = this.props;
+    if (getIsWampTradesProcessed()) {
+      setIsWampTradesProcessed(false);
+    }
+  }
+
+  render() {
+    return (
+      <React.Fragment>
+        <TableHeaderNoSort headers={this.headers} />
+        <PublicTradeList
+          trades={this.props.trades}
+          isProcessingWampTrades={this.props.getIsWampTradesProcessed()}
+        />
+      </React.Fragment>
+    );
+  }
+}
 
 export default TradeLog;

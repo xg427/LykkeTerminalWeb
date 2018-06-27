@@ -1,12 +1,14 @@
 import {
   getPostDecimalsLength,
   getRestErrorMessage,
+  getTrailingZeroOppositePosition,
   getWampErrorMessage,
+  hasTrailingZeroes,
   isOnlyNumbers,
   substringLast,
   substringMinus,
   substringZero
-} from './string';
+} from '../string';
 
 describe('string utils', () => {
   it('should return the length of post decimals numbers', () => {
@@ -66,10 +68,32 @@ describe('string utils', () => {
     );
   });
 
-  it('shoud return string from rest error object', () => {
+  it('should return string from rest error object', () => {
     const restMessage = {id: ['Value to small', 'Please, try again']};
     expect(getRestErrorMessage(restMessage)).toBe(
       'Value to small. Please, try again'
     );
+  });
+
+  describe('trailing zeroes checking', () => {
+    it('should return true if trailing zero is present', () => {
+      const s = '0.12340';
+      expect(hasTrailingZeroes(s)).toBeTruthy();
+    });
+
+    it('should return false if trailing zero is not present', () => {
+      const s = '0.1234';
+      expect(hasTrailingZeroes(s)).toBeFalsy();
+    });
+
+    it('should return opposite position for trailing zeroes', () => {
+      const s = '100.0010';
+      expect(getTrailingZeroOppositePosition(s)).toBe(7);
+    });
+
+    it('should return position is equal to string length if trailing zeroes is not present', () => {
+      const s = '0.123';
+      expect(getTrailingZeroOppositePosition(s)).toBe(s.length);
+    });
   });
 });
