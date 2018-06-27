@@ -1,6 +1,6 @@
 import {
-  convertMinutesToMs,
-  convertMsToMinutes,
+  convertHoursToMs,
+  convertMsToHours,
   convertMsToSeconds,
   convertSecondsToMs
 } from '../../utils/dateFns';
@@ -18,21 +18,22 @@ describe('session store', () => {
   const sessionDuration = {Data: '60000'};
 
   describe('store', () => {
-    const api: any = {
-      saveSessionNoteShown: jest.fn(),
-      loadSessionNoteShown: () => Promise.resolve({Data: '60000'}),
-      getSessionStatus: () => {
-        return {
-          TradingSession: confirmation
-        };
-      },
-      extendSession: jest.fn(),
-      createSession: jest.fn(),
-      saveSessionDuration: jest.fn(),
-      getSessionDuration: () => Promise.resolve(sessionDuration)
-    };
-
+    let api: any;
     beforeEach(() => {
+      api = {
+        saveSessionNoteShown: jest.fn(),
+        loadSessionNoteShown: () => Promise.resolve({Data: '60000'}),
+        getSessionStatus: () => {
+          return {
+            TradingSession: confirmation
+          };
+        },
+        extendSession: jest.fn(),
+        createSession: jest.fn(),
+        saveSessionDuration: jest.fn(),
+        getSessionDuration: () => Promise.resolve(sessionDuration)
+      };
+
       sessionStore = new SessionStore(new RootStore(true), api);
       sessionStore.rootStore.authStore.signOut = jest.fn();
     });
@@ -68,11 +69,10 @@ describe('session store', () => {
     });
 
     it('should increase time to left', () => {
-      const sessionDurationInMinute = 1;
-      const sessionDurationInSeconds = sessionDurationInMinute * 60;
-      sessionStore.handleSetDuration(sessionDurationInMinute);
-      sessionStore.extendSession();
+      const sessionDurationInHours = 1;
+      sessionStore.handleSetDuration(sessionDurationInHours);
 
+      const sessionDurationInSeconds = sessionDurationInHours * 3600;
       expect(sessionStore.sessionRemain).toBe(sessionDurationInSeconds);
 
       expect(api.extendSession).toHaveBeenCalled();
@@ -89,7 +89,7 @@ describe('session store', () => {
     it('should set user default session duration', async () => {
       await sessionStore.initUserSession();
       expect(sessionStore.sessionCurrentDuration).toBe(
-        convertMsToMinutes(+sessionDuration.Data)
+        convertMsToHours(+sessionDuration.Data)
       );
     });
 
@@ -183,7 +183,7 @@ describe('session store', () => {
       sessionStore.sessionConfirmationExpire();
       expect(sessionStore.continueInReadOnlyMode).not.toHaveBeenCalled();
 
-      jest.runTimersToTime(convertMinutesToMs(duration));
+      jest.runTimersToTime(convertHoursToMs(duration));
 
       expect(sessionStore.continueInReadOnlyMode).toHaveBeenCalled();
       expect(sessionStore.continueInReadOnlyMode).toHaveBeenCalledTimes(1);
@@ -192,16 +192,15 @@ describe('session store', () => {
     it('should call showSessionNotification after extended time is over', async () => {
       sessionStore.showSessionNotification = jest.fn();
 
-      const extendedTime = 2;
+      const extendedTime = 0.03;
       const SESSION_WARNING_REMAINING = 60;
-      const ttl = convertMsToSeconds(convertMinutesToMs(extendedTime));
+      const ttl = convertMsToSeconds(convertHoursToMs(extendedTime));
       const timeout = convertSecondsToMs(ttl - SESSION_WARNING_REMAINING);
-      sessionStore.handleSetDuration(extendedTime);
-      await sessionStore.extendSession();
+      await sessionStore.handleSetDuration(extendedTime);
 
       expect(sessionStore.showSessionNotification).not.toHaveBeenCalled();
 
-      jest.runTimersToTime(convertMinutesToMs(timeout));
+      jest.runTimersToTime(convertHoursToMs(timeout));
 
       expect(sessionStore.showSessionNotification).toHaveBeenCalled();
       expect(sessionStore.showSessionNotification).toHaveBeenCalledTimes(1);
@@ -385,11 +384,11 @@ describe('session store', () => {
     });
 
     it('should set user default session duration', async () => {
-      const defaultSessionDuration = 900000;
+      const defaultSessionDuration = 1800000;
       sessionStore.showSessionNotification = jest.fn();
       await sessionStore.initUserSession();
       expect(sessionStore.sessionCurrentDuration).toBe(
-        convertMsToMinutes(defaultSessionDuration)
+        convertMsToHours(defaultSessionDuration)
       );
     });
   });
