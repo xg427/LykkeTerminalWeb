@@ -27,8 +27,8 @@ import {FakeOrderBookStage} from './styles';
 const LEVEL_FONT = `12.25px Proxima Nova`;
 const DEFAULT_OPACITY = 1;
 const STEP_OPACITY = 0.05;
-const START_ANIMATED_OPACITY = 0.5;
-const UPDATE_ANIMATION_INTERVAL = 50;
+const START_ANIMATED_OPACITY = 0.3;
+const UPDATE_ANIMATION_INTERVAL = 40;
 const CELLS_NUMBER = 3;
 
 const fillBySide = (side: Side) =>
