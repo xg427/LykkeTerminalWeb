@@ -131,6 +131,7 @@ class UiOrderStore extends BaseStore {
     this.setQuantityValueWithFixed(volume);
     this.setMarket(OrderType.Market);
     this.setSide(side);
+    this.setMarketTotal(volume, side);
   };
 
   handlePercentageChange = (config: any) => {
@@ -149,7 +150,7 @@ class UiOrderStore extends BaseStore {
           baseAssetId
         )
       );
-      this.setMarketTotal(+this.quantityValue, this.side);
+      this.setMarketTotal(this.quantityValue, this.side);
     }
   };
 
@@ -227,7 +228,7 @@ class UiOrderStore extends BaseStore {
   };
 
   setMarketTotal = (
-    operationVolume?: number,
+    operationVolume?: string | number,
     operationType?: Side,
     debounce?: boolean
   ) => {
@@ -248,7 +249,10 @@ class UiOrderStore extends BaseStore {
     }
 
     if (operationVolume || operationVolume === 0) {
-      this.marketTotal.operationVolume = operationVolume;
+      this.marketTotal.operationVolume =
+        typeof operationVolume === 'number'
+          ? operationVolume
+          : parseFloat(operationVolume);
     }
     if (operationType) {
       this.marketTotal.operationType = operationType;
