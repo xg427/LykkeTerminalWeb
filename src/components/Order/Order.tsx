@@ -74,7 +74,7 @@ interface OrderProps {
   isDisclaimerShown: boolean;
   disclaimedAssets: string[];
   setMarketTotal: (
-    operationVolume?: number,
+    operationVolume?: string | number,
     operationType?: string,
     debounce?: boolean
   ) => any;
@@ -403,7 +403,7 @@ class Order extends React.Component<OrderProps, OrderState> {
             balanceAccuracy={balanceAccuracy}
             onQuantityArrowClick={handleQuantityArrowClick}
             updatePercentageState={this.updatePercentageState}
-            countTotal={setMarketTotal}
+            setMarketTotal={setMarketTotal}
             enoughLiquidity={enoughLiquidity}
           />
         )}
