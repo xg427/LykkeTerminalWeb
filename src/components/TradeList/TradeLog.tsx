@@ -2,7 +2,7 @@ import {pathOr} from 'rambda';
 import * as React from 'react';
 import {InstrumentModel, TradeModel} from '../../models';
 import {LoaderProps} from '../Loader/withLoader';
-import {TableHeaderNoSort} from '../Table';
+import {HeaderProps, TableHeaderWithoutSort} from '../Table';
 import {PublicTradeList} from './';
 
 export interface TradeLogProps extends LoaderProps {
@@ -21,7 +21,7 @@ class TradeLog extends React.Component<TradeLogProps> {
   }
 
   render() {
-    const headers: any[] = [
+    const headers: HeaderProps[] = [
       {
         key: 'price',
         value: `Price (${pathOr(
@@ -44,7 +44,7 @@ class TradeLog extends React.Component<TradeLogProps> {
 
     return (
       <React.Fragment>
-        <TableHeaderNoSort headers={headers} />
+        <TableHeaderWithoutSort headers={headers} />
         <PublicTradeList
           trades={this.props.trades}
           isProcessingWampTrades={this.props.getIsWampTradesProcessed()}
