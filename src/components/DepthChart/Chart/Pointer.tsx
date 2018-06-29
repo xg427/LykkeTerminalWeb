@@ -1,7 +1,8 @@
 import * as React from 'react';
 import {Circle, Line, Text} from 'react-konva';
 import {AssetModel, Order} from '../../../models';
-import formattedNumber from '../../../utils/localFormatted/localFormatted';
+
+import {formattedNumber} from '../../../utils/localFormatted/localFormatted';
 import chart from './chartConstants';
 import {measureText} from './chartHelpers';
 
