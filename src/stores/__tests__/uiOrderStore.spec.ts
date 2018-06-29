@@ -328,6 +328,12 @@ describe('uiOrder store', () => {
   });
 
   describe('market total', () => {
+    const defaultMarketTotal = {
+      canBeUpdated: true,
+      operationType: '',
+      operationVolume: 0,
+      price: 0
+    };
     const orders: Order[] = [
       {
         connectedLimitOrders: [],
@@ -356,12 +362,7 @@ describe('uiOrder store', () => {
     let type;
 
     beforeEach(() => {
-      uiOrderStore.marketTotal = {
-        canBeUpdated: true,
-        operationType: '',
-        operationVolume: 0,
-        price: 0
-      };
+      uiOrderStore.resetMarketTotal();
     });
 
     it('should block market total price after orders were updated from wamp', () => {
@@ -380,23 +381,47 @@ describe('uiOrder store', () => {
       type = Side.Sell;
 
       uiOrderStore.setMarketTotal();
-      uiOrderStore.setMarketTotal(volume, Side.Sell);
+      uiOrderStore.setMarketTotal(volume, type);
 
       expect(uiOrderStore.marketTotal.operationVolume).toBe(volume);
       expect(uiOrderStore.marketTotal.operationType).toBe(type);
     });
 
-    it('should block market total price for when debounce parameter injected', () => {
+    it('should block market total price when debounce parameter injected', () => {
       volume = 1;
       type = Side.Sell;
 
-      uiOrderStore.setMarketTotal(volume, Side.Sell, true);
+      uiOrderStore.setMarketTotal(volume, type, true);
 
       nextVolume = 2;
-      uiOrderStore.setMarketTotal(volume, Side.Sell, true);
+      uiOrderStore.setMarketTotal(volume, type, true);
 
       expect(uiOrderStore.marketTotal.canBeUpdated).toBeFalsy();
       expect(uiOrderStore.marketTotal.operationVolume).toBe(volume);
+    });
+
+    it('should reset market total parameters', () => {
+      volume = 1;
+      type = Side.Sell;
+
+      uiOrderStore.rootStore.orderBookStore.getBids = jest.fn(() => orders);
+      uiOrderStore.setMarketTotal(volume, type);
+
+      expect(uiOrderStore.marketTotal.operationVolume).toBe(volume);
+      expect(uiOrderStore.marketTotal.operationType).toBe(type);
+      expect(uiOrderStore.marketTotal.price).not.toBe(0);
+
+      uiOrderStore.resetMarketTotal();
+      expect(uiOrderStore.marketTotal.canBeUpdated).toBe(
+        defaultMarketTotal.canBeUpdated
+      );
+      expect(uiOrderStore.marketTotal.operationType).toBe(
+        defaultMarketTotal.operationType
+      );
+      expect(uiOrderStore.marketTotal.operationVolume).toBe(
+        defaultMarketTotal.operationVolume
+      );
+      expect(uiOrderStore.marketTotal.price).toBe(defaultMarketTotal.price);
     });
   });
 });

@@ -26,3 +26,21 @@ const localStorage = {
 (window as any).TradingView = tradingView;
 (window as any).localStorage = localStorage;
 (window as any).Worker = jest.fn();
+
+jest.mock('applicationinsights-js', () => {
+  return {
+    AppInsights: {
+      downloadAndSetup: jest.fn(),
+      trackException: jest.fn()
+    }
+  };
+});
+
+jest.mock('raven-js', () => {
+  return {
+    config: jest.fn().mockReturnValue({
+      install: jest.fn()
+    }),
+    captureException: jest.fn()
+  };
+});
