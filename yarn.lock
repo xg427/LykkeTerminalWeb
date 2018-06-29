@@ -2,6 +2,10 @@
 # yarn lockfile v1
 
 
+"@lykkex/lykke.js@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@lykkex/lykke.js/-/lykke.js-0.2.0.tgz#251bfd6a4f0ce71af6c07b4e0940229a8a6fd9c8"
+
 "@types/autobahn@^0.9.38":
   version "0.9.38"
   resolved "https://registry.yarnpkg.com/@types/autobahn/-/autobahn-0.9.38.tgz#ec160b4f0a8748a5442e0343523c98068cfb233b"
