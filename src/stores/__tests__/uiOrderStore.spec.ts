@@ -1,4 +1,4 @@
-import {ArrowDirection, OrderType, Side} from '../../models';
+import {ArrowDirection, OrderType, Side, Order} from '../../models';
 import {DEFAULT_INPUT_VALUE} from '../../utils/inputNumber';
 import {getPercentsOf, precisionFloor} from '../../utils/math';
 import {RootStore, UiOrderStore} from '../index';
@@ -8,6 +8,10 @@ describe('uiOrder store', () => {
 
   beforeEach(() => {
     uiOrderStore = new UiOrderStore(new RootStore());
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   describe('values validation', () => {
@@ -243,14 +247,16 @@ describe('uiOrder store', () => {
     });
 
     it('should return calculated percent value of balance for market and buy side', () => {
-      const convertedBalance = 5263.98;
-      uiOrderStore.rootStore.marketStore.convert = () => convertedBalance;
-
+      const convertedBalance = 5228.46;
       const balance = 52284.65;
       const percents = 50;
+      uiOrderStore.rootStore.orderBookStore.getAsks = jest
+        .fn()
+        .mockReturnValue([Order.create({price: 10000, volume: 1000})]);
       uiOrderStore.setSide(Side.Buy);
       uiOrderStore.setMarket(OrderType.Market);
       uiOrderStore.handlePercentageChange({balance, percents});
+
       expect(uiOrderStore.getComputedQuantityValue).toBe(
         getPercentsOf(
           percents,
