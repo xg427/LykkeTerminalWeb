@@ -75,20 +75,19 @@ export const MarketButton = styled.div`
   }
 `;
 
-export const MarketProperty = styled.div`
+export const MarketProperty = styled.div.attrs({
+  style: (props: any) => ({
+    borderBottomColor: props.isActive ? colors.blue : 'transparent',
+    color: props.isActive ? colors.snowWhite : colors.coolGrey,
+    fontWeight: props.isActive ? 600 : 'normal'
+  })
+})`
   cursor: pointer;
   text-align: center;
   padding: ${rem(9)} 0 ${rem(11)};
-  color: ${colors.coolGrey};
   font-size: ${rem(18)};
   border-bottom: 2px solid transparent;
-
-  &.active {
-    border-bottom-color: ${colors.blue};
-    color: ${colors.snowWhite};
-    font-weight: 600;
-  }
-`;
+` as any;
 
 export const ConfirmButton = styled.button.attrs({
   style: (props: any) =>
@@ -317,3 +316,11 @@ export const Percent = styled.div`
     }
   }
 `;
+
+DisclaimerNotification.displayName = 'DisclaimerNotification';
+Link.displayName = 'Link';
+ActionButton.displayName = 'ActionChoiceButton';
+ActionProperty.displayName = 'ActionProperty';
+MarketButton.displayName = 'MarketButton';
+MarketProperty.displayName = 'MarketProperty';
+ConfirmButton.displayName = 'ConfirmButton';

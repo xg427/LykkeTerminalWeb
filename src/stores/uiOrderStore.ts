@@ -59,8 +59,10 @@ class UiOrderStore extends BaseStore {
 
   handlePriceChange: (price: string) => void;
   handleQuantityChange: (price: string) => void;
+  handleStopPriceChange: (price: string) => void;
   handlePriceArrowClick: (operation: ArrowDirection) => void;
   handleQuantityArrowClick: (operation: ArrowDirection) => void;
+  handleStopPriceArrowClick: (operation: ArrowDirection) => void;
   onPercentChangeForLimit: (
     percents: number,
     value: number,
@@ -75,6 +77,8 @@ class UiOrderStore extends BaseStore {
     isEnoughLiquidity: true,
     price: 0
   };
+  @observable
+  stopPriceValue: string = DEFAULT_INPUT_VALUE;
   @observable
   private priceValue: string = DEFAULT_INPUT_VALUE;
   @observable
@@ -97,6 +101,10 @@ class UiOrderStore extends BaseStore {
       this.setQuantityValue,
       this.getQuantityAccuracy
     );
+    this.handleStopPriceChange = curry(onValueChange)(
+      this.setStopPriceValue,
+      this.getPriceAccuracy
+    );
     this.handlePriceArrowClick = curry(onArrowClick)(
       this.getPriceValue,
       this.getPriceAccuracy,
@@ -105,6 +113,11 @@ class UiOrderStore extends BaseStore {
     this.handleQuantityArrowClick = curry(onArrowClick)(
       this.getQuantityValue,
       this.getQuantityAccuracy,
+      this.setQuantityValueWithFixed
+    );
+    this.handleStopPriceArrowClick = curry(onArrowClick)(
+      this.getStopPriceValue,
+      this.getPriceAccuracy,
       this.setQuantityValueWithFixed
     );
 
@@ -122,12 +135,18 @@ class UiOrderStore extends BaseStore {
     (this.quantityValue = !quantity
       ? DEFAULT_INPUT_VALUE
       : bigToFixed(quantity, this.quantityAccuracy).toString());
+  setStopPriceValueWithFixed = (stopPrice: number) =>
+    (this.stopPriceValue = !stopPrice
+      ? DEFAULT_INPUT_VALUE
+      : bigToFixed(stopPrice, this.priceAccuracy).toString());
 
   setPriceValue = (price: string) => (this.priceValue = price);
   setQuantityValue = (quantity: string) => (this.quantityValue = quantity);
+  setStopPriceValue = (stopPrice: string) => (this.stopPriceValue = stopPrice);
 
   getPriceValue = () => this.priceValue;
   getQuantityValue = () => this.quantityValue;
+  getStopPriceValue = () => this.stopPriceValue;
 
   getPriceAccuracy = () => this.priceAccuracy;
   getQuantityAccuracy = () => this.quantityAccuracy;

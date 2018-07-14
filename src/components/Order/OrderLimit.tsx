@@ -6,7 +6,7 @@ import {AnalyticsService} from '../../services/analyticsService';
 import {formattedNumber} from '../../utils/localFormatted/localFormatted';
 import NumberInput from '../NumberInput/NumberInput';
 import {OrderBasicFormProps} from './index';
-import OrderButton from './OrderButton';
+import OrderConfirmButton from './OrderConfirmButton';
 import OrderPercentage from './OrderPercentage';
 import {
   Action,
@@ -134,7 +134,7 @@ const OrderLimit: React.SFC<OrderLimitProps> = ({
       </Total>
 
       <StyledOrderButton>
-        <OrderButton
+        <OrderConfirmButton
           isDisable={isDisable}
           type={'submit'}
           message={buttonMessage}

@@ -14,9 +14,8 @@ import withScroll from '../CustomScrollbar/withScroll';
 import ConfirmModal from '../Modal/ConfirmModal';
 import ActionChoiceButton from './ActionChoiceButton';
 import {Disclaimer} from './Disclaimer';
+import {OrderLimit, OrderMarket, StopLimitOrder} from './index';
 import MarketChoiceButton from './MarketChoiceButton';
-import OrderLimit from './OrderLimit';
-import OrderMarket from './OrderMarket';
 import {Actions, Markets} from './styles';
 
 const confirmStorage = StorageUtils(keys.confirmReminder);
@@ -27,6 +26,7 @@ const percentage = Percentage.map((i: any) => {
 
 const MARKET = OrderType.Market;
 const LIMIT = OrderType.Limit;
+const STOP_LIMIT = OrderType.StopLimit;
 
 interface OrderState {
   pendingOrder: boolean;
@@ -318,6 +318,7 @@ class Order extends React.Component<OrderProps, OrderState> {
       quoteAssetId,
       isDisclaimerShown,
       disclaimedAssets,
+      disclaimedAssets,
       setMarketTotal,
       marketTotalPrice,
       isEnoughLiquidity
@@ -326,6 +327,7 @@ class Order extends React.Component<OrderProps, OrderState> {
       priceValue,
       quantityValue,
       currentMarket,
+      isCurrentSideSell
       isCurrentSideSell,
       handlePriceChange,
       handleQuantityChange,
@@ -361,14 +363,6 @@ class Order extends React.Component<OrderProps, OrderState> {
         quoteAssetBalance
       );
 
-    const availableBalance = isCurrentSideSell
-      ? baseAssetBalance
-      : quoteAssetBalance;
-
-    const balanceAccuracy = isCurrentSideSell
-      ? baseAssetAccuracy
-      : quoteAssetAccuracy;
-
     return (
       <React.Fragment>
         <Markets>
@@ -381,6 +375,11 @@ class Order extends React.Component<OrderProps, OrderState> {
             title={MARKET}
             isActive={currentMarket === MARKET}
             click={this.handleMarketClick(MARKET)}
+          />
+          <MarketChoiceButton
+            title={STOP_LIMIT}
+            isActive={currentMarket === STOP_LIMIT}
+            click={this.handleMarketClick(STOP_LIMIT)}
           />
         </Markets>
 
@@ -405,10 +404,6 @@ class Order extends React.Component<OrderProps, OrderState> {
             price={priceValue}
             quantityAccuracy={quantityAccuracy}
             priceAccuracy={priceAccuracy}
-            onPriceChange={handlePriceChange}
-            onQuantityChange={handleQuantityChange}
-            onPriceArrowClick={handlePriceArrowClick}
-            onQuantityArrowClick={handleQuantityArrowClick}
             baseAssetAccuracy={baseAssetAccuracy}
             percents={percents}
             onHandlePercentageChange={this.handlePercentageChange}
@@ -418,14 +413,12 @@ class Order extends React.Component<OrderProps, OrderState> {
             amount={formattedNumber(roundedAmount || 0, quoteAssetAccuracy)}
             isDisable={isLimitInvalid}
             onReset={this.reset}
-            balance={availableBalance}
             buttonMessage={`${
               isCurrentSideSell ? Side.Sell : Side.Buy
             } ${formattedNumber(
               +quantityValue,
               quantityAccuracy
             )} ${baseAssetName}`}
-            balanceAccuracy={balanceAccuracy}
             updatePercentageState={this.updatePercentageState}
           />
         )}
@@ -440,22 +433,21 @@ class Order extends React.Component<OrderProps, OrderState> {
             quoteAssetName={quoteAssetName}
             percents={percents}
             onHandlePercentageChange={this.handlePercentageChange}
-            onQuantityChange={handleQuantityChange}
             onReset={this.reset}
             isDisable={isMarketInvalid}
             onSubmit={this.handleButtonClick}
-            balance={availableBalance}
             isSell={isCurrentSideSell}
             // tslint:disable-next-line:jsx-no-lambda
             onResetPercentage={() => resetPercentage(percentage)}
             priceAccuracy={priceAccuracy}
-            balanceAccuracy={balanceAccuracy}
-            onMarketQuantityArrowClick={handleMarketQuantityArrowClick}
             updatePercentageState={this.updatePercentageState}
             setMarketTotal={setMarketTotal}
             isEnoughLiquidity={isEnoughLiquidity}
           />
         )}
+
+        {currentMarket === STOP_LIMIT && <StopLimitOrder />}
+
         {this.state.isConfirmModalOpen && (
           <ConfirmModal
             // tslint:disable-next-line:jsx-no-lambda

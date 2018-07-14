@@ -6,8 +6,46 @@ import {AssetBalanceModel, WalletModel, WalletType} from '../models';
 import {ApiWalletModel} from '../models/walletModel';
 import {BaseStore, RootStore} from './index';
 
+const DEFAULT_BALANCE = 0;
+
 class BalanceListStore extends BaseStore {
   tradingWallet: WalletModel;
+
+  @computed
+  get baseAssetBalance() {
+    const asset = this.tradingWalletBalances.find((b: AssetBalanceModel) => {
+      const baseAssetId = pathOr(
+        '',
+        ['baseAsset', 'id'],
+        this.rootStore.uiStore.selectedInstrument
+      );
+      return b.id === baseAssetId;
+    });
+    return asset ? asset.available : DEFAULT_BALANCE;
+  }
+
+  @computed
+  get quoteAssetBalance() {
+    const asset = this.tradingWalletBalances.find((b: AssetBalanceModel) => {
+      const quoteAssetId = pathOr(
+        '',
+        ['quoteAsset', 'id'],
+        this.rootStore.uiStore.selectedInstrument
+      );
+      return b.id === quoteAssetId;
+    });
+    return asset ? asset.available : DEFAULT_BALANCE;
+  }
+
+  @computed
+  get tradingWalletBalances() {
+    return (this.tradingWallet && this.tradingWallet.balances) || [];
+  }
+
+  @computed
+  get tradingWallet() {
+    return find(w => w.type === WalletType.Trading, this.walletList);
+  }
 
   constructor(store: RootStore, private readonly api: BalanceListApi) {
     super(store);

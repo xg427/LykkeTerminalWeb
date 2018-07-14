@@ -158,6 +158,12 @@ describe('uiOrder store', () => {
       expect(uiOrderStore.isCurrentSideSell).toBeTruthy();
     });
 
+    it('should change stop price value', () => {
+      const stopPrice = '123';
+      uiOrderStore.setStopPriceValue(stopPrice);
+      expect(uiOrderStore.stopPriceValue).toBe(stopPrice);
+    });
+
     it('should change price, reset volume, set order type to limit and change the side if market is not limit', () => {
       expect(uiOrderStore.isCurrentSideSell).toBeFalsy();
       expect(uiOrderStore.getComputedPriceValue).toBe(DEFAULT_INPUT_VALUE);

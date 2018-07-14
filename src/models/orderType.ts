@@ -6,7 +6,8 @@ enum OrderType {
 
 enum OrderInputs {
   Price = 'priceValue',
-  Quantity = 'quantityValue'
+  Quantity = 'quantityValue',
+  StopLimitPrice = 'stopLimitPriceValue'
 }
 
 enum OrderStatus {

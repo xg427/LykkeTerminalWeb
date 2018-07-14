@@ -1,6 +1,9 @@
 import * as React from 'react';
+import {keys} from '../../constants/keyBoardKeys';
 import ArrowDirection from '../../models/arrowDirection';
 import {StyledInput, StyledInputNumberComponent} from './styles';
+
+export const DEFAULT_PLACEHOLDER = '0.00';
 
 interface NumberInputProps {
   id?: string;
@@ -15,30 +18,31 @@ const NumberInput: React.SFC<NumberInputProps> = ({
   onChange,
   onArrowClick
 }) => {
+  const handleKeyDown = (e: any) => {
+    switch (e.keyCode) {
+      case keys.up:
+        onArrowClick(ArrowDirection.Up)();
+        e.preventDefault();
+        break;
+      case keys.down:
+        onArrowClick(ArrowDirection.Down)();
+        e.preventDefault();
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <StyledInputNumberComponent>
       <StyledInput
         id={id}
         type="text"
         value={value}
-        placeholder={'0.00'}
+        placeholder={DEFAULT_PLACEHOLDER}
         autoComplete={'off'}
         onChange={onChange()}
-        // tslint:disable-next-line:jsx-no-lambda
-        onKeyDown={e => {
-          switch (e.keyCode) {
-            case 38:
-              onArrowClick(ArrowDirection.Up)();
-              e.preventDefault();
-              break;
-            case 40:
-              onArrowClick(ArrowDirection.Down)();
-              e.preventDefault();
-              break;
-            default:
-              break;
-          }
-        }}
+        onKeyDown={handleKeyDown}
         name={value}
       />
     </StyledInputNumberComponent>

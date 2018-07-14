@@ -1,58 +1,145 @@
-import {mount} from 'enzyme';
-import React from 'react';
+import {shallow} from 'enzyme';
+import * as React from 'react';
+
+import {keys} from '../../../constants/keyBoardKeys';
 import {ArrowDirection} from '../../../models';
-import NumberInput from '../NumberInput';
+import NumberInput, {DEFAULT_PLACEHOLDER} from '../NumberInput';
 
 describe('<NumberInput>', () => {
-  let id: string;
-  let value: string;
-  let onChange: any;
-  let onArrowClick: (direction: ArrowDirection) => () => void;
+  const id = ArrowDirection.Up;
+  const value = '';
+  const handleChange = () => () => {
+    return;
+  };
+  const handleArrowClick = () => () => {
+    return;
+  };
 
-  const getTestNumberInput = () => (
-    <NumberInput
-      id={id}
-      value={value}
-      onChange={onChange}
-      onArrowClick={onArrowClick}
-    />
-  );
+  const getTestNumberInput = (
+    propsId: ArrowDirection,
+    propsValue: string,
+    onChange: () => (e: any) => any,
+    onArrowClick: (arrowDirection: ArrowDirection) => () => any
+  ) => {
+    return (
+      <NumberInput
+        id={propsId}
+        value={propsValue}
+        onChange={onChange}
+        onArrowClick={onArrowClick}
+      />
+    );
+  };
 
-  beforeEach(() => {
-    id = '1';
-    value = '100';
-    onChange = jest.fn(() => jest.fn());
-    onArrowClick = jest.fn(() => jest.fn());
+  it('should render number input', () => {
+    const wrapper = shallow(
+      getTestNumberInput(id, value, handleChange, handleArrowClick)
+    );
+    expect(wrapper.find('StyledInputNumberComponent')).toHaveLength(1);
   });
 
-  describe('method render', () => {
-    it('should render styled input', () => {
-      const wrapper = mount(getTestNumberInput());
-      expect(wrapper.find('input')).toHaveLength(1);
+  it('should contain up and down arrows', () => {
+    const wrapper = shallow(
+      getTestNumberInput(id, value, handleChange, handleArrowClick)
+    );
+    expect(wrapper.find('span.up')).toHaveLength(1);
+    expect(wrapper.find('span.down')).toHaveLength(1);
+  });
+
+  it('should have placeholder with 0.00 value', () => {
+    const wrapper = shallow(
+      getTestNumberInput(id, value, handleChange, handleArrowClick)
+    );
+    const input = wrapper.find('StyledInput');
+    expect(input.props().placeholder).toBe(DEFAULT_PLACEHOLDER);
+  });
+
+  it('should set id prop', () => {
+    const wrapper = shallow(
+      getTestNumberInput(id, value, handleChange, handleArrowClick)
+    );
+    const input = wrapper.find('StyledInput');
+    expect(input.props().id).toBe(id);
+  });
+
+  it('should set value prop', () => {
+    const wrapper = shallow(
+      getTestNumberInput(id, value, handleChange, handleArrowClick)
+    );
+    const input = wrapper.find('StyledInput');
+    expect(input.props().value).toBe(value);
+  });
+
+  describe('handle events', () => {
+    it('should handle onChange event', () => {
+      let testValue = 'old value';
+      const handleChangeEvent = () => (e: any) => (testValue = e.target.value);
+
+      const event = {
+        target: {
+          name: 'input',
+          value: 'new value'
+        }
+      };
+
+      const wrapper = shallow(
+        getTestNumberInput(id, value, handleChangeEvent, handleArrowClick)
+      );
+      const input = wrapper.find('StyledInput');
+      input.simulate('change', event);
+      expect(testValue).toBe(event.target.value);
     });
 
-    it('should call onChange callback', () => {
-      const wrapper = mount(getTestNumberInput());
-      wrapper.find('input').simulate('keydown', {which: '1'});
-      expect(onChange).toHaveBeenCalled();
+    it('should handle keyboard event', () => {
+      let arrowDirection = '';
+
+      const handleArrowClickEvent = (ad: ArrowDirection) => () => {
+        arrowDirection = ad;
+      };
+
+      const event = {
+        keyCode: keys.down,
+        preventDefault: () => {
+          return;
+        }
+      };
+
+      const wrapper = shallow(
+        getTestNumberInput(id, value, handleChange, handleArrowClickEvent)
+      );
+      const input = wrapper.find('StyledInput');
+      input.simulate('keyDown', event);
+      expect(arrowDirection).toBe(ArrowDirection.Down);
     });
 
-    it('should call onArrowClick callback for Up button', () => {
-      const wrapper = mount(getTestNumberInput());
-      wrapper.find('input').simulate('keydown', {keyCode: 38});
-      expect(onArrowClick).toHaveBeenCalledWith(ArrowDirection.Up);
+    it('should handle click event on up span', () => {
+      let arrowDirection = '';
+
+      const handleArrowClickEvent = (ad: ArrowDirection) => () => {
+        arrowDirection = ad;
+      };
+
+      const wrapper = shallow(
+        getTestNumberInput(id, value, handleChange, handleArrowClickEvent)
+      );
+      const input = wrapper.find('span.up');
+      input.simulate('click', {});
+      expect(arrowDirection).toBe(ArrowDirection.Up);
     });
 
-    it('should call onArrowClick callback ofr Down button', () => {
-      const wrapper = mount(getTestNumberInput());
-      wrapper.find('input').simulate('keydown', {keyCode: 40});
-      expect(onArrowClick).toHaveBeenCalledWith(ArrowDirection.Down);
-    });
+    it('should handle click event on down span', () => {
+      let arrowDirection = '';
 
-    it('should not call onArrowClick callback for Right button', () => {
-      const wrapper = mount(getTestNumberInput());
-      wrapper.find('input').simulate('keydown', {keyCode: 39});
-      expect(onArrowClick).not.toHaveBeenCalled();
+      const handleArrowClickEvent = (ad: ArrowDirection) => () => {
+        arrowDirection = ad;
+      };
+
+      const wrapper = shallow(
+        getTestNumberInput(id, value, handleChange, handleArrowClickEvent)
+      );
+      const input = wrapper.find('span.down');
+      input.simulate('click', {});
+      expect(arrowDirection).toBe(ArrowDirection.Down);
     });
   });
 });

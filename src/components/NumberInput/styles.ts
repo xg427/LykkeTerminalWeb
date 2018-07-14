@@ -47,3 +47,6 @@ export const StyledInputNumberComponent = styled.div`
     transform: rotate(180deg);
   }
 `;
+
+StyledInputNumberComponent.displayName = 'StyledInputNumberComponent';
+StyledInput.displayName = 'StyledInput';

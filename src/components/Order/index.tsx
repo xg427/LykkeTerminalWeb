@@ -1,11 +1,11 @@
 import {pathOr} from 'rambda';
-import {AssetBalanceModel} from '../../models';
 import withAuth from '../Auth/withAuth';
 import {connect} from '../connect';
 import {withKyc} from '../Kyc';
 import Order from './Order';
-
-const DEFAULT_BALANCE = 0;
+import OrderLimit from './OrderLimit';
+import OrderMarket from './OrderMarket';
+import StopLimitOrder from './StopLimitOrder';
 
 export interface OrderBasicFormProps {
   action: string;
@@ -29,9 +29,7 @@ export interface OrderBasicFormProps {
 
 const ConnectedOrder = connect(
   ({
-    balanceListStore: {
-      tradingWallet: {balances: balances}
-    },
+    balanceListStore: {baseAssetBalance, quoteAssetBalance},
     orderBookStore: {bestAskPrice, bestBidPrice},
     orderStore: {placeOrder},
     uiStore: {
@@ -42,10 +40,6 @@ const ConnectedOrder = connect(
     },
     referenceStore: {getBaseAsset, getInstrumentById},
     uiOrderStore: {
-      handlePriceArrowClick,
-      handleQuantityArrowClick,
-      handlePriceChange,
-      handleQuantityChange,
       handlePercentageChange,
       isLimitInvalid,
       isMarketInvalid,
@@ -86,33 +80,17 @@ const ConnectedOrder = connect(
     isLimitInvalid,
     isMarketInvalid,
     handlePercentageChange,
-    handlePriceArrowClick,
-    handleQuantityArrowClick,
     handleMarketQuantityArrowClick,
     placeOrder,
     quoteAssetId: pathOr('', ['quoteAsset', 'id'], instrument),
-    get baseAssetBalance() {
-      const asset = balances.find((b: AssetBalanceModel) => {
-        const baseAssetId = pathOr('', ['baseAsset', 'id'], instrument);
-        return b.id === baseAssetId;
-      });
-      return asset ? asset.available : DEFAULT_BALANCE;
-    },
-    get quoteAssetBalance() {
-      const asset = balances.find((b: AssetBalanceModel) => {
-        const quoteAssetId = pathOr('', ['quoteAsset', 'id'], instrument);
-        return b.id === quoteAssetId;
-      });
-      return asset ? asset.available : DEFAULT_BALANCE;
-    },
+    baseAssetBalance,
+    quoteAssetBalance,
     isAuth,
     isKycPassed,
     readOnlyMode,
     instrument,
     priceValue: getComputedPriceValue,
     quantityValue: getComputedQuantityValue,
-    handlePriceChange,
-    handleQuantityChange,
     resetOrder,
     currentMarket,
     isCurrentSideSell,
@@ -131,4 +109,74 @@ const ConnectedOrder = connect(
   withAuth(withKyc(Order))
 );
 
+const ConnectedLimitOrder = connect(
+  ({
+    balanceListStore: {baseAssetBalance, quoteAssetBalance},
+    uiOrderStore: {
+      handlePriceArrowClick,
+      handleQuantityArrowClick,
+      handlePriceChange,
+      handleQuantityChange,
+      isCurrentSideSell
+    },
+    uiStore: {selectedInstrument: instrument}
+  }) => ({
+    onPriceArrowClick: handlePriceArrowClick,
+    onQuantityArrowClick: handleQuantityArrowClick,
+    onPriceChange: handlePriceChange,
+    onQuantityChange: handleQuantityChange,
+    balance: isCurrentSideSell ? baseAssetBalance : quoteAssetBalance,
+    balanceAccuracy: isCurrentSideSell
+      ? pathOr(2, ['baseAsset', 'accuracy'], instrument)
+      : pathOr(2, ['quoteAsset', 'accuracy'], instrument)
+  }),
+  OrderLimit
+);
+
+const ConnectedMarketOrder = connect(
+  ({
+    balanceListStore: {baseAssetBalance, quoteAssetBalance},
+    uiOrderStore: {
+      handleQuantityArrowClick,
+      handleQuantityChange,
+      isCurrentSideSell
+    },
+    uiStore: {selectedInstrument: instrument}
+  }) => ({
+    onQuantityArrowClick: handleQuantityArrowClick,
+    onQuantityChange: handleQuantityChange,
+    balance: isCurrentSideSell ? baseAssetBalance : quoteAssetBalance,
+    balanceAccuracy: isCurrentSideSell
+      ? pathOr(2, ['baseAsset', 'accuracy'], instrument)
+      : pathOr(2, ['quoteAsset', 'accuracy'], instrument)
+  }),
+  OrderMarket
+);
+
+const ConnectedStopLimitOrder = connect(
+  ({
+    uiOrderStore: {
+      handlePriceArrowClick,
+      handleQuantityArrowClick,
+      handlePriceChange,
+      handleQuantityChange,
+      handleStopPriceChange,
+      handleStopPriceArrowClick,
+      stopPriceValue
+    }
+  }) => ({
+    onPriceArrowClick: handlePriceArrowClick,
+    onQuantityArrowClick: handleQuantityArrowClick,
+    onPriceChange: handlePriceChange,
+    onQuantityChange: handleQuantityChange,
+    onStopPriceChange: handleStopPriceChange,
+    onStopPriceArrowClick: handleStopPriceArrowClick,
+    stopPriceValue
+  }),
+  StopLimitOrder
+);
+
+export {ConnectedStopLimitOrder as StopLimitOrder};
+export {ConnectedMarketOrder as OrderMarket};
+export {ConnectedLimitOrder as OrderLimit};
 export {ConnectedOrder as Order};

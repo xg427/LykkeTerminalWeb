@@ -8,7 +8,7 @@ import {capitalize} from '../../utils';
 import {formattedNumber} from '../../utils/localFormatted/localFormatted';
 import NumberInput from '../NumberInput/NumberInput';
 import {OrderBasicFormProps} from './index';
-import OrderButton from './OrderButton';
+import OrderConfirmButton from './OrderConfirmButton';
 import OrderPercentage from './OrderPercentage';
 import {
   Action,
@@ -108,7 +108,7 @@ class OrderMarket extends React.Component<
     const {action, quantity, quantityAccuracy} = this.props;
 
     return (
-      <div>
+      <React.Fragment>
         <InputControl style={{width: '100%'}}>
           <Flex justify="space-between" style={{marginBottom: '8px'}}>
             <Action>
@@ -155,8 +155,8 @@ class OrderMarket extends React.Component<
           </MarketAmount>
         </Total>
         <MarketConfirmButton>
-          <OrderButton
-            isDisable={isDisable || !isEnoughLiquidity}
+          <OrderConfirmButton
+            isDisable={this.props.isDisable || !isEnoughLiquidity}
             type={'submit'}
             message={`${capitalize(this.state.action)} ${formattedNumber(
               +quantity,
@@ -167,7 +167,7 @@ class OrderMarket extends React.Component<
         <Reset justify={'center'}>
           <span onClick={this.reset}>Reset and clear</span>
         </Reset>
-      </div>
+      </React.Fragment>
     );
   }
 }

@@ -1,9 +1,10 @@
 import * as React from 'react';
+import Side from '../../models/side';
 import {ActionButton, ActionProperty} from './styles';
 
 interface ActionChoiceButtonProps {
-  title: string;
-  click: any;
+  title: Side;
+  click: () => void;
   isActive: boolean;
 }
 

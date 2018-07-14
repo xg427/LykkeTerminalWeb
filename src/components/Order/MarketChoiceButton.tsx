@@ -11,15 +11,12 @@ const MarketChoiceButton: React.SFC<MarketChoiceButtonProps> = ({
   title,
   click,
   isActive
-}) => {
-  const classes = isActive ? 'active' : '';
-  return (
-    <MarketButton>
-      <MarketProperty onClick={click} className={classes}>
-        {title}
-      </MarketProperty>
-    </MarketButton>
-  );
-};
+}) => (
+  <MarketButton>
+    <MarketProperty onClick={click} isActive={isActive}>
+      {title}
+    </MarketProperty>
+  </MarketButton>
+);
 
 export default MarketChoiceButton;
