@@ -14,7 +14,7 @@ describe('order utils', () => {
   const baseAssetBalance = 2;
   const quoteAssetBalance = 2;
   const priceAccuracy = 0;
-  const quantityAccuracy = 0;
+  const amountAccuracy = 0;
 
   it('should return true if amount exceeds limit balance and sell is true', () => {
     quantityValue = '3.0';
@@ -25,7 +25,7 @@ describe('order utils', () => {
       baseAssetBalance,
       quoteAssetBalance,
       priceAccuracy,
-      quantityAccuracy
+      amountAccuracy
     );
     expect(isInvalid).toBeTruthy();
   });
@@ -41,7 +41,7 @@ describe('order utils', () => {
       baseAssetBalance,
       quoteAssetBalance,
       priceAccuracy,
-      quantityAccuracy
+      amountAccuracy
     );
     expect(isInvalid).toBeTruthy();
   });
@@ -55,7 +55,7 @@ describe('order utils', () => {
       baseAssetBalance,
       quoteAssetBalance,
       priceAccuracy,
-      quantityAccuracy
+      amountAccuracy
     );
     expect(isInvalid).toBeFalsy();
   });
@@ -71,7 +71,7 @@ describe('order utils', () => {
       baseAssetBalance,
       quoteAssetBalance,
       priceAccuracy,
-      quantityAccuracy
+      amountAccuracy
     );
     expect(isInvalid).toBeFalsy();
   });

@@ -13,10 +13,10 @@ import {
   Amount,
   Available,
   InputControl,
+  OrderButton,
   OrderTitle,
-  Reset,
-  StyledOrderButton,
-  Total
+  OrderTotal,
+  Reset
 } from './styles';
 
 // tslint:disable-next-line:no-var-requires
@@ -39,7 +39,7 @@ const OrderLimit: React.SFC<OrderLimitProps> = ({
   onPriceArrowClick,
   onQuantityArrowClick,
   quantity,
-  quantityAccuracy,
+  amountAccuracy,
   price,
   priceAccuracy,
   percents,
@@ -62,9 +62,9 @@ const OrderLimit: React.SFC<OrderLimitProps> = ({
     updatePercentageState(OrderInputs.Price);
   };
 
-  const handleQuantityArrowClick = (operation: string) => () => {
+  const handleAmountArrowClick = (operation: string) => () => {
     onQuantityArrowClick(operation);
-    updatePercentageState(OrderInputs.Quantity);
+    updatePercentageState(OrderInputs.Amount);
   };
 
   const handlePriceChange = () => (e: any) => {
@@ -72,9 +72,9 @@ const OrderLimit: React.SFC<OrderLimitProps> = ({
     updatePercentageState(OrderInputs.Price);
   };
 
-  const handleQuantityChange = () => (e: any) => {
+  const handleAmountChange = () => (e: any) => {
     onQuantityChange(e.target.value);
-    updatePercentageState(OrderInputs.Quantity);
+    updatePercentageState(OrderInputs.Amount);
   };
 
   const handlePercentageChange = () => {
@@ -110,9 +110,9 @@ const OrderLimit: React.SFC<OrderLimitProps> = ({
         </Flex>
         <NumberInput
           value={quantity}
-          id={OrderInputs.Quantity}
-          onChange={handleQuantityChange}
-          onArrowClick={handleQuantityArrowClick}
+          id={OrderInputs.Amount}
+          onChange={handleAmountChange}
+          onArrowClick={handleAmountArrowClick}
         />
       </InputControl>
       <Flex justify={'space-between'}>
@@ -126,20 +126,20 @@ const OrderLimit: React.SFC<OrderLimitProps> = ({
           />
         ))}
       </Flex>
-      <Total>
+      <OrderTotal>
         <OrderTitle>Total</OrderTitle>
         <Amount>
           {amount} {quoteAssetName}
         </Amount>
-      </Total>
+      </OrderTotal>
 
-      <StyledOrderButton>
+      <OrderButton>
         <OrderConfirmButton
           isDisable={isDisable}
           type={'submit'}
           message={buttonMessage}
         />
-      </StyledOrderButton>
+      </OrderButton>
 
       {onReset && (
         <Reset justify={'center'}>

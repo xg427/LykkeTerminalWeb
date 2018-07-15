@@ -45,7 +45,7 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
   private readonly action: string;
   private readonly accuracy: {
     priceAccuracy: number;
-    quantityAccuracy: number;
+    amountAccuracy: number;
     quoteAssetAccuracy: number;
   };
   private readonly baseAssetName: string = '';
@@ -57,9 +57,9 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
   private readonly balance: number = 0;
   private assetAccuracy: number;
   private handlePriceArrowClick: any;
-  private handleQuantityArrowClick: any;
+  private handleAmountArrowClick: any;
   private handlePriceChange: any;
-  private handleQuantityChange: any;
+  private handleAmountChange: any;
   private handlePercentChangeForLimit: any;
 
   constructor(props: EditOrderProps) {
@@ -70,7 +70,7 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
 
     this.accuracy = {
       priceAccuracy: pathOr(2, ['accuracy'], currentInstrument),
-      quantityAccuracy: pathOr(2, ['baseAsset', 'accuracy'], currentInstrument),
+      amountAccuracy: pathOr(2, ['baseAsset', 'accuracy'], currentInstrument),
       quoteAssetAccuracy: pathOr(
         2,
         ['quoteAsset', 'accuracy'],
@@ -87,7 +87,7 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
       ).toString(),
       quantityValue: bigToFixed(
         order.remainingVolume,
-        this.accuracy.quantityAccuracy
+        this.accuracy.amountAccuracy
       ).toString()
     };
 
@@ -97,10 +97,10 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
       this.setPriceValueWithFixed
     );
 
-    this.handleQuantityArrowClick = curry(onArrowClick)(
+    this.handleAmountArrowClick = curry(onArrowClick)(
       () => this.state.quantityValue,
-      () => this.accuracy.quantityAccuracy,
-      this.setQuantityValueWithFixed
+      () => this.accuracy.amountAccuracy,
+      this.setAmountValueWithFixed
     );
 
     this.handlePriceChange = curry(onValueChange)(
@@ -108,14 +108,14 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
       () => this.accuracy.priceAccuracy
     );
 
-    this.handleQuantityChange = curry(onValueChange)(
-      this.setQuantityValue,
-      () => this.accuracy.quantityAccuracy
+    this.handleAmountChange = curry(onValueChange)(
+      this.setAmountValue,
+      () => this.accuracy.amountAccuracy
     );
 
     this.handlePercentChangeForLimit = curry(getPercentOfValueForLimit)(
       () => this.state.priceValue,
-      () => this.accuracy.quantityAccuracy
+      () => this.accuracy.amountAccuracy
     );
 
     this.baseAssetName = currentInstrument.baseAsset.name;
@@ -136,7 +136,7 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
       ? order.volume
       : order.volume * order.price;
     this.assetAccuracy = this.isSellActive
-      ? this.accuracy.quantityAccuracy
+      ? this.accuracy.amountAccuracy
       : pathOr(2, ['quoteAsset', 'accuracy'], currentInstrument);
     this.balance = asset.available + reserved;
   }
@@ -149,16 +149,16 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
     });
   };
 
-  setQuantityValueWithFixed = (quantity: number | string) => {
+  setAmountValueWithFixed = (quantity: number | string) => {
     this.setState({
       quantityValue: !quantity
         ? DEFAULT_INPUT_VALUE
-        : bigToFixed(quantity, this.accuracy.quantityAccuracy).toString()
+        : bigToFixed(quantity, this.accuracy.amountAccuracy).toString()
     });
   };
 
   setPriceValue = (price: string) => this.setState({priceValue: price});
-  setQuantityValue = (quantity: string) =>
+  setAmountValue = (quantity: string) =>
     this.setState({quantityValue: quantity});
 
   handlePercentageChange = (index: number) => () => {
@@ -171,7 +171,7 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
       index
     );
 
-    this.setQuantityValueWithFixed(
+    this.setAmountValueWithFixed(
       this.handlePercentChangeForLimit(percents, this.balance, this.action)
     );
     this.setState({
@@ -181,7 +181,7 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
 
   updatePercentageState = (field: string) => {
     const tempObj: any = {};
-    if (field === OrderInputs.Quantity) {
+    if (field === OrderInputs.Amount) {
       resetPercentage(percentage);
       tempObj.percents = percentage;
     }
@@ -220,7 +220,7 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
   isLimitInvalid = () => {
     const {quantityValue, priceValue} = this.state;
     const {
-      accuracy: {priceAccuracy, quantityAccuracy},
+      accuracy: {priceAccuracy, amountAccuracy},
       isSellActive,
       balance
     } = this;
@@ -235,7 +235,7 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
         +balance,
         +balance,
         priceAccuracy,
-        quantityAccuracy
+        amountAccuracy
       )
     );
   };
@@ -262,11 +262,11 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
           onSubmit={this.handleEditOrder}
           quantity={this.state.quantityValue}
           price={this.state.priceValue}
-          quantityAccuracy={this.accuracy.quantityAccuracy}
+          amountAccuracy={this.accuracy.amountAccuracy}
           priceAccuracy={this.accuracy.priceAccuracy}
           onPriceChange={this.handlePriceChange}
-          onQuantityChange={this.handleQuantityChange}
-          onQuantityArrowClick={this.handleQuantityArrowClick}
+          onQuantityChange={this.handleAmountChange}
+          onQuantityArrowClick={this.handleAmountArrowClick}
           onPriceArrowClick={this.handlePriceArrowClick}
           percents={this.state.percents}
           onHandlePercentageChange={this.handlePercentageChange}

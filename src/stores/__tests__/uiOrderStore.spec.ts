@@ -37,7 +37,7 @@ describe('uiOrder store', () => {
     });
 
     it('quantity accuracy should be 2 by default', () => {
-      expect(uiOrderStore.getQuantityAccuracy()).toBe(2);
+      expect(uiOrderStore.getAmountAccuracy()).toBe(2);
     });
 
     it('should set custom price accuracy', () => {
@@ -46,96 +46,92 @@ describe('uiOrder store', () => {
     });
 
     it('should set custom price accuracy', () => {
-      uiOrderStore.setQuantityAccuracy(3);
-      expect(uiOrderStore.getQuantityAccuracy()).toBe(3);
+      uiOrderStore.setAmountAccuracy(3);
+      expect(uiOrderStore.getAmountAccuracy()).toBe(3);
     });
 
     it('should change price', () => {
-      expect(uiOrderStore.getComputedPriceValue).toBe(DEFAULT_INPUT_VALUE);
+      expect(uiOrderStore.priceValue).toBe(DEFAULT_INPUT_VALUE);
       uiOrderStore.handlePriceChange('1');
-      expect(uiOrderStore.getComputedPriceValue).toBe('1');
+      expect(uiOrderStore.priceValue).toBe('1');
     });
 
     it('should change quantity', () => {
-      expect(uiOrderStore.getComputedQuantityValue).toBe(DEFAULT_INPUT_VALUE);
-      uiOrderStore.handleQuantityChange('1');
-      expect(uiOrderStore.getComputedQuantityValue).toBe('1');
+      expect(uiOrderStore.amountValue).toBe(DEFAULT_INPUT_VALUE);
+      uiOrderStore.handleAmountChange('1');
+      expect(uiOrderStore.amountValue).toBe('1');
     });
 
     it('should increase price by 1 digit', () => {
       const price = '0.02';
       uiOrderStore.handlePriceChange(price);
-      expect(uiOrderStore.getComputedPriceValue).toBe(price);
+      expect(uiOrderStore.priceValue).toBe(price);
       uiOrderStore.handlePriceArrowClick(ArrowDirection.Up);
-      expect(uiOrderStore.getComputedPriceValue).toBe('0.03');
+      expect(uiOrderStore.priceValue).toBe('0.03');
     });
 
     it('should decrease price by 1 digit', () => {
       const price = '0.02';
       uiOrderStore.handlePriceChange(price);
-      expect(uiOrderStore.getComputedPriceValue).toBe(price);
+      expect(uiOrderStore.priceValue).toBe(price);
       uiOrderStore.handlePriceArrowClick(ArrowDirection.Down);
-      expect(uiOrderStore.getComputedPriceValue).toBe('0.01');
+      expect(uiOrderStore.priceValue).toBe('0.01');
     });
 
     it('should increase quantity by 1 digit', () => {
       const quantity = '0.02';
-      uiOrderStore.handleQuantityChange(quantity);
-      expect(uiOrderStore.getComputedQuantityValue).toBe(quantity);
-      uiOrderStore.handleQuantityArrowClick(ArrowDirection.Up);
-      expect(uiOrderStore.getComputedQuantityValue).toBe('0.03');
+      uiOrderStore.handleAmountChange(quantity);
+      expect(uiOrderStore.amountValue).toBe(quantity);
+      uiOrderStore.handleAmountArrowClick(ArrowDirection.Up);
+      expect(uiOrderStore.amountValue).toBe('0.03');
     });
 
     it('should decrease quantity by 1 digit', () => {
       const quantity = '0.02';
-      uiOrderStore.handleQuantityChange(quantity);
-      expect(uiOrderStore.getComputedQuantityValue).toBe(quantity);
-      uiOrderStore.handleQuantityArrowClick(ArrowDirection.Down);
-      expect(uiOrderStore.getComputedQuantityValue).toBe('0.01');
+      uiOrderStore.handleAmountChange(quantity);
+      expect(uiOrderStore.amountValue).toBe(quantity);
+      uiOrderStore.handleAmountArrowClick(ArrowDirection.Down);
+      expect(uiOrderStore.amountValue).toBe('0.01');
     });
 
     it('should set price with fixing', () => {
       const price = 1;
-      expect(uiOrderStore.getComputedPriceValue).toBe(DEFAULT_INPUT_VALUE);
+      expect(uiOrderStore.priceValue).toBe(DEFAULT_INPUT_VALUE);
       uiOrderStore.setPriceValueWithFixed(price);
-      expect(uiOrderStore.getComputedPriceValue).toBe(
+      expect(uiOrderStore.priceValue).toBe(
         price.toFixed(uiOrderStore.getPriceAccuracy())
       );
     });
 
     it('should set quantity with fixing', () => {
       const quantity = 1;
-      expect(uiOrderStore.getComputedPriceValue).toBe(DEFAULT_INPUT_VALUE);
+      expect(uiOrderStore.priceValue).toBe(DEFAULT_INPUT_VALUE);
       uiOrderStore.setPriceValueWithFixed(quantity);
-      expect(uiOrderStore.getComputedPriceValue).toBe(
-        quantity.toFixed(uiOrderStore.getQuantityAccuracy())
+      expect(uiOrderStore.priceValue).toBe(
+        quantity.toFixed(uiOrderStore.getAmountAccuracy())
       );
     });
 
     it('should set price', () => {
       const price = '1';
-      expect(uiOrderStore.getComputedPriceValue).toBe(DEFAULT_INPUT_VALUE);
+      expect(uiOrderStore.priceValue).toBe(DEFAULT_INPUT_VALUE);
       uiOrderStore.setPriceValue(price);
-      expect(uiOrderStore.getComputedPriceValue).toBe(price);
+      expect(uiOrderStore.priceValue).toBe(price);
     });
 
     it('should set quantity', () => {
       const quantity = '1';
-      expect(uiOrderStore.getComputedPriceValue).toBe(DEFAULT_INPUT_VALUE);
+      expect(uiOrderStore.priceValue).toBe(DEFAULT_INPUT_VALUE);
       uiOrderStore.setPriceValue(quantity);
-      expect(uiOrderStore.getComputedPriceValue).toBe(quantity);
+      expect(uiOrderStore.priceValue).toBe(quantity);
     });
 
     it('should return current price', () => {
-      expect(uiOrderStore.getComputedPriceValue).toBe(
-        uiOrderStore.getPriceValue()
-      );
+      expect(uiOrderStore.priceValue).toBe(uiOrderStore.getPriceValue());
     });
 
     it('should return current quantity', () => {
-      expect(uiOrderStore.getComputedQuantityValue).toBe(
-        uiOrderStore.getQuantityValue()
-      );
+      expect(uiOrderStore.amountValue).toBe(uiOrderStore.getAmountValue());
     });
 
     it('should set a limit type for order by default', () => {
@@ -166,46 +162,46 @@ describe('uiOrder store', () => {
 
     it('should change price, reset volume, set order type to limit and change the side if market is not limit', () => {
       expect(uiOrderStore.isCurrentSideSell).toBeFalsy();
-      expect(uiOrderStore.getComputedPriceValue).toBe(DEFAULT_INPUT_VALUE);
+      expect(uiOrderStore.priceValue).toBe(DEFAULT_INPUT_VALUE);
       uiOrderStore.setMarket(OrderType.Market);
-      uiOrderStore.setQuantityValue('123');
+      uiOrderStore.setAmountValue('123');
       expect(uiOrderStore.currentMarket).toBe(OrderType.Market);
 
       const newPrice = 1;
 
       uiOrderStore.handlePriceClickFromOrderBook(newPrice, Side.Sell);
       expect(uiOrderStore.isCurrentSideSell).toBeTruthy();
-      expect(uiOrderStore.getComputedPriceValue).toBe(
+      expect(uiOrderStore.priceValue).toBe(
         newPrice.toFixed(uiOrderStore.getPriceAccuracy())
       );
-      expect(uiOrderStore.getComputedQuantityValue).toBe(DEFAULT_INPUT_VALUE);
+      expect(uiOrderStore.amountValue).toBe(DEFAULT_INPUT_VALUE);
       expect(uiOrderStore.currentMarket).toBe(OrderType.Limit);
     });
 
     it('should change price and change the side if market is limit', () => {
       expect(uiOrderStore.isCurrentSideSell).toBeFalsy();
-      expect(uiOrderStore.getComputedPriceValue).toBe(DEFAULT_INPUT_VALUE);
+      expect(uiOrderStore.priceValue).toBe(DEFAULT_INPUT_VALUE);
 
       const newPrice = 1;
 
       uiOrderStore.handlePriceClickFromOrderBook(newPrice, Side.Sell);
       expect(uiOrderStore.isCurrentSideSell).toBeTruthy();
-      expect(uiOrderStore.getComputedPriceValue).toBe(
+      expect(uiOrderStore.priceValue).toBe(
         newPrice.toFixed(uiOrderStore.getPriceAccuracy())
       );
     });
 
     it('should change volume, set order type to market, change the order side', () => {
       expect(uiOrderStore.isCurrentSideSell).toBeFalsy();
-      expect(uiOrderStore.getComputedQuantityValue).toBe(DEFAULT_INPUT_VALUE);
+      expect(uiOrderStore.amountValue).toBe(DEFAULT_INPUT_VALUE);
       expect(uiOrderStore.currentMarket).toBe(OrderType.Limit);
 
       const newQuantity = 1;
 
       uiOrderStore.handleVolumeClickFromOrderBook(newQuantity, Side.Sell);
       expect(uiOrderStore.isCurrentSideSell).toBeTruthy();
-      expect(uiOrderStore.getComputedQuantityValue).toBe(
-        newQuantity.toFixed(uiOrderStore.getQuantityAccuracy())
+      expect(uiOrderStore.amountValue).toBe(
+        newQuantity.toFixed(uiOrderStore.getAmountAccuracy())
       );
       expect(uiOrderStore.currentMarket).toBe(OrderType.Market);
     });
@@ -213,17 +209,11 @@ describe('uiOrder store', () => {
     it('should return calculated percent value of balance for limit and sell side', () => {
       const balance = 100;
       const percents = 30;
-      uiOrderStore.setSide(Side.Sell);
-      uiOrderStore.handlePercentageChange({
-        balance,
-        percents,
-        baseAssetId: '',
-        quoteAssetId: ''
-      });
-      expect(uiOrderStore.getComputedQuantityValue).toBe(
+      uiOrderStore.handlePercentageChange({balance, percents});
+      expect(uiOrderStore.amountValue).toBe(
         uiOrderStore
           .onPercentChangeForLimit(percents, balance, Side.Sell)
-          .toFixed(uiOrderStore.getQuantityAccuracy())
+          .toFixed(uiOrderStore.getAmountAccuracy())
       );
     });
 
@@ -232,16 +222,11 @@ describe('uiOrder store', () => {
       const percents = 50;
       uiOrderStore.setSide(Side.Buy);
       uiOrderStore.setPriceValue('1000');
-      uiOrderStore.handlePercentageChange({
-        balance,
-        percents,
-        baseAssetId: '',
-        quoteAssetId: ''
-      });
-      expect(uiOrderStore.getComputedQuantityValue).toBe(
+      uiOrderStore.handlePercentageChange({balance, percents});
+      expect(uiOrderStore.amountValue).toBe(
         uiOrderStore
           .onPercentChangeForLimit(percents, balance, Side.Buy)
-          .toFixed(uiOrderStore.getQuantityAccuracy())
+          .toFixed(uiOrderStore.getAmountAccuracy())
       );
     });
 
@@ -250,18 +235,13 @@ describe('uiOrder store', () => {
       const percents = 30;
       uiOrderStore.setSide(Side.Sell);
       uiOrderStore.setMarket(OrderType.Market);
-      uiOrderStore.handlePercentageChange({
-        balance,
-        percents,
-        baseAssetId: '',
-        quoteAssetId: ''
-      });
-      expect(uiOrderStore.getComputedQuantityValue).toBe(
+      uiOrderStore.handlePercentageChange({balance, percents});
+      expect(uiOrderStore.amountValue).toBe(
         getPercentsOf(
           percents,
           balance,
-          uiOrderStore.getQuantityAccuracy()
-        ).toFixed(uiOrderStore.getQuantityAccuracy())
+          uiOrderStore.getAmountAccuracy()
+        ).toFixed(uiOrderStore.getAmountAccuracy())
       );
     });
 
@@ -274,23 +254,18 @@ describe('uiOrder store', () => {
       ];
       uiOrderStore.setSide(Side.Buy);
       uiOrderStore.setMarket(OrderType.Market);
-      uiOrderStore.handlePercentageChange({
-        balance,
-        percents,
-        baseAssetId: '',
-        quoteAssetId: ''
-      });
-      expect(uiOrderStore.getComputedQuantityValue).toBe(
+      uiOrderStore.handlePercentageChange({balance, percents});
+      expect(uiOrderStore.amountValue).toBe(
         getPercentsOf(
           percents,
           convertedBalance,
-          uiOrderStore.getQuantityAccuracy()
-        ).toFixed(uiOrderStore.getQuantityAccuracy())
+          uiOrderStore.getAmountAccuracy()
+        ).toFixed(uiOrderStore.getAmountAccuracy())
       );
     });
 
     it('should return true if quantity value has default value', () => {
-      expect(uiOrderStore.getComputedQuantityValue).toBe(DEFAULT_INPUT_VALUE);
+      expect(uiOrderStore.amountValue).toBe(DEFAULT_INPUT_VALUE);
       expect(
         uiOrderStore.isMarketInvalid(
           baseAssetId,
@@ -303,8 +278,8 @@ describe('uiOrder store', () => {
 
     it('should return true if quantity is greater than baseAssetBalance for sell side', () => {
       const quantity = '4';
-      uiOrderStore.setQuantityValue(quantity);
-      expect(parseFloat(uiOrderStore.getComputedQuantityValue)).toBeGreaterThan(
+      uiOrderStore.setAmountValue(quantity);
+      expect(parseFloat(uiOrderStore.amountValue)).toBeGreaterThan(
         baseAssetBalance
       );
       expect(
@@ -321,10 +296,10 @@ describe('uiOrder store', () => {
       const convertedBalance = 5263.98;
       uiOrderStore.rootStore.marketStore.convert = () => convertedBalance;
       const quantity = '6258.368';
-      uiOrderStore.setQuantityValue(quantity);
+      uiOrderStore.setAmountValue(quantity);
       uiOrderStore.setSide(Side.Buy);
-      expect(parseFloat(uiOrderStore.getComputedQuantityValue)).toBeGreaterThan(
-        precisionFloor(+convertedBalance, uiOrderStore.getQuantityAccuracy())
+      expect(parseFloat(uiOrderStore.amountValue)).toBeGreaterThan(
+        precisionFloor(+convertedBalance, uiOrderStore.getAmountAccuracy())
       );
       expect(
         uiOrderStore.isMarketInvalid(
@@ -341,16 +316,16 @@ describe('uiOrder store', () => {
       uiOrderStore.rootStore.orderBookStore.mid = () =>
         Promise.resolve(midPrice);
 
-      uiOrderStore.setQuantityValue('123');
+      uiOrderStore.setAmountValue('123');
       uiOrderStore.setPriceValue('123');
-      expect(uiOrderStore.getComputedQuantityValue).not.toBe('0.00');
-      expect(uiOrderStore.getComputedPriceValue).not.toBe(
+      expect(uiOrderStore.amountValue).not.toBe('0.00');
+      expect(uiOrderStore.priceValue).not.toBe(
         midPrice.toFixed(uiOrderStore.getPriceAccuracy())
       );
 
       await uiOrderStore.resetOrder();
-      expect(uiOrderStore.getComputedQuantityValue).toBe(DEFAULT_INPUT_VALUE);
-      expect(uiOrderStore.getComputedPriceValue).toBe(
+      expect(uiOrderStore.amountValue).toBe(DEFAULT_INPUT_VALUE);
+      expect(uiOrderStore.priceValue).toBe(
         midPrice.toFixed(uiOrderStore.getPriceAccuracy())
       );
     });

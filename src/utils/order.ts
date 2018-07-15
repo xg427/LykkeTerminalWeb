@@ -3,18 +3,18 @@ import {getPercentsOf, precisionFloor} from './math';
 
 export const getPercentOfValueForLimit = (
   getPriceValue: () => string,
-  getQuantityAccuracy: () => number,
+  getAmountAccuracy: () => number,
   percents: number,
   value: number,
   side: Side
 ) => {
   if (side === Side.Sell) {
-    return getPercentsOf(percents, value, getQuantityAccuracy());
+    return getPercentsOf(percents, value, getAmountAccuracy());
   }
   return getPercentsOf(
     percents,
     value / parseFloat(getPriceValue()),
-    getQuantityAccuracy()
+    getAmountAccuracy()
   );
 };
 
@@ -25,12 +25,12 @@ export const isAmountExceedLimitBalance = (
   baseAssetBalance: number,
   quoteAssetBalance: number,
   priceAccuracy: number,
-  quantityAccuracy: number
+  amountAccuracy: number
 ) =>
   isSell
     ? +quantityValue > baseAssetBalance
     : parseFloat(priceValue) *
-        precisionFloor(parseFloat(quantityValue), quantityAccuracy) >
+        precisionFloor(parseFloat(quantityValue), amountAccuracy) >
       quoteAssetBalance;
 
 export const setActivePercentage = (percentage: any[], index?: number) => {

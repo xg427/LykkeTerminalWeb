@@ -39,7 +39,7 @@ interface OrderProps {
   bid: number;
   accuracy: {
     priceAccuracy: number;
-    quantityAccuracy: number;
+    amountAccuracy: number;
     baseAssetAccuracy: number;
     quoteAssetAccuracy: number;
   };
@@ -66,10 +66,10 @@ interface OrderProps {
   priceValue: string;
   quantityValue: string;
   handlePriceArrowClick: (operation: string) => void;
-  handleQuantityArrowClick: (operation: string) => void;
+  handleAmountArrowClick: (operation: string) => void;
   handleMarketQuantityArrowClick: (operation: string) => void;
   handlePriceChange: (value: string) => void;
-  handleQuantityChange: (value: string) => void;
+  handleAmountChange: (value: string) => void;
   setMarket: (value: OrderType) => void;
   setSide: (side: Side) => void;
   currentMarket: OrderType;
@@ -222,7 +222,7 @@ class Order extends React.Component<OrderProps, OrderState> {
   updatePercentageState = (field: OrderInputs) => {
     const {currentMarket} = this.props;
     const tempObj: any = {};
-    if (currentMarket === LIMIT && field === OrderInputs.Quantity) {
+    if (currentMarket === LIMIT && field === OrderInputs.Amount) {
       resetPercentage(percentage);
       tempObj.percents = percentage;
     } else if (currentMarket === MARKET) {
@@ -305,7 +305,7 @@ class Order extends React.Component<OrderProps, OrderState> {
       baseAssetBalance,
       quoteAssetBalance,
       accuracy: {
-        quantityAccuracy,
+        amountAccuracy,
         priceAccuracy,
         quoteAssetAccuracy,
         baseAssetAccuracy
@@ -402,7 +402,7 @@ class Order extends React.Component<OrderProps, OrderState> {
             onSubmit={this.handleButtonClick}
             quantity={quantityValue}
             price={priceValue}
-            quantityAccuracy={quantityAccuracy}
+            amountAccuracy={amountAccuracy}
             priceAccuracy={priceAccuracy}
             baseAssetAccuracy={baseAssetAccuracy}
             percents={percents}
@@ -417,7 +417,7 @@ class Order extends React.Component<OrderProps, OrderState> {
               isCurrentSideSell ? Side.Sell : Side.Buy
             } ${formattedNumber(
               +quantityValue,
-              quantityAccuracy
+              amountAccuracy
             )} ${baseAssetName}`}
             updatePercentageState={this.updatePercentageState}
           />
@@ -426,7 +426,7 @@ class Order extends React.Component<OrderProps, OrderState> {
         {currentMarket === MARKET && (
           <OrderMarket
             amount={formattedNumber(marketTotalPrice || 0, quoteAssetAccuracy)}
-            quantityAccuracy={quantityAccuracy}
+            amountAccuracy={amountAccuracy}
             action={isCurrentSideSell ? Side.Sell : Side.Buy}
             quantity={quantityValue}
             baseAssetName={baseAssetName}

@@ -81,13 +81,13 @@ class OrderMarket extends React.Component<
 
   handleArrowClick = (operation: string) => () => {
     this.props.onMarketQuantityArrowClick(operation);
-    this.props.updatePercentageState(OrderInputs.Quantity);
+    this.props.updatePercentageState(OrderInputs.Amount);
   };
 
   handleChange = () => (e: any) => {
     this.props.setMarketTotal(e.target.value, this.props.action);
     this.props.onQuantityChange(e.target.value);
-    this.props.updatePercentageState(OrderInputs.Quantity);
+    this.props.updatePercentageState(OrderInputs.Amount);
   };
 
   handlePercentageChange = (index?: number) => () => {
@@ -105,7 +105,7 @@ class OrderMarket extends React.Component<
       isEnoughLiquidity
     } = this.props;
     this.previousPropsAction = this.props.action;
-    const {action, quantity, quantityAccuracy} = this.props;
+    const {action, amountAccuracy, quantity} = this.props;
 
     return (
       <React.Fragment>
@@ -125,7 +125,7 @@ class OrderMarket extends React.Component<
           </Flex>
           <NumberInput
             value={quantity}
-            id={OrderInputs.Quantity}
+            id={OrderInputs.Amount}
             onChange={this.handleChange}
             onArrowClick={this.handleArrowClick}
           />
@@ -160,7 +160,7 @@ class OrderMarket extends React.Component<
             type={'submit'}
             message={`${capitalize(this.state.action)} ${formattedNumber(
               +quantity,
-              quantityAccuracy
+              amountAccuracy
             )} ${!this.isInverted ? baseAssetName : quoteAssetName}`}
           />
         </MarketConfirmButton>

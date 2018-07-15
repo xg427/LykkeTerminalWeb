@@ -117,7 +117,7 @@ export const ConfirmButton = styled.button.attrs({
   }
 `;
 
-export const Total = Flex.extend`
+export const OrderTotal = Flex.extend`
   justify-content: space-between;
   border-top: 1px solid rgb(45, 45, 45);
   border-bottom: 1px solid rgb(45, 45, 45);
@@ -197,7 +197,7 @@ export const InputControl = styled.div`
   margin: ${rem(10)} 0;
 `;
 
-export const StyledOrderButton = styled.div`
+export const OrderButton = styled.div`
   margin-top: ${rem(8)};
   margin-bottom: ${rem(8)};
 `;
@@ -324,3 +324,6 @@ ActionProperty.displayName = 'ActionProperty';
 MarketButton.displayName = 'MarketButton';
 MarketProperty.displayName = 'MarketProperty';
 ConfirmButton.displayName = 'ConfirmButton';
+OrderTotal.displayName = 'OrderTotal';
+OrderTitle.displayName = 'OrderTitle';
+OrderButton.displayName = 'OrderButton';
