@@ -20,18 +20,17 @@ export const getPercentOfValueForLimit = (
 
 export const isAmountExceedLimitBalance = (
   isSell: boolean,
-  quantityValue: string,
+  amountValue: string,
   priceValue: string,
-  baseAssetBalance: number,
-  quoteAssetBalance: number,
+  mainAssetBalance: number,
   priceAccuracy: number,
   amountAccuracy: number
 ) =>
   isSell
-    ? +quantityValue > baseAssetBalance
+    ? +amountValue > mainAssetBalance
     : parseFloat(priceValue) *
-        precisionFloor(parseFloat(quantityValue), amountAccuracy) >
-      quoteAssetBalance;
+        precisionFloor(parseFloat(amountValue), amountAccuracy) >
+      mainAssetBalance;
 
 export const setActivePercentage = (percentage: any[], index?: number) => {
   let percents: number = 0;

@@ -23,7 +23,8 @@ interface OrdersProps extends OrderActions {
 }
 
 interface OrdersState extends TableSortState {
-  isEditModal: boolean;
+  isLimitEditModal: boolean;
+  isStopLimitEditModal: boolean;
 }
 
 class Blotter extends React.Component<OrdersProps, OrdersState> {
@@ -35,7 +36,8 @@ class Blotter extends React.Component<OrdersProps, OrdersState> {
       data: this.props.orders,
       sortByParam: '',
       sortDirection: SortDirection.ASC,
-      isEditModal: false
+      isLimitEditModal: false,
+      isStopLimitEditModal: false
     };
   }
 
@@ -60,14 +62,21 @@ class Blotter extends React.Component<OrdersProps, OrdersState> {
 
   handleEditOrder = (order: OrderModel) => (id: string) => {
     this.currentEditingOrder = order;
-    this.setState({
-      isEditModal: true
-    });
+
+    if (order) {
+      this.setState({
+        isLimitEditModal: true
+      });
+    } else {
+      this.setState({
+        isStopLimitEditModal: true
+      });
+    }
   };
 
   handleCloseEditModal = () => {
     this.setState({
-      isEditModal: false
+      isLimitEditModal: false
     });
   };
 
@@ -78,6 +87,13 @@ class Blotter extends React.Component<OrdersProps, OrdersState> {
         key: 'symbol',
         value: 'Asset pair',
         width: OrderCellWidth.Symbol
+      },
+      {
+        sortDisabled: checkDataForSorting(this.state.data, 'side'),
+        className: 'left-align',
+        key: 'side',
+        value: 'Side',
+        width: OrderCellWidth.Side
       },
       {
         sortDisabled: checkDataForSorting(this.state.data, 'price'),
@@ -136,7 +152,13 @@ class Blotter extends React.Component<OrdersProps, OrdersState> {
           onEditOrder={this.handleEditOrder}
           onCancelOrder={this.props.cancelOrder}
         />
-        {this.state.isEditModal && (
+        {this.state.isLimitEditModal && (
+          <EditOrder
+            order={this.currentEditingOrder}
+            onClose={this.handleCloseEditModal}
+          />
+        )}
+        {this.state.isStopLimitEditModal && (
           <EditOrder
             order={this.currentEditingOrder}
             onClose={this.handleCloseEditModal}

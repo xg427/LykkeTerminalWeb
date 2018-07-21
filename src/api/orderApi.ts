@@ -2,30 +2,35 @@ import Side from '../models/side';
 import RestApi from './restApi';
 import {ApiResponse} from './types';
 
-export interface PlaceOrder {
-  AssetId: string;
-  AssetPairId: string;
-  OrderAction: Side;
-  Price?: number;
-  Volume: number;
-}
-
 export interface CancelAllOrders {
   AssetPairId?: string;
 }
 
 export interface OrderApi {
-  placeMarket: (body: PlaceOrder) => ApiResponse;
-  placeLimit: (body: PlaceOrder) => ApiResponse;
+  placeMarket: (body: OrderRequestBody) => ApiResponse;
+  placeLimit: (body: OrderRequestBody) => ApiResponse;
+  placeStopLimit: (body: OrderRequestBody) => ApiResponse;
   cancelOrder: (id: string) => ApiResponse;
   cancelAllOrders: (body: CancelAllOrders) => ApiResponse;
   fetchAll: () => ApiResponse;
 }
 
-export class RestOrderApi extends RestApi implements OrderApi {
-  placeMarket = (body: any) => this.fireAndForget('/Orders/market', body);
+export interface OrderRequestBody {
+  AssetId: string;
+  AssetPairId: string;
+  OrderAction: Side;
+  Volume: number;
+  Price?: number;
+}
 
-  placeLimit = (body: any) => this.post('/Orders/limit', body);
+export class RestOrderApi extends RestApi implements OrderApi {
+  placeMarket = (body: OrderRequestBody) =>
+    this.fireAndForget('/Orders/market', body);
+
+  placeLimit = (body: OrderRequestBody) => this.post('/Orders/limit', body);
+
+  placeStopLimit = (body: OrderRequestBody) =>
+    this.post('/Orders/stoplimit', body);
 
   cancelOrder = (id: string) =>
     this.fireAndForget(`/orders/limit/${id}/cancel`, {});

@@ -3,28 +3,38 @@ import * as React from 'react';
 import {Percent} from './styles';
 
 interface OrderPercentageProps {
-  percent: number;
-  isActive: boolean;
   onClick: any;
   isDisabled: boolean;
+  percents: any[];
 }
 
 const OrderPercentage: React.SFC<OrderPercentageProps> = ({
-  percent,
-  isActive,
+  percents,
   onClick,
   isDisabled
 }) => {
+  const handleClick = (index: number) => () => onClick(index);
+
   const className = classNames({
     active: isActive,
     disabled: isDisabled
   });
 
   return (
-    <Percent className={className} onClick={onClick}>
-      <div>{percent}%</div>
-    </Percent>
+    <React.Fragment>
+      {percents!.map((item: any, index: number) => (
+        <Percent
+          key={index}
+          disabled={isDisabled}
+          className={className}
+          onClick={handleClick(index)}
+        >
+          <div>{item.percent}%</div>
+        </Percent>
+      ))}
+    </React.Fragment>
   );
 };
 
+OrderPercentage.displayName = 'OrderPercentage';
 export default OrderPercentage;

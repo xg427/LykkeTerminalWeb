@@ -24,6 +24,7 @@ import {
   BaseStore,
   ChartStore,
   DepthChartStore,
+  EditOrderStore,
   MarketStore,
   ModalStore,
   NotificationStore,
@@ -64,6 +65,7 @@ class RootStore {
   readonly sessionStore: SessionStore;
   readonly priceStore: PriceStore;
   readonly marketStore: MarketStore;
+  readonly editOrderStore: EditOrderStore;
   readonly socketStore: SocketStore;
 
   private readonly stores = new Set<BaseStore>();
@@ -98,6 +100,7 @@ class RootStore {
       this.sessionStore = new SessionStore(this, new SessionApi(this));
       this.priceStore = new PriceStore(this, new PriceApi());
       this.marketStore = new MarketStore(this);
+      this.editOrderStore = new EditOrderStore(this);
       this.socketStore = new SocketStore(this);
     }
   }

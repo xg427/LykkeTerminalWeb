@@ -1,4 +1,4 @@
-import OrderApi, {PlaceOrder} from '../api/orderApi';
+import OrderApi, {OrderRequestBody} from '../api/orderApi';
 import * as topics from '../api/topics';
 import ModalMessages from '../constants/modalMessages';
 import messages from '../constants/notificationMessages';
@@ -35,7 +35,7 @@ class OrderStore extends BaseStore {
     this.modalStore = this.rootStore.modalStore;
   }
 
-  placeOrder = async (orderType: string, body: PlaceOrder) => {
+  placeOrder = async (orderType: string, body: OrderRequestBody) => {
     switch (orderType) {
       case OrderType.Market:
         return this.api
@@ -43,25 +43,34 @@ class OrderStore extends BaseStore {
           .then(this.orderPlacedSuccessfully, this.orderPlacedUnsuccessfully)
           .then(() => Promise.resolve());
       case OrderType.Limit:
-        return (
-          this.api
-            .placeLimit(body)
-            // tslint:disable-next-line:no-empty
-            .then((orderId: any) => {
-              const addedOrder = this.rootStore.orderListStore.addOrder({
-                Id: orderId,
-                CreateDateTime: new Date(),
-                OrderAction: body.OrderAction,
-                Volume: body.Volume,
-                RemainingVolume: body.Volume,
-                Price: body.Price,
-                AssetPairId: body.AssetPairId
-              });
-              if (addedOrder) {
-                this.orderPlacedSuccessfully();
-              }
-            }, this.orderPlacedUnsuccessfully)
-        );
+        return this.api
+          .placeLimit(body)
+          .then(
+            (orderId: any) => this.optimisticOrderAdding(orderId, body),
+            this.orderPlacedUnsuccessfully
+          );
+      case OrderType.StopLimit:
+        return this.api
+          .placeStopLimit(body)
+          .then(
+            (orderId: string) => this.optimisticOrderAdding(orderId, body),
+            this.orderPlacedUnsuccessfully
+          );
+    }
+  };
+
+  optimisticOrderAdding = (orderId: string, body: OrderRequestBody) => {
+    const addedOrder = this.rootStore.orderListStore.addOrder({
+      Id: orderId,
+      CreateDateTime: new Date(),
+      OrderAction: body.OrderAction,
+      Volume: body.Volume,
+      RemainingVolume: body.Volume,
+      Price: body.Price,
+      AssetPairId: body.AssetPairId
+    });
+    if (addedOrder) {
+      this.orderPlacedSuccessfully();
     }
   };
 

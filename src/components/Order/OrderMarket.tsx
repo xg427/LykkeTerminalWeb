@@ -1,15 +1,13 @@
-import {Form, FormikProps, withFormik} from 'formik';
 import * as React from 'react';
-import {AnalyticsEvents} from '../../constants/analyticsEvents';
-import indicativeTotalHint from '../../constants/indicativeTotalHint';
-import {OrderInputs, Side} from '../../models';
-import {AnalyticsService} from '../../services/analyticsService';
-import {capitalize} from '../../utils';
-import {formattedNumber} from '../../utils/localFormatted/localFormatted';
+import {ArrowDirection, OrderInputs} from '../../models';
+import formattedNumber from '../../utils/localFormatted/localFormatted';
 import NumberInput from '../NumberInput/NumberInput';
-import {OrderBasicFormProps} from './index';
-import OrderConfirmButton from './OrderConfirmButton';
+import {CommonOrderProps} from './index';
 import OrderPercentage from './OrderPercentage';
+import {Action, Available, InputControl, OrderButton} from './styles';
+
+import {curry} from 'rambda';
+import OrderConfirmButton from './OrderConfirmButton';
 import {
   Action,
   Available,
@@ -25,166 +23,113 @@ import {
 // tslint:disable-next-line:no-var-requires
 const {Flex} = require('grid-styled');
 
-interface OrderMarketState {
-  action: string;
-}
-
-export interface OrderMarketProps extends OrderBasicFormProps {
-  amount: string;
+interface MarketOrderProps extends CommonOrderProps {
+  handlePercentageChange: (
+    balance: number,
+    quoteAssetId: string,
+    baseAssetId: string,
+    percents: number
+  ) => void;
+  marketAmount: number;
   setMarketTotal: (volume?: any, action?: string, debounce?: boolean) => void;
-  onResetPercentage: any;
-  isEnoughLiquidity: boolean;
-  onMarketQuantityArrowClick: (operation: string) => void;
 }
 
-class OrderMarket extends React.Component<
-  OrderMarketProps & FormikProps<{}>,
-  OrderMarketState
-> {
-  private isInverted: boolean = false;
-  private previousPropsAction: string;
+const OrderMarket: React.SFC<MarketOrderProps> = ({
+  onAmountArrowClick,
+  onAmountChange,
+  amount,
+  balance,
+  handlePercentageChange,
+  updatePercentState,
+  quoteAssetId,
+  baseAssetId,
+  baseAssetName,
+  balanceAccuracy,
+  availableAssetName,
+  percents,
+  resetPercents,
+  handleButtonClick,
+  getConfirmButtonMessage,
+  isOrderInvalid,
+  isButtonDisable
+}) => {
+  const handleArrowClick = (operation: ArrowDirection) => () => {
+    onAmountArrowClick(operation);
+    resetPercents();
+  };
 
-  constructor(props: OrderMarketProps & FormikProps<{}>) {
-    super(props);
+  const handleChange = () => (e: any) => {
+    onAmountChange(e.target.value);
+    resetPercents();
+  };
 
-    this.state = {
-      action: this.props.action
-    };
-  }
-
-  componentWillReceiveProps(nextProps: any) {
-    if (this.previousPropsAction !== nextProps.action) {
-      this.setState({
-        action: nextProps.action
-      });
-      this.isInverted = false;
-      this.updateInvertedValues(nextProps.action);
+  const handlePercentsClick = (index?: number) => {
+    if (!balance) {
+      return;
     }
-  }
 
-  updateInvertedValues = (action: any) => {
-    this.props.setValues({
-      invertedAction: action,
-      isInverted: this.isInverted
-    });
-  };
-
-  reset = () => {
-    this.setState({
-      action: this.props.action
-    });
-    this.isInverted = false;
-    this.updateInvertedValues(null);
-    this.props.onReset();
-    AnalyticsService.track(AnalyticsEvents.ClickOnReset);
-  };
-
-  handleArrowClick = (operation: string) => () => {
-    this.props.onMarketQuantityArrowClick(operation);
-    this.props.updatePercentageState(OrderInputs.Amount);
-  };
-
-  handleChange = () => (e: any) => {
-    this.props.setMarketTotal(e.target.value, this.props.action);
-    this.props.onQuantityChange(e.target.value);
-    this.props.updatePercentageState(OrderInputs.Amount);
-  };
-
-  handlePercentageChange = (index?: number) => () => {
-    AnalyticsService.track(AnalyticsEvents.ClickOnAvailable('Market'));
-    this.props.onHandlePercentageChange(index)(this.isInverted);
-  };
-
-  render() {
-    const {
-      amount,
-      baseAssetName,
-      quoteAssetName,
-      balanceAccuracy,
-      isDisable,
-      isEnoughLiquidity
-    } = this.props;
-    this.previousPropsAction = this.props.action;
-    const {action, amountAccuracy, quantity} = this.props;
-
-    return (
-      <React.Fragment>
-        <InputControl style={{width: '100%'}}>
-          <Flex justify="space-between" style={{marginBottom: '8px'}}>
-            <Action>
-              {'Amount '}
-              {!this.isInverted ? `(${baseAssetName})` : `(${quoteAssetName})`}
-            </Action>
-            <Available
-              disabled={!this.props.balance}
-              onClick={this.handlePercentageChange()}
-            >
-              {formattedNumber(this.props.balance || 0, balanceAccuracy)}{' '}
-              {this.props.isSell ? baseAssetName : quoteAssetName} available
-            </Available>
-          </Flex>
-          <NumberInput
-            value={quantity}
-            id={OrderInputs.Amount}
-            onChange={this.handleChange}
-            onArrowClick={this.handleArrowClick}
-          />
-        </InputControl>
-        <Flex justify={'space-between'} style={{width: '100%'}}>
-          {this.props.percents!.map((item: any, index: number) => (
-            <OrderPercentage
-              percent={item.percent}
-              key={index}
-              onClick={this.handlePercentageChange(index)}
-              isActive={item.isActive}
-              isDisabled={!this.props.balance}
-            />
-          ))}
-        </Flex>
-        <Total>
-          <OrderTitle className={'estimated-total'}>Estimated total</OrderTitle>
-          <MarketAmount available={isEnoughLiquidity}>
-            {isEnoughLiquidity ? `${amount} ${quoteAssetName}` : '--'}
-            <TotalHint>
-              {isEnoughLiquidity
-                ? action === Side.Sell
-                  ? indicativeTotalHint.sell
-                  : indicativeTotalHint.buy
-                : indicativeTotalHint.na}
-            </TotalHint>
-          </MarketAmount>
-        </Total>
-        <MarketConfirmButton>
-          <OrderConfirmButton
-            isDisable={this.props.isDisable || !isEnoughLiquidity}
-            type={'submit'}
-            message={`${capitalize(this.state.action)} ${formattedNumber(
-              +quantity,
-              amountAccuracy
-            )} ${!this.isInverted ? baseAssetName : quoteAssetName}`}
-          />
-        </MarketConfirmButton>
-        <Reset justify={'center'}>
-          <span onClick={this.reset}>Reset and clear</span>
-        </Reset>
-      </React.Fragment>
+    const curriedAmountUpdating = curry(handlePercentageChange)(
+      balance,
+      quoteAssetId,
+      baseAssetId
     );
-  }
-}
+    updatePercentState(curriedAmountUpdating, index);
+  };
 
-const OrderMarketForm: React.SFC<OrderMarketProps & FormikProps<{}>> = (
-  props: OrderMarketProps & FormikProps<{}>
-) => {
+  const isOrderValuesInvalid = () => {
+    return isButtonDisable || isOrderInvalid();
+  };
+
   return (
-    <Form>
-      <OrderMarket {...props} />
-    </Form>
+    <React.Fragment>
+      <InputControl style={{width: '100%'}}>
+        <Flex justify="space-between" style={{marginBottom: '8px'}}>
+          <Action>{`Amount (${baseAssetName})`}</Action>
+          {/* tslint:disable-next-line:jsx-no-lambda */}
+          <Available onClick={() => handlePercentsClick()}>
+            {formattedNumber(balance || 0, balanceAccuracy)}{' '}
+            {availableAssetName} available
+          </Available>
+        </Flex>
+        <NumberInput
+          value={amount}
+          id={OrderInputs.Amount}
+          onChange={handleChange}
+          onArrowClick={handleArrowClick}
+        />
+      </InputControl>
+      <Flex justify={'space-between'} style={{width: '100%'}}>
+        <OrderPercentage
+          percents={percents}
+          onClick={handlePercentsClick}
+          isDisabled={!balance}
+        />
+      </Flex>
+
+      <Total>
+        <OrderTitle className={'estimated-total'}>Estimated total</OrderTitle>
+        <MarketAmount available={isEnoughLiquidity}>
+          {isEnoughLiquidity ? `${amount} ${quoteAssetName}` : '--'}
+          <TotalHint>
+            {isEnoughLiquidity
+              ? action === Side.Sell
+                ? indicativeTotalHint.sell
+                : indicativeTotalHint.buy
+              : indicativeTotalHint.na}
+          </TotalHint>
+        </MarketAmount>
+      </Total>
+
+      <OrderButton>
+        <OrderConfirmButton
+          isDisable={isOrderValuesInvalid() || !isEnoughLiquidity}
+          type={'button'}
+          message={getConfirmButtonMessage()}
+          onClick={handleButtonClick}
+        />
+      </OrderButton>
+    </React.Fragment>
   );
 };
 
-export default withFormik<OrderMarketProps, {}>({
-  handleSubmit: (values: any, {props}) => {
-    const {action, baseAssetName, quoteAssetName} = props;
-    props.onSubmit(action, baseAssetName, quoteAssetName);
-  }
-})(OrderMarketForm);
+export default OrderMarket;

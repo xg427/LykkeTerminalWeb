@@ -11,8 +11,7 @@ describe('order utils', () => {
   let quantityValue = '0.0';
   let priceValue = '0.0';
   let isSell = true;
-  const baseAssetBalance = 2;
-  const quoteAssetBalance = 2;
+  const mainAssetBalance = 2;
   const priceAccuracy = 0;
   const amountAccuracy = 0;
 
@@ -22,8 +21,7 @@ describe('order utils', () => {
       isSell,
       quantityValue,
       priceValue,
-      baseAssetBalance,
-      quoteAssetBalance,
+      mainAssetBalance,
       priceAccuracy,
       amountAccuracy
     );
@@ -38,8 +36,7 @@ describe('order utils', () => {
       isSell,
       quantityValue,
       priceValue,
-      baseAssetBalance,
-      quoteAssetBalance,
+      mainAssetBalance,
       priceAccuracy,
       amountAccuracy
     );
@@ -52,8 +49,7 @@ describe('order utils', () => {
       isSell,
       quantityValue,
       priceValue,
-      baseAssetBalance,
-      quoteAssetBalance,
+      mainAssetBalance,
       priceAccuracy,
       amountAccuracy
     );
@@ -68,8 +64,7 @@ describe('order utils', () => {
       isSell,
       quantityValue,
       priceValue,
-      baseAssetBalance,
-      quoteAssetBalance,
+      mainAssetBalance,
       priceAccuracy,
       amountAccuracy
     );
@@ -118,7 +113,6 @@ describe('order utils', () => {
         isSell,
         quantityValue,
         priceValue,
-        baseAssetBalance,
         2050.352,
         3,
         8
@@ -137,7 +131,6 @@ describe('order utils', () => {
         isSell,
         quantityValue,
         priceValue,
-        baseAssetBalance,
         amountTaken,
         3,
         8

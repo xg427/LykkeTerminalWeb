@@ -5,17 +5,21 @@ interface OrderButtonProps {
   isDisable: boolean;
   type: string;
   message?: string;
+  onClick: () => void;
 }
 
 const OrderConfirmButton: React.SFC<OrderButtonProps> = ({
   isDisable,
   type,
-  message
-}) => (
-  <ConfirmButton type={type} disabled={isDisable}>
-    {message}
-  </ConfirmButton>
-);
+  message,
+  onClick
+}) => {
+  return (
+    <ConfirmButton type={type} disabled={isDisable} onClick={onClick}>
+      {message}
+    </ConfirmButton>
+  );
+};
 
 export default OrderConfirmButton;
 export {ConfirmButton};

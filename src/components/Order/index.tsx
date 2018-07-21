@@ -7,192 +7,169 @@ import OrderLimit from './OrderLimit';
 import OrderMarket from './OrderMarket';
 import StopLimitOrder from './StopLimitOrder';
 
-export interface OrderBasicFormProps {
-  action: string;
-  baseAssetName: string;
-  quoteAssetName: string;
-  balance: number;
-  isDisable: boolean;
-  isSell: boolean;
-  onHandlePercentageChange: any;
-  onReset?: any;
-  onSubmit: any;
-  percents: any[];
-  quantity: string;
-  amountAccuracy: number;
-  priceAccuracy: number;
-  baseAssetAccuracy?: any;
-  balanceAccuracy: number;
-  onQuantityChange: (value: string) => void;
-  updatePercentageState: (field: string) => void;
-}
+import * as React from 'react';
+import {default as CommonOrder} from './CommonOrder';
+
+import {ArrowDirection} from '../../models';
+
+import {IPercentage} from '../../constants/ordersPercentage';
 
 const ConnectedOrder = connect(
   ({
-    balanceListStore: {baseAssetBalance, quoteAssetBalance},
-    orderBookStore: {bestAskPrice, bestBidPrice},
     orderStore: {placeOrder},
-    uiStore: {
-      selectedInstrument: instrument,
-      readOnlyMode,
-      isDisclaimerShown,
-      disclaimedAssets
-    },
-    referenceStore: {getBaseAsset, getInstrumentById},
+    uiStore: {readOnlyMode, isDisclaimerShown, disclaimedAssets},
+    referenceStore,
     uiOrderStore: {
-      handlePercentageChange,
-      isLimitInvalid,
-      isMarketInvalid,
       getPriceAccuracy,
       getAmountAccuracy,
-      priceValue,
-      amountValue,
-      currentMarket,
+      market,
       isCurrentSideSell,
       setMarket,
       setSide,
       resetOrder,
-      marketTotalPrice,
-      isEnoughLiquidity,
-      setMarketTotal,
-      resetMarketTotal,
-      handleMarketQuantityArrowClick
+      getConfirmationMessage,
+      getOrderRequestBody,
+      getConfirmButtonMessage,
+      getSpecificOrderValidationChecking
     },
     authStore: {isAuth, isKycPassed},
     marketStore: {convert}
   }) => ({
-    accuracy: {
-      priceAccuracy: getPriceAccuracy(),
-      amountAccuracy: getAmountAccuracy(),
-      baseAssetAccuracy: pathOr(2, ['baseAsset', 'accuracy'], instrument),
-      quoteAssetAccuracy: pathOr(2, ['quoteAsset', 'accuracy'], instrument)
-    },
-    ask: bestAskPrice,
-    baseAssetId: pathOr('', ['baseAsset', 'id'], instrument),
-    get baseAssetName() {
-      return pathOr('', ['baseAsset', 'name'], instrument);
-    },
-    get quoteAssetName() {
-      return pathOr('', ['quoteAsset', 'name'], instrument);
-    },
-    bid: bestBidPrice,
-    currency: pathOr('', ['id'], instrument),
-    isLimitInvalid,
-    isMarketInvalid,
-    handlePercentageChange,
-    handleMarketQuantityArrowClick,
     placeOrder,
-    quoteAssetId: pathOr('', ['quoteAsset', 'id'], instrument),
-    baseAssetBalance,
-    quoteAssetBalance,
     isAuth,
     isKycPassed,
     readOnlyMode,
-    instrument,
-    priceValue,
-    quantityValue: amountValue,
     resetOrder,
-    currentMarket,
+    currentMarket: market,
     isCurrentSideSell,
     setMarket,
     setSide,
     isDisclaimerShown,
     disclaimedAssets,
-    setMarketTotal,
-    marketTotalPrice,
-    isEnoughLiquidity,
-    resetMarketTotal,
-    convert,
-    baseAsset: getBaseAsset,
-    getInstrumentById
+    getConfirmationMessage,
+    getOrderRequestBody
   }),
   withAuth(withKyc(Order))
 );
 
-const ConnectedLimitOrder = connect(
+const withOrderConnectedProps = (Component: any) => (props: any) => {
+  return (
+    <ConnectedCommonPropsOrder>
+      <Component {...props} />
+    </ConnectedCommonPropsOrder>
+  );
+};
+
+export interface CommonOrderProps {
+  onAmountArrowClick: (operation: ArrowDirection) => void;
+  onAmountChange: (value: string) => void;
+  balance: number;
+  balanceAccuracy: number;
+  isCurrentSideSell: boolean;
+  baseAssetId: string;
+  quoteAssetId: string;
+  amount: string;
+  availableAssetName: string;
+  baseAssetName: string;
+  quoteAssetName: string;
+  quoteAssetAccuracy: number;
+  updatePercentState: any;
+  percents: IPercentage[];
+  resetPercents: () => void;
+  handleButtonClick: () => void;
+  getConfirmButtonMessage: () => string;
+  isButtonDisable: boolean;
+  isOrderInvalid: () => boolean;
+}
+
+const ConnectedCommonPropsOrder = connect(
   ({
     balanceListStore: {baseAssetBalance, quoteAssetBalance},
     uiOrderStore: {
-      handlePriceArrowClick,
       handleAmountArrowClick,
-      handlePriceChange,
       handleAmountChange,
-      isCurrentSideSell
+      isCurrentSideSell,
+      amountValue,
+      resetOrder,
+      getConfirmButtonMessage,
+      getSpecificOrderValidationChecking
     },
     uiStore: {selectedInstrument: instrument}
   }) => ({
-    onPriceArrowClick: handlePriceArrowClick,
-    onQuantityArrowClick: handleAmountArrowClick,
-    onPriceChange: handlePriceChange,
-    onQuantityChange: handleAmountChange,
+    onAmountArrowClick: handleAmountArrowClick,
+    onAmountChange: handleAmountChange,
     balance: isCurrentSideSell ? baseAssetBalance : quoteAssetBalance,
     balanceAccuracy: isCurrentSideSell
       ? pathOr(2, ['baseAsset', 'accuracy'], instrument)
-      : pathOr(2, ['quoteAsset', 'accuracy'], instrument)
+      : pathOr(2, ['quoteAsset', 'accuracy'], instrument),
+    baseAssetId: pathOr('', ['baseAsset', 'id'], instrument),
+    quoteAssetId: pathOr('', ['quoteAsset', 'id'], instrument),
+    amount: amountValue,
+    availableAssetName: isCurrentSideSell
+      ? pathOr('', ['baseAsset', 'name'], instrument)
+      : pathOr('', ['quoteAsset', 'name'], instrument),
+    baseAssetName: pathOr('', ['baseAsset', 'name'], instrument),
+    quoteAssetName: pathOr('', ['quoteAsset', 'name'], instrument),
+    amountAccuracy: pathOr(2, ['baseAsset', 'accuracy'], instrument),
+    quoteAssetAccuracy: pathOr(2, ['quoteAsset', 'accuracy'], instrument),
+    getConfirmButtonMessage,
+    isOrderInvalid: getSpecificOrderValidationChecking(
+      isCurrentSideSell ? baseAssetBalance : quoteAssetBalance
+    )
   }),
-  OrderLimit
+  CommonOrder
+);
+
+const ConnectedLimitOrder = connect(
+  ({
+    uiOrderStore: {
+      handlePriceArrowClick,
+      handlePriceChange,
+      priceValue,
+      handleLimitPercentageChange,
+      limitAmount
+    }
+  }) => ({
+    onPriceArrowClick: handlePriceArrowClick,
+    onPriceChange: handlePriceChange,
+    price: priceValue,
+    handlePercentageChange: handleLimitPercentageChange,
+    limitAmount
+  }),
+  withOrderConnectedProps(OrderLimit)
 );
 
 const ConnectedMarketOrder = connect(
-  ({
-    balanceListStore: {baseAssetBalance, quoteAssetBalance},
-    uiOrderStore: {
-      handleAmountArrowClick,
-      handleAmountChange,
-      isCurrentSideSell
-    },
-    uiStore: {selectedInstrument: instrument}
-  }) => ({
-    onQuantityArrowClick: handleAmountArrowClick,
-    onQuantityChange: handleAmountChange,
-    balance: isCurrentSideSell ? baseAssetBalance : quoteAssetBalance,
-    balanceAccuracy: isCurrentSideSell
-      ? pathOr(2, ['baseAsset', 'accuracy'], instrument)
-      : pathOr(2, ['quoteAsset', 'accuracy'], instrument)
+  ({uiOrderStore: {handleMarketPercentageChange, marketAmount}}) => ({
+    handlePercentageChange: handleMarketPercentageChange,
+    marketAmount
   }),
-  OrderMarket
+  withOrderConnectedProps(OrderMarket)
 );
 
 const ConnectedStopLimitOrder = connect(
   ({
-    balanceListStore: {baseAssetBalance, quoteAssetBalance},
-    uiStore: {selectedInstrument: instrument},
     uiOrderStore: {
       handlePriceArrowClick,
-      handleAmountArrowClick,
       handlePriceChange,
-      handleAmountChange,
       handleStopPriceChange,
       handleStopPriceArrowClick,
       stopPriceValue,
-      amountValue,
       priceValue,
-      isCurrentSideSell
+      handleStopLimitPercentageChange,
+      stopLimitAmount
     }
   }) => ({
     onPriceArrowClick: handlePriceArrowClick,
-    onAmountArrowClick: handleAmountArrowClick,
     onPriceChange: handlePriceChange,
-    onAmountChange: handleAmountChange,
     onStopPriceChange: handleStopPriceChange,
     onStopPriceArrowClick: handleStopPriceArrowClick,
-    stopPriceValue,
-    amountValue,
-    priceValue,
-    amountAssetName: pathOr(
-      '',
-      [`${isCurrentSideSell ? 'baseAsset' : 'quoteAsset'}`, 'id'],
-      instrument
-    ),
-    priceAssetName: pathOr('', ['quoteAsset', 'id'], instrument),
-    stopPriceAssetName: pathOr('', ['quoteAsset', 'id'], instrument),
-    isCurrentSideSell,
-    balance: isCurrentSideSell ? baseAssetBalance : quoteAssetBalance,
-    balanceAccuracy: isCurrentSideSell
-      ? pathOr(2, ['baseAsset', 'accuracy'], instrument)
-      : pathOr(2, ['quoteAsset', 'accuracy'], instrument)
+    stopPrice: stopPriceValue,
+    price: priceValue,
+    handlePercentageChange: handleStopLimitPercentageChange,
+    stopLimitAmount
   }),
-  StopLimitOrder
+  withOrderConnectedProps(StopLimitOrder)
 );
 
 export {ConnectedStopLimitOrder as StopLimitOrder};

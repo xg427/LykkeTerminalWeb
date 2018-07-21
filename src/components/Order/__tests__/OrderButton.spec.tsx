@@ -11,8 +11,15 @@ describe('<OrderConfirmButton>', () => {
   let confirmButton: any;
 
   const getTestOrderButton = () => {
+    // tslint:disable:jsx-no-lambda
+    // tslint:disable:no-empty
     return (
-      <OrderConfirmButton message={message} type={type} isDisable={isDisable} />
+      <OrderConfirmButton
+        message={message}
+        type={type}
+        isDisable={isDisable}
+        onClick={() => {}}
+      />
     );
   };
 

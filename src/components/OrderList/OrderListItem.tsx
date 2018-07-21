@@ -5,9 +5,10 @@ import {AnalyticsService} from '../../services/analyticsService';
 import {formattedNumber} from '../../utils/localFormatted/localFormatted';
 import {precisionCeil, precisionFloor} from '../../utils/math';
 import {Icon} from '../Icon/index';
-import {Cell, ColoredText} from '../Table/styles';
+import {Cell} from '../Table/styles';
 import TitledCell from '../Table/TitledCell';
 import {OrderActions, OrderCellWidth} from './index';
+import {SideCell} from './styles';
 
 interface OrderListItemProps {
   onEdit: any;
@@ -16,6 +17,12 @@ interface OrderListItemProps {
   changeInstrumentById: (id: string) => void;
   isSelected: boolean;
 }
+
+const getSide = (side: Side, price: number, accuracy: number) => {
+  return side === Side.Sell
+    ? `Stop @ ${formattedNumber(price, accuracy)}`
+    : side;
+};
 
 const OrderListItem: React.SFC<OrderActions & OrderListItemProps> = ({
   order: {createdAt, price, id, side, volume, filled, filledPercent, value},
@@ -54,10 +61,11 @@ const OrderListItem: React.SFC<OrderActions & OrderListItemProps> = ({
       >
         {displayName}
       </Cell>
+      <SideCell w={OrderCellWidth.Side} side={side}>
+        {getSide(side, price, accuracy)}
+      </SideCell>
       <TitledCell title={formattedNumber(price, accuracy)}>
-        <ColoredText side={side}>
-          {formattedNumber(price, accuracy)}
-        </ColoredText>
+        {formattedNumber(price, accuracy)}
       </TitledCell>
       <TitledCell>
         {formattedNumber(volume, baseAssetAccuracy)} {baseAssetName}

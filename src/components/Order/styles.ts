@@ -317,6 +317,12 @@ export const Percent = styled.div`
   }
 `;
 
+export const AdvancedShowButton = styled.div.attrs({
+  style: (props: any) => ({
+    display: props.isActive ? 'block' : 'none'
+  })
+})`` as any;
+
 DisclaimerNotification.displayName = 'DisclaimerNotification';
 Link.displayName = 'Link';
 ActionButton.displayName = 'ActionChoiceButton';

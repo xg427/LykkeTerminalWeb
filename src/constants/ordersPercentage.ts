@@ -1,4 +1,9 @@
-export const Percentage = [
+export interface IPercentage {
+  isActive: boolean;
+  percent: number;
+}
+
+export const Percentage: IPercentage[] = [
   {
     isActive: false,
     percent: 25

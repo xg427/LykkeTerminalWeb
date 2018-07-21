@@ -18,4 +18,5 @@ export {default as UiOrderStore} from './uiOrderStore';
 export {default as SessionStore} from './sessionStore';
 export {default as PriceStore} from './priceStore';
 export {default as MarketStore} from './marketStore';
+export {default as EditOrderStore} from './editOrderStore';
 export {default as SocketStore} from './socketStore';

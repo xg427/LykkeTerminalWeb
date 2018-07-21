@@ -1,4 +1,8 @@
 import {computed, observable} from 'mobx';
+import {curry, pathOr} from 'rambda';
+import {OrderType} from '../models';
+import ArrowDirection from '../models/arrowDirection';
+import Side from '../models/side';
 import {curry} from 'rambda';
 import {ArrowDirection, OrderType, Side} from '../models';
 import {
@@ -10,12 +14,16 @@ import {
   onArrowClick,
   onValueChange
 } from '../utils/inputNumber';
+import formattedNumber from '../utils/localFormatted/localFormatted';
+import {getPercentsOf, precisionFloor} from '../utils/math';
 import {bigToFixed, getPercentsOf, precisionFloor} from '../utils/math';
 import {
   getPercentOfValueForLimit,
   isAmountExceedLimitBalance
 } from '../utils/order';
 import {BaseStore, RootStore} from './index';
+
+import {OrderRequestBody} from '../api/orderApi';
 
 const MARKET_TOTAL_DEBOUNCE = 1000;
 
@@ -28,13 +36,30 @@ export interface PercentageChangeConfig {
 
 class UiOrderStore extends BaseStore {
   @computed
-  get currentMarket() {
-    return this.market;
+  get isCurrentSideSell() {
+    return this.side === Side.Sell;
   }
 
   @computed
-  get isCurrentSideSell() {
-    return this.side === Side.Sell;
+  get marketAmount() {
+    const price =
+      (this.side === Side.Sell
+        ? this.rootStore.orderBookStore.bestBidPrice
+        : this.rootStore.orderBookStore.bestAskPrice) || 0;
+
+    return price * +this.amountValue;
+  }
+
+  @computed
+  get limitAmount() {
+    return +this.priceValue * +this.amountValue;
+  }
+
+  @computed
+  get stopLimitAmount() {
+    return this.side === Side.Sell
+      ? +this.priceValue * +this.amountValue
+      : +this.amountValue / +this.priceValue;
   }
 
   @computed
@@ -71,10 +96,10 @@ class UiOrderStore extends BaseStore {
   @observable stopPriceValue: string = DEFAULT_INPUT_VALUE;
   @observable priceValue: string = DEFAULT_INPUT_VALUE;
   @observable amountValue: string = DEFAULT_INPUT_VALUE;
-  @observable private market: OrderType = OrderType.Limit;
-  @observable private side: Side = Side.Sell;
-  private priceAccuracy: number = 2;
-  private amountAccuracy: number = 2;
+  @observable market: OrderType = OrderType.Limit;
+  @observable side: Side = Side.Sell;
+  priceAccuracy: number = 2;
+  amountAccuracy: number = 2;
 
   constructor(store: RootStore) {
     super(store);
@@ -158,24 +183,32 @@ class UiOrderStore extends BaseStore {
     this.setMarketTotal(volume, side);
   };
 
-  handlePercentageChange = (config: PercentageChangeConfig) => {
-    const {balance, baseAssetId, quoteAssetId, percents} = config;
+  handleLimitPercentageChange = (balance: number, percents: number) => {
+    this.setAmountValueWithFixed(
+      this.onPercentChangeForLimit(percents, balance, this.side)
+    );
+  };
 
-    if (this.market === OrderType.Limit) {
-      this.setAmountValueWithFixed(
-        this.onPercentChangeForLimit(percents, balance, this.side)
-      );
-    } else {
-      this.setAmountValueWithFixed(
-        this.onPercentChangeForMarket(
-          percents,
-          balance,
-          quoteAssetId,
-          baseAssetId
-        )
-      );
-      this.setMarketTotal(this.quantityValue, this.side);
-    }
+  handleStopLimitPercentageChange = (balance: number, percents: number) => {
+    this.setAmountValueWithFixed(
+      this.onPercentChangeForLimit(percents, balance, this.side)
+    );
+  };
+
+  handleMarketPercentageChange = (
+    balance: number,
+    quoteAssetId: string,
+    baseAssetId: string,
+    percents: number
+  ) => {
+    this.setAmountValueWithFixed(
+      this.onPercentChangeForMarket(
+        percents,
+        balance,
+        quoteAssetId,
+        baseAssetId
+      )
+    );
   };
 
   handleMarketQuantityArrowClick = (operation: ArrowDirection) => {
@@ -199,55 +232,227 @@ class UiOrderStore extends BaseStore {
     return getPercentsOf(percents, convertedBalance, this.getAmountAccuracy());
   };
 
-  isLimitInvalid = (baseAssetBalance: number, quoteAssetBalance: number) => {
+  getSpecificOrderValidationChecking = (mainAssetBalance: number) => {
+    switch (this.market) {
+      case OrderType.Market:
+        return () => this.isMarketInvalid(mainAssetBalance);
+      case OrderType.StopLimit:
+        return () => this.isStopLimitInvalid(mainAssetBalance);
+      case OrderType.Limit:
+        return () => this.isLimitInvalid(mainAssetBalance);
+    }
+  };
+
+  isFlooredLimitAmountValid = () => {
+    const accuracy = pathOr(
+      2,
+      ['quoteAsset', 'accuracy'],
+      this.rootStore.uiStore.selectedInstrument
+    );
+    return precisionFloor(this.limitAmount, accuracy) > 0;
+  };
+
+  isLimitInvalid = (mainAssetBalance: number) => {
     return (
+      !this.isFlooredLimitAmountValid() ||
       !+this.priceValue ||
       !+this.amountValue ||
       isAmountExceedLimitBalance(
         this.isCurrentSideSell,
         this.amountValue,
         this.priceValue,
-        baseAssetBalance,
-        quoteAssetBalance,
+        mainAssetBalance,
         this.priceAccuracy,
         this.amountAccuracy
       )
     );
   };
 
-  isMarketInvalid = (
-    baseAssetId: string,
-    quoteAssetId: string,
-    baseAssetBalance: number,
-    quoteAssetBalance: number
-  ) => {
+  isFlooredMarketAmountValid = () => {
+    const accuracy = pathOr(
+      2,
+      ['quoteAsset', 'accuracy'],
+      this.rootStore.uiStore.selectedInstrument
+    );
+    return precisionFloor(this.marketAmount, accuracy) > 0;
+  };
+
+  isMarketInvalid = (mainAssetBalance: number) => {
+    const baseAssetId = pathOr(
+      '',
+      ['baseAsset', 'id'],
+      this.rootStore.uiStore.selectedInstrument
+    );
+    const quoteAssetId = pathOr(
+      '',
+      ['quoteAsset', 'id'],
+      this.rootStore.uiStore.selectedInstrument
+    );
     return (
+      !this.isFlooredMarketAmountValid() ||
       !+this.amountValue ||
       this.isAmountExceedMarketBalance(
-        baseAssetBalance,
-        quoteAssetBalance,
+        mainAssetBalance,
         baseAssetId,
         quoteAssetId
       )
     );
   };
 
+  isFlooredStopLimitAmountValid = () => {
+    const accuracy = pathOr(
+      2,
+      ['quoteAsset', 'accuracy'],
+      this.rootStore.uiStore.selectedInstrument
+    );
+    return precisionFloor(this.stopLimitAmount, accuracy) > 0;
+  };
+
+  isStopPriceValid = () => {
+    const {bestAskPrice, bestBidPrice} = this.rootStore.orderBookStore;
+    return this.isCurrentSideSell
+      ? +this.stopPriceValue < bestBidPrice &&
+          +this.priceValue <= +this.stopPriceValue
+      : +this.stopPriceValue > bestAskPrice &&
+          +this.priceValue >= +this.stopPriceValue;
+  };
+
+  isStopLimitInvalid = (mainAssetBalance: number) => {
+    return (
+      !this.isFlooredStopLimitAmountValid() ||
+      !this.isStopPriceValid() ||
+      !+this.priceValue ||
+      !+this.amountValue ||
+      !+this.stopPriceValue ||
+      isAmountExceedLimitBalance(
+        this.isCurrentSideSell,
+        this.amountValue,
+        this.priceValue,
+        mainAssetBalance,
+        this.priceAccuracy,
+        this.amountAccuracy
+      )
+    );
+  };
+
   isAmountExceedMarketBalance = (
-    baseAssetBalance: number,
-    quoteAssetBalance: number,
+    mainAssetBalance: number,
     baseAssetId: string,
     quoteAssetId: string
   ) => {
-    const convertedBalance = this.rootStore.marketStore.convert(
-      quoteAssetBalance,
-      quoteAssetId,
-      baseAssetId,
-      this.rootStore.referenceStore.getInstrumentById
+    if (this.isCurrentSideSell) {
+      return +this.amountValue > mainAssetBalance;
+    } else {
+      const convertedBalance = this.rootStore.marketStore.convert(
+        mainAssetBalance,
+        quoteAssetId,
+        baseAssetId,
+        this.rootStore.referenceStore.getInstrumentById
+      );
+      return (
+        +this.amountValue >
+        precisionFloor(+convertedBalance, this.amountAccuracy)
+      );
+    }
+  };
+
+  getConfirmButtonMessage = () => {
+    const assetName = pathOr(
+      '',
+      ['baseAsset', 'name'],
+      this.rootStore.uiStore.selectedInstrument!
     );
-    return this.isCurrentSideSell
-      ? +this.amountValue > baseAssetBalance
-      : +this.amountValue >
-          precisionFloor(+convertedBalance, this.amountAccuracy);
+    const amount = formattedNumber(+this.amountValue, this.amountAccuracy);
+    return `${this.side} ${amount} ${assetName}`;
+  };
+
+  getConfirmationMessage = () => {
+    const displayedPrice = formattedNumber(
+      +parseFloat(this.priceValue),
+      this.priceAccuracy
+    );
+
+    const displayedQuantity = formattedNumber(
+      +parseFloat(this.amountValue),
+      this.amountAccuracy
+    );
+
+    const quoteAssetName = pathOr(
+      '',
+      ['quoteAsset', 'name'],
+      this.rootStore.uiStore.selectedInstrument
+    );
+    const baseAssetName = pathOr(
+      '',
+      ['baseAsset', 'name'],
+      this.rootStore.uiStore.selectedInstrument
+    );
+
+    const messageSuffix =
+      this.market === OrderType.Market
+        ? 'at the market price'
+        : `at the price of ${displayedPrice} ${quoteAssetName}`;
+    return `${this.side.toLowerCase()} ${displayedQuantity} ${baseAssetName} ${messageSuffix}`;
+  };
+
+  getOrderRequestBody = (): OrderRequestBody => {
+    switch (this.market) {
+      case OrderType.Market:
+        return this.getMarketRequestBody();
+      case OrderType.StopLimit:
+        return this.getStopLimitRequestBody();
+      case OrderType.Limit:
+        return this.getLimitRequestBody();
+    }
+  };
+
+  getMarketRequestBody = (): OrderRequestBody => {
+    const baseAssetId = pathOr(
+      '',
+      ['baseAsset', 'id'],
+      this.rootStore.uiStore.selectedInstrument
+    );
+    const assetPairId = pathOr(
+      '',
+      ['id'],
+      this.rootStore.uiStore.selectedInstrument
+    );
+    return {
+      AssetId: baseAssetId,
+      AssetPairId: assetPairId,
+      OrderAction: this.side,
+      Volume: parseFloat(this.amountValue)
+    };
+  };
+
+  getLimitRequestBody = (): OrderRequestBody => {
+    const baseAssetId = pathOr(
+      '',
+      ['baseAsset', 'id'],
+      this.rootStore.uiStore.selectedInstrument
+    );
+    const assetPairId = pathOr(
+      '',
+      ['id'],
+      this.rootStore.uiStore.selectedInstrument
+    );
+    return {
+      AssetId: baseAssetId,
+      AssetPairId: assetPairId,
+      OrderAction: this.side,
+      Volume: parseFloat(this.amountValue),
+      Price: parseFloat(this.priceValue)
+    };
+  };
+
+  getStopLimitRequestBody = (): OrderRequestBody => {
+    return {
+      AssetId: '',
+      AssetPairId: '',
+      OrderAction: this.side,
+      Volume: parseFloat(this.amountValue),
+      Price: parseFloat(this.priceValue)
+    };
   };
 
   setMarketTotal = (
@@ -298,9 +503,10 @@ class UiOrderStore extends BaseStore {
   };
 
   resetOrder = async () => {
+    this.setAmountValue(DEFAULT_INPUT_VALUE);
+    this.setStopPriceValue(DEFAULT_INPUT_VALUE);
     const mid = await this.rootStore.orderBookStore.mid();
     this.setPriceValueWithFixed(mid);
-    this.setAmountValue(DEFAULT_INPUT_VALUE);
   };
 
   // tslint:disable-next-line:no-empty
