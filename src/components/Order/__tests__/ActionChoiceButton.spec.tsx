@@ -25,18 +25,18 @@ describe('<ActionChoiceButton>', () => {
     );
   };
 
-  it('should render ActionChoiceButton', () => {
+  it('should render ActionButton', () => {
     const wrapper = shallow(
       getTestActionButtonChoice(actionSide, handleClickFn, isActionActive)
     );
-    expect(wrapper.find('ActionChoiceButton')).toHaveLength(1);
+    expect(wrapper.find('ActionButton')).toHaveLength(1);
   });
 
   it('should contain side as a prop', () => {
     const wrapper = shallow(
       getTestActionButtonChoice(actionSide, handleClickFn, isActionActive)
     );
-    const actionBtn = wrapper.find('ActionChoiceButton');
+    const actionBtn = wrapper.find('ActionButton');
     expect((actionBtn.props() as any).side).toBe(actionSide);
   });
 
@@ -47,9 +47,7 @@ describe('<ActionChoiceButton>', () => {
       const wrapper = shallow(
         getTestActionButtonChoice(actionSide, handleClickFn, isActionActive)
       );
-      actionProperty = wrapper
-        .find('ActionChoiceButton')
-        .find('ActionProperty');
+      actionProperty = wrapper.find('ActionButton').find('ActionProperty');
     });
   });
 });

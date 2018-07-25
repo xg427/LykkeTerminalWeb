@@ -1,12 +1,11 @@
 import {mount, shallow} from 'enzyme';
 import * as React from 'react';
-
+import OrderLimit from '../OrderLimit';
 import {OrderInputs} from '../../../models';
-import StopLimitOrder from '../StopLimitOrder';
 import formattedNumber from '../../../utils/localFormatted/localFormatted';
 import {keys} from '../../../constants/keyBoardKeys';
 
-describe('<StopLimitOrder>', () => {
+describe('<OrderLimit>', () => {
   const onPriceArrowClick = jest.fn();
   const onAmountArrowClick = jest.fn();
   const resetPercents = jest.fn();
@@ -20,14 +19,13 @@ describe('<StopLimitOrder>', () => {
   const balanceAccuracy = 3;
   const availableAssetName = 'BTC';
   const amount = '5';
-  const stopPrice = '5';
   const percents = [
     {
       isActive: true,
       percent: 25
     }
   ];
-  const stopLimitAmount = 25;
+  const limitAmount = 25;
   const quoteAssetAccuracy = 2;
   const price = '5';
   const handleButtonClick = jest.fn();
@@ -36,16 +34,12 @@ describe('<StopLimitOrder>', () => {
   const isOrderInvalid = () => true;
   const baseAssetId = 'BTC';
   const quoteAssetId = 'USD';
-  const onStopPriceChange = jest.fn();
-  const onStopPriceArrowClick = jest.fn();
 
-  const getTestStopLimitOrder = () => {
+  const getTestOrderLimit = () => {
     return (
-      <StopLimitOrder
+      <OrderLimit
         onPriceArrowClick={onPriceArrowClick}
         onAmountArrowClick={onAmountArrowClick}
-        onStopPriceChange={onStopPriceChange}
-        onStopPriceArrowClick={onStopPriceArrowClick}
         resetPercents={resetPercents}
         onPriceChange={onPriceChange}
         onAmountChange={onAmountChange}
@@ -58,7 +52,7 @@ describe('<StopLimitOrder>', () => {
         availableAssetName={availableAssetName}
         amount={amount}
         percents={percents}
-        stopLimitAmount={stopLimitAmount}
+        limitAmount={limitAmount}
         quoteAssetAccuracy={quoteAssetAccuracy}
         price={price}
         handleButtonClick={handleButtonClick}
@@ -68,22 +62,34 @@ describe('<StopLimitOrder>', () => {
         isCurrentSideSell={true}
         baseAssetId={baseAssetId}
         quoteAssetId={quoteAssetId}
-        stopPrice={stopPrice}
       />
     );
   };
 
-  it('should contain input for stop limit price', () => {
-    const wrapper = shallow(getTestStopLimitOrder());
+  it('should render 2 input controls', () => {
+    const wrapper = shallow(getTestOrderLimit());
+    expect(wrapper.find('InputControl')).toHaveLength(2);
+  });
+
+  it('should contain input control with order title', () => {
+    const inputControl = shallow(getTestOrderLimit())
+      .find('InputControl')
+      .first();
+    expect(inputControl.find('OrderTitle')).toHaveLength(1);
+    expect(inputControl.html()).toContain(`Price (${quoteAssetName})`);
+  });
+
+  it('should contain price input', () => {
+    const wrapper = shallow(getTestOrderLimit());
     expect(
       wrapper
         .find('NumberInput')
-        .findWhere(n => n.props().id === OrderInputs.StopLimitPrice)
+        .findWhere(n => n.props().id === OrderInputs.Price)
     ).toHaveLength(1);
   });
 
-  it('should contain input for amount', () => {
-    const wrapper = shallow(getTestStopLimitOrder());
+  it('should contain amount input', () => {
+    const wrapper = shallow(getTestOrderLimit());
     expect(
       wrapper
         .find('NumberInput')
@@ -91,116 +97,106 @@ describe('<StopLimitOrder>', () => {
     ).toHaveLength(1);
   });
 
-  it('should not contain input for price by default', () => {
-    const wrapper = shallow(getTestStopLimitOrder());
-    expect(
-      wrapper
-        .find('NumberInput')
-        .findWhere(n => n.props().id === OrderInputs.Price)
-    ).toHaveLength(1);
-  });
-
-  it('should show input for price by changing isPriceLimitShown', () => {
-    const wrapper = shallow(getTestStopLimitOrder());
-    wrapper.setState({isPriceLimitShown: false});
-    expect(
-      wrapper
-        .find('NumberInput')
-        .findWhere(n => n.props().id === OrderInputs.Price)
-    ).toHaveLength(0);
-  });
-
-  it('should contain OrderTotal', () => {
-    const wrapper = shallow(getTestStopLimitOrder());
-    expect(wrapper.find('OrderTotal')).toHaveLength(1);
-    expect(wrapper.find('OrderTotal').find('OrderTitle')).toHaveLength(1);
-  });
-
-  it('should contain OrderConfirmButton', () => {
-    const wrapper = shallow(getTestStopLimitOrder());
-    expect(wrapper.find('OrderButton')).toHaveLength(1);
-    expect(wrapper.find('OrderButton').find('OrderConfirmButton')).toHaveLength(
-      1
-    );
-  });
-
-  it('should contain OrderPercentage', () => {
-    const wrapper = shallow(getTestStopLimitOrder());
-    expect(wrapper.find('OrderPercentage')).toHaveLength(1);
+  it('should contain Percentage component', () => {
+    const wrapper = shallow(getTestOrderLimit());
     expect(wrapper.find('OrderPercentage')).toHaveLength(1);
   });
 
-  it('should open dialog', () => {
-    const wrapper = shallow(getTestStopLimitOrder());
-    wrapper.setState({isWarningModalShown: true});
-    expect(wrapper.find('Dialog')).toHaveLength(1);
-  });
+  describe('Percentage', () => {
+    it('should contain percents prop', () => {
+      const wrapper = shallow(getTestOrderLimit());
+      const percentage = wrapper.find('OrderPercentage');
+      expect((percentage.props() as any).percents).toBe(percents);
+    });
 
-  it('first input control should contain OrderTitle with stop price', () => {
-    const orderTitle = shallow(getTestStopLimitOrder())
-      .find('InputControl')
-      .find('OrderTitle')
-      .first();
-    expect(orderTitle).toHaveLength(1);
-    expect(orderTitle.html()).toContain(`Stop Price (${quoteAssetName})`);
-  });
-
-  it('second input control should contain OrderTitle with amount', () => {
-    const orderTitle = shallow(getTestStopLimitOrder())
-      .find('InputControl')
-      .find('OrderTitle')
-      .at(1);
-    expect(orderTitle).toHaveLength(1);
-    expect(orderTitle.html()).toContain(`Amount (${baseAssetName})`);
-  });
-
-  it('third input control should contain OrderTitle with advanced', () => {
-    const orderTitle = shallow(getTestStopLimitOrder())
-      .find('InputControl')
-      .find('OrderTitle')
-      .at(2);
-    expect(orderTitle).toHaveLength(1);
-    expect(orderTitle.html()).toContain(`Advanced`);
-  });
-
-  it('fourth input control should contain OrderTitle with limit price', () => {
-    const orderTitle = shallow(getTestStopLimitOrder())
-      .find('InputControl')
-      .find('OrderTitle')
-      .at(3);
-    expect(orderTitle).toHaveLength(1);
-    expect(orderTitle.html()).toContain(`Limit Price (${quoteAssetName})`);
+    it('should contain isDisabled prop', () => {
+      const wrapper = shallow(getTestOrderLimit());
+      const percentage = wrapper.find('OrderPercentage');
+      expect((percentage.props() as any).isDisabled).toBe(!balance);
+    });
   });
 
   it('should contain OrderTotal component', () => {
-    const wrapper = shallow(getTestStopLimitOrder());
+    const wrapper = shallow(getTestOrderLimit());
     expect(wrapper.find('OrderTotal')).toHaveLength(1);
   });
 
   describe('Order total', () => {
     it('should contain OrderTitle component with Total text', () => {
-      const orderTotal = shallow(getTestStopLimitOrder()).find('OrderTotal');
+      const orderTotal = shallow(getTestOrderLimit()).find('OrderTotal');
       const title = orderTotal.find('OrderTotal').find('OrderTitle');
       expect(title).toHaveLength(1);
       expect(title.children().text()).toBe('Total');
     });
 
     it('should contain Amount component with formatted amount', () => {
-      const orderTotal = shallow(getTestStopLimitOrder()).find('OrderTotal');
+      const orderTotal = shallow(getTestOrderLimit()).find('OrderTotal');
       const orderAmount = orderTotal.find('OrderTotal').find('Amount');
       expect(orderAmount).toHaveLength(1);
       expect(orderAmount.html()).toContain(
-        `${formattedNumber(
-          stopLimitAmount,
-          quoteAssetAccuracy
-        )} ${quoteAssetName}`
+        `${formattedNumber(limitAmount, quoteAssetAccuracy)} ${quoteAssetName}`
       );
     });
   });
 
+  it('should contain OrderButton', () => {
+    const wrapper = shallow(getTestOrderLimit());
+    expect(wrapper.find('OrderButton')).toHaveLength(1);
+  });
+
+  describe('Order button', () => {
+    it('should contain OrderConfirmButton', () => {
+      const orderButton = shallow(getTestOrderLimit()).find('OrderButton');
+      const orderConfirmButton = orderButton.find('OrderConfirmButton');
+      expect(orderConfirmButton).toHaveLength(1);
+    });
+
+    it('should contain message prop', () => {
+      const orderButton = shallow(getTestOrderLimit()).find('OrderButton');
+      const orderConfirmButton = orderButton.find('OrderConfirmButton');
+      expect((orderConfirmButton.props() as any).message).toBe(
+        getConfirmButtonMessage()
+      );
+    });
+
+    it('should contain isDisable prop', () => {
+      const isConfirmButtonDisable = isButtonDisable || isOrderInvalid();
+      const orderButton = shallow(getTestOrderLimit()).find('OrderButton');
+      const orderConfirmButton = orderButton.find('OrderConfirmButton');
+      expect((orderConfirmButton.props() as any).isDisable).toBe(
+        isConfirmButtonDisable
+      );
+    });
+
+    it('should contain type prop', () => {
+      const orderButton = shallow(getTestOrderLimit()).find('OrderButton');
+      const orderConfirmButton = orderButton.find('OrderConfirmButton');
+      expect((orderConfirmButton.props() as any).type).toBe('button');
+    });
+  });
+
+  it('should contain action with base asset name', () => {
+    const wrapper = shallow(getTestOrderLimit());
+    expect(wrapper.find('Action')).toHaveLength(1);
+    expect(wrapper.find('Action').html()).toContain(
+      `Amount (${baseAssetName})`
+    );
+  });
+
+  it('should contain Available with balance info', () => {
+    const wrapper = shallow(getTestOrderLimit());
+    expect(wrapper.find('Available')).toHaveLength(1);
+    expect(wrapper.find('Available').html()).toContain(
+      `${formattedNumber(
+        balance || 0,
+        balanceAccuracy
+      )} ${availableAssetName} available`
+    );
+  });
+
   describe('events', () => {
     describe('price input', () => {
-      const wrapper = mount(getTestStopLimitOrder());
+      const wrapper = mount(getTestOrderLimit());
       const priceInput = wrapper
         .find('NumberInput')
         .findWhere(n => n.props().id === OrderInputs.Price)
@@ -225,7 +221,7 @@ describe('<StopLimitOrder>', () => {
     });
 
     describe('amount input', () => {
-      const wrapper = mount(getTestStopLimitOrder());
+      const wrapper = mount(getTestOrderLimit());
       const amountInput = wrapper
         .find('NumberInput')
         .findWhere(n => n.props().id === OrderInputs.Amount)
@@ -249,34 +245,9 @@ describe('<StopLimitOrder>', () => {
       });
     });
 
-    describe('stop limit price input', () => {
-      const wrapper = mount(getTestStopLimitOrder());
-      const stopLimitPriceInput = wrapper
-        .find('NumberInput')
-        .findWhere(n => n.props().id === OrderInputs.StopLimitPrice)
-        .find('input');
-
-      it('should call onStopPriceChange', () => {
-        stopLimitPriceInput.simulate('change');
-        expect(onStopPriceChange).toHaveBeenCalled();
-      });
-
-      it('should call onStopPriceArrowClick', () => {
-        const event = {
-          keyCode: keys.down,
-          preventDefault: () => {
-            return;
-          }
-        };
-
-        stopLimitPriceInput.simulate('keyDown', event);
-        expect(onStopPriceArrowClick).toHaveBeenCalled();
-      });
-    });
-
     describe('percent', () => {
       it('should call updatePercentState', () => {
-        const wrapper = mount(getTestStopLimitOrder());
+        const wrapper = mount(getTestOrderLimit());
         const percent = wrapper
           .find('OrderPercentage')
           .find('StyledPercent')
@@ -287,7 +258,7 @@ describe('<StopLimitOrder>', () => {
       });
 
       it('should call updatePercentState after clicking available', () => {
-        const wrapper = mount(getTestStopLimitOrder());
+        const wrapper = mount(getTestOrderLimit());
         const available = wrapper.find('Available');
 
         available.simulate('click');
@@ -298,7 +269,7 @@ describe('<StopLimitOrder>', () => {
         jest.resetAllMocks();
         balance = 0;
 
-        const wrapper = mount(getTestStopLimitOrder());
+        const wrapper = mount(getTestOrderLimit());
         const percent = wrapper
           .find('OrderPercentage')
           .find('StyledPercent')

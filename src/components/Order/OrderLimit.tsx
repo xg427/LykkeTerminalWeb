@@ -79,6 +79,7 @@ const OrderLimit: React.SFC<LimitOrderProps> = ({
     if (!balance) {
       return;
     }
+
     const curriedAmountUpdating = curry(handlePercentageChange)(balance);
     updatePercentState(curriedAmountUpdating, index);
   };

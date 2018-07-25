@@ -4,7 +4,7 @@ import formattedNumber from '../../utils/localFormatted/localFormatted';
 import NumberInput from '../NumberInput/NumberInput';
 import {CommonOrderProps} from './index';
 import OrderPercentage from './OrderPercentage';
-import {Action, Available, InputControl, OrderButton} from './styles';
+import {Available, InputControl, OrderButton, OrderTitle} from './styles';
 
 import {curry} from 'rambda';
 import OrderConfirmButton from './OrderConfirmButton';
@@ -84,7 +84,7 @@ const OrderMarket: React.SFC<MarketOrderProps> = ({
     <React.Fragment>
       <InputControl style={{width: '100%'}}>
         <Flex justify="space-between" style={{marginBottom: '8px'}}>
-          <Action>{`Amount (${baseAssetName})`}</Action>
+          <OrderTitle>{`Amount (${baseAssetName})`}</OrderTitle>
           {/* tslint:disable-next-line:jsx-no-lambda */}
           <Available onClick={() => handlePercentsClick()}>
             {formattedNumber(balance || 0, balanceAccuracy)}{' '}

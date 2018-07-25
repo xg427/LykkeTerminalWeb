@@ -1,44 +1,24 @@
 import {mount} from 'enzyme';
 import React from 'react';
-import {AssetModel, InstrumentModel, OrderType, Side} from '../../../models';
+import {OrderType, Side} from '../../../models';
 import Order from '../Order';
 
+const mockOrderBlock = `<div
+        percents={''}
+        updatePercentState={''}
+        resetPercents={''}
+        handleButtonClick={''}
+        isButtonDisable={''}
+      />`;
+
+jest.mock('../index', () => ({
+  OrderMarket: () => mockOrderBlock,
+  OrderLimit: () => mockOrderBlock,
+  StopLimitOrder: () => mockOrderBlock
+}));
+
 describe('<Order>', () => {
-  let ask: number;
-  let bid: number;
-  let accuracy: {
-    priceAccuracy: number;
-    quantityAccuracy: number;
-    baseAssetAccuracy: number;
-    quoteAssetAccuracy: number;
-  };
-  let currency: string;
   let placeOrder: any;
-  let baseAssetName: string;
-  let quoteAssetName: string;
-  let baseAssetBalance: any;
-  let quoteAssetBalance: any;
-  let handlePercentageChange: any;
-  let baseAssetId: string;
-  let quoteAssetId: string;
-  let isLimitInvalid: (
-    baseAssetBalance: number,
-    quoteAssetBalance: number
-  ) => boolean;
-  let isMarketInvalid: (
-    baseAssetId: string,
-    quoteAssetId: string,
-    baseAssetBalance: number,
-    quoteAssetBalance: number
-  ) => boolean;
-  let instrument: InstrumentModel;
-  let priceValue: string;
-  let quantityValue: string;
-  let handlePriceArrowClick: (operation: string) => void;
-  let handleQuantityArrowClick: (operation: string) => void;
-  let handleMarketQuantityArrowClick: (operation: string) => void;
-  let handlePriceChange: (value: string) => void;
-  let handleQuantityChange: (value: string) => void;
   let setMarket: (value: OrderType) => void;
   let setSide: (side: Side) => void;
   let currentMarket: OrderType;
@@ -46,47 +26,12 @@ describe('<Order>', () => {
   let resetOrder: () => void;
   let isDisclaimerShown: boolean;
   let disclaimedAssets: string[];
-  let setMarketTotal: (
-    operationVolume?: any,
-    operationType?: string,
-    debounce?: boolean
-  ) => void;
-  let marketTotalPrice: number;
-  let isEnoughLiquidity: boolean;
-  let resetMarketTotal: () => void;
-  let baseAsset: AssetModel;
-  let convert: (
-    amount: number,
-    assetFrom: AssetModel,
-    assetTo: AssetModel,
-    getInstrumentById: (id: string) => InstrumentModel | undefined
-  ) => number;
-  let getInstrumentById: (id: string) => InstrumentModel | undefined;
+  let getConfirmationMessage: () => string;
+  let getOrderRequestBody: () => any;
 
   const getTestOrder = () => (
     <Order
-      ask={ask}
-      bid={bid}
-      accuracy={accuracy}
-      currency={currency}
       placeOrder={placeOrder}
-      baseAssetName={baseAssetName}
-      quoteAssetName={quoteAssetName}
-      baseAssetBalance={baseAssetBalance}
-      quoteAssetBalance={quoteAssetBalance}
-      handlePercentageChange={handlePercentageChange}
-      baseAssetId={baseAssetId}
-      quoteAssetId={quoteAssetId}
-      isLimitInvalid={isLimitInvalid}
-      isMarketInvalid={isMarketInvalid}
-      instrument={instrument}
-      priceValue={priceValue}
-      quantityValue={quantityValue}
-      handlePriceArrowClick={handlePriceArrowClick}
-      handleQuantityArrowClick={handleQuantityArrowClick}
-      handleMarketQuantityArrowClick={handleMarketQuantityArrowClick}
-      handlePriceChange={handlePriceChange}
-      handleQuantityChange={handleQuantityChange}
       setMarket={setMarket}
       setSide={setSide}
       currentMarket={currentMarket}
@@ -94,44 +39,13 @@ describe('<Order>', () => {
       resetOrder={resetOrder}
       isDisclaimerShown={isDisclaimerShown}
       disclaimedAssets={disclaimedAssets}
-      setMarketTotal={setMarketTotal}
-      marketTotalPrice={marketTotalPrice}
-      isEnoughLiquidity={isEnoughLiquidity}
-      resetMarketTotal={resetMarketTotal}
-      baseAsset={baseAsset}
-      convert={convert}
-      getInstrumentById={getInstrumentById}
+      getConfirmationMessage={getConfirmationMessage}
+      getOrderRequestBody={getOrderRequestBody}
     />
   );
 
   beforeEach(() => {
-    ask = 1000;
-    bid = 1000;
-    accuracy = {
-      priceAccuracy: 2,
-      quantityAccuracy: 2,
-      baseAssetAccuracy: 2,
-      quoteAssetAccuracy: 2
-    };
-    currency = 'USD';
     placeOrder = jest.fn();
-    baseAssetName = 'USD';
-    quoteAssetName = 'BTC';
-    baseAssetBalance = 15000;
-    quoteAssetBalance = 5;
-    handlePercentageChange = jest.fn();
-    baseAssetId = '1';
-    quoteAssetId = '2';
-    isLimitInvalid = jest.fn(() => false);
-    isMarketInvalid = jest.fn(() => false);
-    instrument = new InstrumentModel({});
-    priceValue = '8000';
-    quantityValue = '3';
-    handlePriceArrowClick = jest.fn();
-    handleQuantityArrowClick = jest.fn();
-    handleMarketQuantityArrowClick = jest.fn();
-    handlePriceChange = jest.fn();
-    handleQuantityChange = jest.fn();
     setMarket = jest.fn();
     setSide = jest.fn();
     currentMarket = OrderType.Market;
@@ -139,13 +53,8 @@ describe('<Order>', () => {
     resetOrder = jest.fn();
     isDisclaimerShown = false;
     disclaimedAssets = [];
-    setMarketTotal = jest.fn();
-    marketTotalPrice = 1000;
-    isEnoughLiquidity = true;
-    resetMarketTotal = jest.fn();
-    baseAsset = new AssetModel({});
-    convert = jest.fn();
-    getInstrumentById = jest.fn();
+    getConfirmationMessage = jest.fn();
+    getOrderRequestBody = jest.fn();
   });
 
   describe('method render', () => {
@@ -157,10 +66,117 @@ describe('<Order>', () => {
     it('should render Buy and Sell option buttons in correct order', () => {
       const wrapper = mount(getTestOrder());
       const buttons = wrapper.find('ActionChoiceButton');
-      const buyButtonProps = buttons.at(0).props() as any;
-      const sellButtonProps = buttons.at(1).props() as any;
-      expect(buyButtonProps.title).toBe('Buy');
+      const sellButtonProps = buttons.at(0).props() as any;
+      const buyButtonProps = buttons.at(1).props() as any;
       expect(sellButtonProps.title).toBe('Sell');
+      expect(buyButtonProps.title).toBe('Buy');
+    });
+
+    it('should render market option buttons in correct order', () => {
+      const wrapper = mount(getTestOrder());
+      const buttons = wrapper.find('MarketChoiceButton');
+      const limitMarket = buttons.at(0).props() as any;
+      const marketMarket = buttons.at(1).props() as any;
+      const stopLimitMarket = buttons.at(2).props() as any;
+      expect(limitMarket.title).toBe(OrderType.Limit);
+      expect(marketMarket.title).toBe(OrderType.Market);
+      expect(stopLimitMarket.title).toBe(OrderType.StopLimit);
+    });
+
+    it('should render OrderMarket by default', () => {
+      const wrapper = mount(getTestOrder());
+      const orderMarket = wrapper.find('OrderMarket');
+      expect(orderMarket).toHaveLength(1);
+    });
+
+    it('should render OrderLimit', () => {
+      currentMarket = OrderType.Limit;
+      const wrapper = mount(getTestOrder());
+      const orderMarket = wrapper.find('OrderLimit');
+      expect(orderMarket).toHaveLength(1);
+    });
+
+    it('should render StopLimitOrder', () => {
+      currentMarket = OrderType.StopLimit;
+      const wrapper = mount(getTestOrder());
+      const orderMarket = wrapper.find('StopLimitOrder');
+      expect(orderMarket).toHaveLength(1);
+    });
+
+    it('should render Reset component', () => {
+      const wrapper = mount(getTestOrder());
+      const reset = wrapper.find('Reset');
+      expect(reset).toHaveLength(1);
+    });
+
+    it('should not render WithModal by default', () => {
+      const wrapper = mount(getTestOrder());
+      const confirmModal = wrapper.find('WithModal');
+      expect(confirmModal).toHaveLength(0);
+    });
+
+    it('should render WithModal', () => {
+      const wrapper = mount(getTestOrder());
+      wrapper.setState({
+        isConfirmModalOpen: true
+      });
+      const confirmModal = wrapper.find('WithModal');
+      expect(confirmModal).toHaveLength(1);
+    });
+
+    it('should not render Disclaimer', () => {
+      const wrapper = mount(getTestOrder());
+      const disclaimer = wrapper.find('DisclaimerNotification');
+      expect(disclaimer).toHaveLength(0);
+    });
+
+    it('should render Disclaimer', () => {
+      isDisclaimerShown = true;
+      disclaimedAssets = ['EOS'];
+      const wrapper = mount(getTestOrder());
+      const disclaimer = wrapper.find('DisclaimerNotification');
+      expect(disclaimer).toHaveLength(1);
+    });
+
+    describe('handlers', () => {
+      beforeEach(() => {
+        jest.resetAllMocks();
+      });
+
+      it('should call resetOrder', () => {
+        const wrapper = mount(getTestOrder());
+        const resetBtn = wrapper.find('Reset').find('span');
+        resetBtn.simulate('click');
+        expect(resetOrder).toHaveBeenCalled();
+      });
+
+      it('should call setMarket with clicked market', () => {
+        const wrapper = mount(getTestOrder());
+        const buttons = wrapper.find('MarketChoiceButton');
+        const limitMarket = buttons.at(0).find('MarketProperty');
+        limitMarket.simulate('click');
+        expect(setMarket).toHaveBeenCalledWith(OrderType.Limit);
+
+        const marketMarket = buttons.at(1).find('MarketProperty');
+        marketMarket.simulate('click');
+        expect(setMarket).toHaveBeenCalledWith(OrderType.Market);
+
+        const stopLimitMarket = buttons.at(2).find('MarketProperty');
+        stopLimitMarket.simulate('click');
+        expect(setMarket).toHaveBeenCalledWith(OrderType.StopLimit);
+      });
+
+      it('should call setSide with clicked side', () => {
+        const wrapper = mount(getTestOrder());
+        const buttons = wrapper.find('ActionChoiceButton');
+        const sellButton = buttons.at(0).find('ActionProperty');
+        sellButton.simulate('click');
+        expect(setSide).toHaveBeenCalledWith(Side.Sell);
+
+        const buyButton = buttons.at(1).find('ActionProperty');
+        buyButton.simulate('click');
+        expect(setSide).toHaveBeenCalledWith(Side.Buy);
+      });
     });
   });
 });

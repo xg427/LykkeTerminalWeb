@@ -37,4 +37,5 @@ const OrderPercentage: React.SFC<OrderPercentageProps> = ({
 };
 
 OrderPercentage.displayName = 'OrderPercentage';
+StyledPercent.displayName = 'StyledPercent';
 export default OrderPercentage;

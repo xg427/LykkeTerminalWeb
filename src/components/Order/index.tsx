@@ -28,9 +28,7 @@ const ConnectedOrder = connect(
       setSide,
       resetOrder,
       getConfirmationMessage,
-      getOrderRequestBody,
-      getConfirmButtonMessage,
-      getSpecificOrderValidationChecking
+      getOrderRequestBody
     },
     authStore: {isAuth, isKycPassed},
     marketStore: {convert}
@@ -46,7 +44,6 @@ const ConnectedOrder = connect(
     setSide,
     isDisclaimerShown,
     disclaimedAssets,
-    getConfirmationMessage,
     getOrderRequestBody
   }),
   withAuth(withKyc(Order))

@@ -325,7 +325,7 @@ export const AdvancedShowButton = styled.div.attrs({
 
 DisclaimerNotification.displayName = 'DisclaimerNotification';
 Link.displayName = 'Link';
-ActionButton.displayName = 'ActionChoiceButton';
+ActionButton.displayName = 'ActionButton';
 ActionProperty.displayName = 'ActionProperty';
 MarketButton.displayName = 'MarketButton';
 MarketProperty.displayName = 'MarketProperty';
@@ -333,3 +333,8 @@ ConfirmButton.displayName = 'ConfirmButton';
 OrderTotal.displayName = 'OrderTotal';
 OrderTitle.displayName = 'OrderTitle';
 OrderButton.displayName = 'OrderButton';
+InputControl.displayName = 'InputControl';
+Amount.displayName = 'Amount';
+Action.displayName = 'Action';
+Available.displayName = 'Available';
+Reset.displayName = 'Reset';

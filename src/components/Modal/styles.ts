@@ -232,3 +232,5 @@ export const KycAndFundsBack = styled.div`
   margin: 0;
   background-color: ${colors.lightGraphite};
 `;
+
+ApplyButton.displayName = 'ApplyButton';

@@ -36,7 +36,10 @@ interface OrderState {
 }
 
 interface OrderProps {
-  placeOrder: any;
+  placeOrder: (
+    currentMarket: OrderType,
+    body: OrderRequestBody
+  ) => Promise<any>;
   setMarket: (value: OrderType) => void;
   setSide: (side: Side) => void;
   currentMarket: OrderType;
