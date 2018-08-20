@@ -1,3 +1,4 @@
+import {safeMath} from '@lykkex/lykke.js';
 import {ISubscription} from 'autobahn';
 import {action, computed, observable} from 'mobx';
 import {compose, curry, head, reverse, sortBy, take} from 'rambda';
@@ -7,7 +8,6 @@ import {LEVELS_COUNT} from '../components/OrderBook';
 import {LevelType, Order, OrderBookCellType, Side} from '../models/index';
 import {OrderLevel} from '../models/order';
 import {switchcase} from '../utils/fn';
-import {precisionFloor} from '../utils/math';
 import {getDigits} from '../utils/number';
 import {BaseStore, RootStore} from './index';
 import {
@@ -62,7 +62,11 @@ class OrderBookStore extends BaseStore {
   @computed
   get maxMultiplierIdx() {
     if (this.rawAsks.length > 0) {
-      const sortByPriceDesc = compose(headArr, reverse, sortByPrice);
+      const sortByPriceDesc = compose(
+        headArr,
+        reverse,
+        sortByPrice
+      );
       const bestAsk = sortByPriceDesc(this.rawAsks).price;
       return Math.floor(Math.log10(bestAsk / this.seedSpan));
     }
@@ -72,7 +76,7 @@ class OrderBookStore extends BaseStore {
   @computed
   get span() {
     if (this.rootStore.uiStore.selectedInstrument) {
-      return precisionFloor(
+      return safeMath.floor(
         this.seedSpan * this.spanMultiplier,
         this.rootStore.uiStore.selectedInstrument.accuracy
       );

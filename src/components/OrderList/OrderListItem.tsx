@@ -1,7 +1,7 @@
+import {safeMath} from '@lykkex/lykke.js';
 import * as React from 'react';
 import {InstrumentModel, OrderModel, Side} from '../../models';
 import {formattedNumber} from '../../utils/localFormatted/localFormatted';
-import {precisionCeil, precisionFloor} from '../../utils/math';
 import {Icon} from '../Icon/index';
 import {Cell, ColoredText} from '../Table/styles';
 import TitledCell from '../Table/TitledCell';
@@ -43,8 +43,8 @@ const OrderListItem: React.SFC<OrderActions & OrderListItemProps> = ({
   const handleCancelOrder = () => cancelOrder(id);
   const roundedValue =
     side === Side.Buy
-      ? precisionCeil(value, quoteAssetAccuracy)
-      : precisionFloor(value, quoteAssetAccuracy);
+      ? safeMath.ceil(value, quoteAssetAccuracy)
+      : safeMath.floor(value, quoteAssetAccuracy);
   const handleChangeInstrument = () =>
     !isSelected && changeInstrumentById(instrumentId);
   return (

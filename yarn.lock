@@ -16,9 +16,9 @@
     esutils "^2.0.2"
     js-tokens "^3.0.0"
 
-"@lykkex/lykke.js@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@lykkex/lykke.js/-/lykke.js-0.2.1.tgz#f101863579168cf1ce2ffa4f257bf8081b21427c"
+"@lykkex/lykke.js@^0.3.3":
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/@lykkex/lykke.js/-/lykke.js-0.3.3.tgz#d8a905b9cad28de193b163fe5df601bfdda68596"
 
 "@lykkex/react-components@^0.8.6":
   version "0.8.6"
