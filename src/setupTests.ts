@@ -42,7 +42,11 @@ jest.mock('oidc-client', () => {
       return {
         signinRedirect: jest.fn(),
         signoutRedirect: jest.fn(),
-        signinRedirectCallback: jest.fn()
+        signinRedirectCallback: jest.fn(),
+        events: {
+          addSilentRenewError: jest.fn(),
+          addUserLoaded: jest.fn()
+        }
       };
     }
   };
