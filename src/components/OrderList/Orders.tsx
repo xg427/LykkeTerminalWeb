@@ -17,7 +17,6 @@ import {CancelAllOrders, ToggleOrders} from './OrderListAdditional';
 import OrderListToolbar from './OrderListToolbar';
 
 interface OrdersProps extends OrderActions {
-  addModal: any;
   cancelOrder: any;
   orders: OrderModel[];
 }

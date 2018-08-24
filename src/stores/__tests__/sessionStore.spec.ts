@@ -93,14 +93,14 @@ describe('session store', () => {
       );
     });
 
-    it('should open qr modal', () => {
-      sessionStore.rootStore.modalStore.addModal = jest.fn();
-      sessionStore.showQR();
-      expect(sessionStore.rootStore.modalStore.addModal).toHaveBeenCalled();
-      expect(sessionStore.rootStore.modalStore.addModal).toHaveBeenCalledTimes(
-        1
-      );
-    });
+    // it('should open qr modal', () => {
+    //   sessionStore.rootStore.modalStore.addModal = jest.fn();
+    //   sessionStore.showQR();
+    //   expect(sessionStore.rootStore.modalStore.addModal).toHaveBeenCalled();
+    //   expect(sessionStore.rootStore.modalStore.addModal).toHaveBeenCalledTimes(
+    //     1
+    //   );
+    // });
 
     it('should set read-only mode to true', () => {
       expect(sessionStore.rootStore.uiStore.readOnlyMode).toBeFalsy();

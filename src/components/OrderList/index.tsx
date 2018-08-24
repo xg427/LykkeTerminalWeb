@@ -25,11 +25,9 @@ const ConnectedOrders = connect(
   ({
     orderListStore: {limitOrders: orders},
     orderStore: {cancelOrder},
-    modalStore: {addModal},
     authStore: {isAuth, isKycPassed},
     uiStore: {readOnlyMode}
   }) => ({
-    addModal,
     cancelOrder,
     isAuth,
     isKycPassed,

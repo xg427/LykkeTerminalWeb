@@ -21,6 +21,9 @@ import {
 } from '../../stores';
 import {getHashCode} from '../../utils/hashcode';
 import {StorageUtils} from '../../utils/index';
+import {Header} from '../Header';
+import {Modals} from '../Modal';
+import {MyWallets} from '../MyWallets';
 import ApplicationLink from '../ApplicationLink/ApplicationLink';
 import Backdrop from '../Backdrop/Backdrop';
 import {Footer} from '../Footer';
@@ -288,12 +291,7 @@ class Terminal extends React.Component<TerminalProps, {}> {
         />
         <TerminalWrapper>
           <NotificationList />
-          {this.props.rootStore.modalStore.isModals ? (
-            <div>
-              <Backdrop />
-              <Modal modals={this.props.rootStore.modalStore.modals} />
-            </div>
-          ) : null}
+          <Modals />
           {this.props.rootStore.sessionStore.sessionNotificationsBlockShown && (
             <SessionNotificationComponent />
           )}

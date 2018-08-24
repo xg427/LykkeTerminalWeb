@@ -1,9 +1,6 @@
 import {computed, observable} from 'mobx';
 import {SessionApi} from '../api';
-import ModalMessages from '../constants/modalMessages';
 import {keys} from '../models';
-import ModalModel from '../models/modalModel';
-import Types from '../models/modals';
 import {
   convertHoursToMs,
   convertMsToHours,
@@ -58,7 +55,6 @@ class SessionStore extends BaseStore {
   private isSessionNotesShown: boolean = false;
   private sessionRemainIntervalId: any;
   private sessionConfirmationExpireTimerId: any;
-  private qrModal: ModalModel;
   private sessionPollingTimerId: any;
   private sessionNotificationTimeoutId: any;
 
@@ -122,13 +118,7 @@ class SessionStore extends BaseStore {
   };
 
   showQR = () => {
-    this.qrModal = this.rootStore.modalStore.addModal(
-      ModalMessages.qr,
-      // tslint:disable-next-line:no-empty
-      () => {},
-      this.continueInReadOnlyMode,
-      Types.QR
-    );
+    this.rootStore.modalStore.setQRModalState(true);
   };
 
   startSessionListener = async () => {
@@ -144,7 +134,7 @@ class SessionStore extends BaseStore {
 
         if (Confirmed) {
           this.sessionConfirmed();
-          this.qrModal.close();
+          this.rootStore.modalStore.setQRModalState(false);
           this.stopSessionPolling();
           return;
         }
@@ -158,7 +148,7 @@ class SessionStore extends BaseStore {
 
   sessionConfirmationExpire = () => {
     this.sessionConfirmationExpireTimerId = setTimeout(() => {
-      this.qrModal.close();
+      this.rootStore.modalStore.setQRModalState(false);
       this.continueInReadOnlyMode();
     }, this.sessionDuration);
   };

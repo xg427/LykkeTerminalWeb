@@ -3,7 +3,6 @@ import {ArrowDirection, OrderInputs} from '../../models';
 import formattedNumber from '../../utils/localFormatted/localFormatted';
 import NumberInput from '../NumberInput/NumberInput';
 import {
-  AdvancedShowButton,
   Amount,
   Available,
   InputControl,
@@ -12,7 +11,6 @@ import {
   OrderTotal
 } from './styles';
 
-import {FAIcon} from '../Icon/Icon';
 import OrderPercentage from './OrderPercentage';
 
 import {CommonOrderProps} from './index';
@@ -35,11 +33,9 @@ interface StopLimitOrderProps extends CommonOrderProps {
   price: string;
   handlePercentageChange: (balance: number, percents: number) => void;
   stopLimitAmount: number;
-  isAdvancedChoosePresent?: boolean;
 }
 
 interface StopLimitOrderState {
-  isPriceLimitShown: boolean;
   isWarningModalShown: boolean;
 }
 
@@ -48,7 +44,6 @@ class StopLimitOrder extends React.Component<
   StopLimitOrderState
 > {
   state = {
-    isPriceLimitShown: true,
     isWarningModalShown: false
   };
 
@@ -88,9 +83,6 @@ class StopLimitOrder extends React.Component<
     this.props.updatePercentState(curriedAmountUpdating, index);
   };
 
-  toggleAdvancedOpen = () =>
-    this.setState({isPriceLimitShown: !this.state.isPriceLimitShown});
-
   isOrderInvalid = () => {
     return this.props.isButtonDisable || this.props.isOrderInvalid();
   };
@@ -125,8 +117,7 @@ class StopLimitOrder extends React.Component<
       balanceAccuracy,
       stopLimitAmount,
       quoteAssetAccuracy,
-      availableAssetName,
-      isAdvancedChoosePresent = true
+      availableAssetName
     } = this.props;
 
     return (
@@ -168,35 +159,17 @@ class StopLimitOrder extends React.Component<
           />
         </Flex>
 
-        {isAdvancedChoosePresent && (
-          <InputControl>
-            <Flex justify={'space-between'} style={{marginBottom: '7px'}}>
-              <OrderTitle>Advanced</OrderTitle>
-              <div onClick={this.toggleAdvancedOpen}>
-                <AdvancedShowButton isActive={!this.state.isPriceLimitShown}>
-                  <FAIcon name="angle-up" />
-                </AdvancedShowButton>
-                <AdvancedShowButton isActive={this.state.isPriceLimitShown}>
-                  <FAIcon name="angle-down" />
-                </AdvancedShowButton>
-              </div>
-            </Flex>
-          </InputControl>
-        )}
-
-        {this.state.isPriceLimitShown ? (
-          <InputControl style={{borderBottom: '1px solid #333'}}>
-            <Flex justify={'space-between'} style={{marginBottom: '7px'}}>
-              <OrderTitle>Limit Price ({quoteAssetName})</OrderTitle>
-            </Flex>
-            <NumberInput
-              value={price}
-              id={OrderInputs.Price}
-              onChange={this.handlePriceChange}
-              onArrowClick={this.handlePriceArrowClick}
-            />
-          </InputControl>
-        ) : null}
+        <InputControl style={{borderBottom: '1px solid #333'}}>
+          <Flex justify={'space-between'} style={{marginBottom: '7px'}}>
+            <OrderTitle>Limit Price ({quoteAssetName})</OrderTitle>
+          </Flex>
+          <NumberInput
+            value={price}
+            id={OrderInputs.Price}
+            onChange={this.handlePriceChange}
+            onArrowClick={this.handlePriceArrowClick}
+          />
+        </InputControl>
 
         <OrderTotal>
           <OrderTitle>Total</OrderTitle>

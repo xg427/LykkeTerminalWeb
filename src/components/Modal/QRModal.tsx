@@ -19,7 +19,7 @@ interface QRModalProps {
 const QRModal: React.SFC<QRModalProps> = ({
   modal: {cancelAction, close, message},
   qrId
-}) => {
+}: QRModalProps) => {
   const handleContinue = () => {
     cancelAction();
     close();

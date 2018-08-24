@@ -1,10 +1,10 @@
 import {mount, shallow} from 'enzyme';
 import * as React from 'react';
 
-import {OrderInputs} from '../../../models';
-import StopLimitOrder from '../StopLimitOrder';
-import formattedNumber from '../../../utils/localFormatted/localFormatted';
 import {keys} from '../../../constants/keyBoardKeys';
+import {OrderInputs} from '../../../models';
+import formattedNumber from '../../../utils/localFormatted/localFormatted';
+import StopLimitOrder from '../StopLimitOrder';
 
 describe('<StopLimitOrder>', () => {
   const onPriceArrowClick = jest.fn();
@@ -100,16 +100,6 @@ describe('<StopLimitOrder>', () => {
     ).toHaveLength(1);
   });
 
-  it('should show input for price by changing isPriceLimitShown', () => {
-    const wrapper = shallow(getTestStopLimitOrder());
-    wrapper.setState({isPriceLimitShown: false});
-    expect(
-      wrapper
-        .find('NumberInput')
-        .findWhere(n => n.props().id === OrderInputs.Price)
-    ).toHaveLength(0);
-  });
-
   it('should contain OrderTotal', () => {
     const wrapper = shallow(getTestStopLimitOrder());
     expect(wrapper.find('OrderTotal')).toHaveLength(1);
@@ -154,20 +144,11 @@ describe('<StopLimitOrder>', () => {
     expect(orderTitle.html()).toContain(`Amount (${baseAssetName})`);
   });
 
-  it('third input control should contain OrderTitle with advanced', () => {
-    const orderTitle = shallow(getTestStopLimitOrder())
-      .find('InputControl')
-      .find('OrderTitle')
-      .at(2);
-    expect(orderTitle).toHaveLength(1);
-    expect(orderTitle.html()).toContain(`Advanced`);
-  });
-
   it('fourth input control should contain OrderTitle with limit price', () => {
     const orderTitle = shallow(getTestStopLimitOrder())
       .find('InputControl')
       .find('OrderTitle')
-      .at(3);
+      .at(2);
     expect(orderTitle).toHaveLength(1);
     expect(orderTitle.html()).toContain(`Limit Price (${quoteAssetName})`);
   });

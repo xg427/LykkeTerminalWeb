@@ -5,6 +5,11 @@ import withModal from './withModal';
 
 import OrderLimit from '../Order/OrderLimit';
 import StopLimitOrder from '../Order/StopLimitOrder';
+import Modals, {ModalsProps} from './Modals';
+
+import KycModal, {KycModalProps} from './KycModal';
+import {ManageFundsModalProps} from './ManageFundsModal';
+import ManageFundsModal from './ManageFundsModal';
 
 const ConnectedEditOrderModal = connect(
   ({
@@ -105,10 +110,44 @@ const ConnectedQRModal = connect(
   ({sessionStore: {getQrId}}) => ({
     qrId: getQrId()
   }),
-  QRModal
+  withModal(QRModal)
+);
+
+const ConnectedModals = connect<ModalsProps>(
+  ({
+    modalStore: {
+      getQRModalState,
+      getMissedKycModalState,
+      getSessionConfirmationModalState,
+      getManageFundsModalState
+    }
+  }) => ({
+    isQRModalOpen: getQRModalState(),
+    isMissedKysModalOpen: getMissedKycModalState(),
+    isSessionConfirmationModalOpen: getSessionConfirmationModalState(),
+    isManageFundsModalOpen: getManageFundsModalState()
+  }),
+  Modals
+);
+
+const ConnectedMissedKysModal = connect<KycModalProps>(
+  ({modalStore: {setMissedKycModalState}}) => ({
+    setMissedKycModalState
+  }),
+  withModal(KycModal)
+);
+
+const ConnectedManageFundsModal = connect<ManageFundsModalProps>(
+  ({modalStore: {setManageFundsModalState}}) => ({
+    setManageFundsModalState
+  }),
+  withModal(ManageFundsModal)
 );
 
 export {ConnectedEditOrderModal as EditOrder};
 export {ConnectedQRModal as QRModal};
 export {ConnectedEditLimitOrder as EditLimitOrder};
 export {ConnectedEditStopLimitOrder as EditStopLimitOrder};
+export {ConnectedModals as Modals};
+export {ConnectedMissedKysModal as KycModal};
+export {ConnectedManageFundsModal as ManageFundsModal};

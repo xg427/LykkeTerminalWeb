@@ -1,5 +1,4 @@
 import * as React from 'react';
-import ModalModel from '../../models/modalModel';
 import {
   Expired,
   ModalBody,
@@ -8,16 +7,19 @@ import {
   StyledButton
 } from './styles';
 
-const ExpiredModal: React.SFC<{modal: ModalModel}> = ({modal}) => {
+import ModalMessages from '../../constants/modalMessages';
+import withModal from './withModal';
+
+const ExpiredModal: React.SFC<{}> = () => {
   return (
     <Expired>
       <SessionExpiredImage />
-      <ModalTitle>{modal.message.title}</ModalTitle>
-      <ModalBody>{modal.message.body}</ModalBody>
+      <ModalTitle>{ModalMessages.expired.title}</ModalTitle>
+      <ModalBody>{ModalMessages.expired.body}</ModalBody>
       {/* tslint:disable-next-line:jsx-no-lambda */}
       <StyledButton onClick={() => location.reload()}>Turn on 2FA</StyledButton>
     </Expired>
   );
 };
 
-export default ExpiredModal;
+export default withModal(ExpiredModal);

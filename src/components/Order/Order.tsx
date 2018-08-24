@@ -262,7 +262,7 @@ class Order extends React.Component<OrderProps, OrderState> {
           />
         )}
         {isDisclaimerShown &&
-          disclaimedAssets.map((asset, index) => (
+          disclaimedAssets.map((asset, index: number) => (
             <Disclaimer asset={asset} key={`${asset}_${index}`} />
           ))}
       </React.Fragment>

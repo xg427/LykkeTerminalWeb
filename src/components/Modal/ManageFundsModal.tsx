@@ -1,5 +1,4 @@
 import * as React from 'react';
-import ModalModel from '../../models/modalModel';
 import ModalHeader from './ModalHeader/ModalHeader';
 import {
   MarginedModalBody,
@@ -9,26 +8,32 @@ import {
   OkButton
 } from './styles';
 
-const ManageFundsModal: React.SFC<{modal: ModalModel}> = ({modal}) => {
-  const handleCancel = () => {
-    modal.close();
-  };
+import ModalMessages from '../../constants/modalMessages';
+
+export interface ManageFundsModalProps {
+  setManageFundsModalState: (state: boolean) => void;
+}
+
+const ManageFundsModal: React.SFC<ManageFundsModalProps> = ({
+  setManageFundsModalState
+}) => {
+  const handleCancel = () => setManageFundsModalState(false);
 
   return (
     <ModalWrapper>
       <ModalHeader onClick={handleCancel} />
-      <MarginedModalBody>{modal.message.body}</MarginedModalBody>
+      <MarginedModalBody>{ModalMessages.manageWallets.body}</MarginedModalBody>
       <ModalContentWrapper>
         <MobileAppLink
-          href={modal.message.link.appStore}
+          href={ModalMessages.manageWallets.link.appStore}
           target={'_blank'}
-          onClick={modal.close}
+          onClick={handleCancel}
           image={'app-store'}
         />
         <MobileAppLink
-          href={modal.message.link.playMarket}
+          href={ModalMessages.manageWallets.link.playMarket}
           target={'_blank'}
-          onClick={modal.close}
+          onClick={handleCancel}
           image={'google-play'}
         />
       </ModalContentWrapper>

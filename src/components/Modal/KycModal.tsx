@@ -1,6 +1,5 @@
 import * as React from 'react';
 import ModalMessages from '../../constants/modalMessages';
-import ModalModel from '../../models/modalModel';
 import ModalHeader from './ModalHeader/ModalHeader';
 import {
   Modal,
@@ -12,13 +11,19 @@ import {
   StyledText
 } from './styles';
 
-const KycModal: React.SFC<{modal: ModalModel}> = ({modal}) => {
+export interface KycModalProps {
+  setMissedKycModalState: (state: boolean) => void;
+}
+
+const KycModal: React.SFC<KycModalProps> = ({setMissedKycModalState}) => {
+  const handleClose = () => setMissedKycModalState(false);
+
   return (
     <Modal>
       <StyledKycModalHeader>
         <ModalHeader
           title={ModalMessages.missedKyc.title}
-          onClick={modal.close}
+          onClick={handleClose}
         />
       </StyledKycModalHeader>
       <StyledText>{ModalMessages.missedKyc.body}</StyledText>
@@ -30,7 +35,7 @@ const KycModal: React.SFC<{modal: ModalModel}> = ({modal}) => {
           <StyledGooglePlay />
         </a>
       </StyledApplications>
-      <StyledButton onClick={modal.close}>Ok</StyledButton>
+      <StyledButton onClick={handleClose}>Ok</StyledButton>
     </Modal>
   );
 };

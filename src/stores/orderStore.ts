@@ -1,7 +1,8 @@
 import OrderApi, {OrderRequestBody} from '../api/orderApi';
 import * as topics from '../api/topics';
-import ModalMessages from '../constants/modalMessages';
 import messages from '../constants/notificationMessages';
+import {ApiError, levels} from '../models';
+import {OrderModel, OrderType} from '../models';
 import logger from '../Logger';
 import {levels} from '../models';
 import {OrderType} from '../models';
@@ -18,11 +19,6 @@ const errorOrNoop = (error: string) => {
     return undefined;
   }
 };
-
-enum Errors {
-  Confirmation = 'Confirmation',
-  AssetKycNeeded = 'AssetKycNeeded'
-}
 
 // tslint:disable:no-console
 class OrderStore extends BaseStore {
@@ -193,12 +189,7 @@ class OrderStore extends BaseStore {
     const errorObject = errorOrNoop(error.message);
     if (!errorObject) {
       if (error.message === 'Session confirmation is required') {
-        this.modalStore.addModal(
-          ModalMessages.expired,
-          null,
-          null,
-          Types.Expired
-        );
+        this.rootStore.modalStore.setSessionConfirmationModalState(true);
       } else {
         this.notificationStore.addNotification(
           levels.error,
@@ -209,8 +200,8 @@ class OrderStore extends BaseStore {
       const key = Object.keys(errorObject)[0];
       if (error.status === 400) {
         switch (key) {
-          case Errors.AssetKycNeeded:
-            this.modalStore.addModal(null, null, null, Types.MissedKyc);
+          case ApiError.AssetKycNeeded:
+            this.rootStore.modalStore.setMissedKycModalState(true);
             break;
           default:
             {

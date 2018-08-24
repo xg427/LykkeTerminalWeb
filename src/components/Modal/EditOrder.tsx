@@ -226,7 +226,6 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
           resetPercents={this.resetPercents}
           handleButtonClick={this.handleEditOrder}
           isButtonDisable={this.state.pendingOrder}
-          isAdvancedChoosePresent={false}
         />
       </EditModal>
     );

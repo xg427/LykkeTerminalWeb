@@ -44,16 +44,17 @@ const ConnectedOrder = connect(
     setSide,
     isDisclaimerShown,
     disclaimedAssets,
-    getOrderRequestBody
+    getOrderRequestBody,
+    getConfirmationMessage
   }),
   withAuth(withKyc(Order))
 );
 
 const withOrderConnectedProps = (Component: any) => (props: any) => {
   return (
-    <ConnectedCommonPropsOrder>
+    <ConnectedOrderCommonProps>
       <Component {...props} />
-    </ConnectedCommonPropsOrder>
+    </ConnectedOrderCommonProps>
   );
 };
 
@@ -79,7 +80,7 @@ export interface CommonOrderProps {
   isOrderInvalid: () => boolean;
 }
 
-const ConnectedCommonPropsOrder = connect(
+const ConnectedOrderCommonProps = connect(
   ({
     balanceListStore: {baseAssetBalance, quoteAssetBalance},
     uiOrderStore: {
