@@ -1,7 +1,7 @@
 import {action, computed, observable} from 'mobx';
 import {compose, reverse, sortBy} from 'rambda';
 import {OrderApi} from '../api/index';
-import {InstrumentModel, OrderModel} from '../models';
+import {InstrumentModel, OrderModel, OrderType} from '../models';
 import * as mappers from '../models/mappers';
 import OrdersDefaultSelection from '../models/ordersDefaultSelection';
 import {BaseStore, RootStore} from './index';
@@ -58,7 +58,9 @@ class OrderListStore extends BaseStore {
       uiStore: {selectedInstrument}
     } = this.rootStore;
     return this.limitOrders.filter(
-      order => order.symbol === (selectedInstrument && selectedInstrument.id)
+      order =>
+        order.symbol === (selectedInstrument && selectedInstrument.id) &&
+        order.type === OrderType.Limit
     );
   }
 

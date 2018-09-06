@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {InstrumentModel, OrderModel, OrderType, Side} from '../../models';
 import {AnalyticsEvents} from '../../constants/analyticsEvents';
 import {InstrumentModel, OrderModel, Side} from '../../models';
 import {AnalyticsService} from '../../services/analyticsService';
@@ -18,14 +19,15 @@ interface OrderListItemProps {
   isSelected: boolean;
 }
 
-const getSide = (side: Side, price: number, accuracy: number) => {
-  return side === Side.Sell
-    ? `Stop @ ${formattedNumber(price, accuracy)}`
-    : side;
+const getSide = (order: OrderModel, accuracy: number) => {
+  const {stopPrice, side, type} = order;
+  return type === OrderType.Limit
+    ? side
+    : `Stop @ ${formattedNumber(stopPrice!, accuracy)}`;
 };
 
 const OrderListItem: React.SFC<OrderActions & OrderListItemProps> = ({
-  order: {createdAt, price, id, side, volume, filled, filledPercent, value},
+  order,
   onEdit,
   cancelOrder,
   instrument: {
@@ -39,17 +41,17 @@ const OrderListItem: React.SFC<OrderActions & OrderListItemProps> = ({
   isSelected
 }) => {
   const handleEditOrder = () => {
-    onEdit(id);
+    onEdit(order.id);
     AnalyticsService.track(AnalyticsEvents.StartOrderEdit);
   };
   const handleCancelOrder = () => {
-    cancelOrder(id);
+    cancelOrder(order.id);
     AnalyticsService.track(AnalyticsEvents.CancelOrder);
   };
   const roundedValue =
-    side === Side.Buy
-      ? precisionCeil(value, quoteAssetAccuracy)
-      : precisionFloor(value, quoteAssetAccuracy);
+    order.side === Side.Buy
+      ? precisionCeil(order.value, quoteAssetAccuracy)
+      : precisionFloor(order.value, quoteAssetAccuracy);
   const handleChangeInstrument = () =>
     !isSelected && changeInstrumentById(instrumentId);
   return (
@@ -61,18 +63,18 @@ const OrderListItem: React.SFC<OrderActions & OrderListItemProps> = ({
       >
         {displayName}
       </Cell>
-      <SideCell w={OrderCellWidth.Side} side={side}>
-        {getSide(side, price, accuracy)}
+      <SideCell w={OrderCellWidth.Side} side={order.side}>
+        {getSide(order, accuracy)}
       </SideCell>
-      <TitledCell title={formattedNumber(price, accuracy)}>
-        {formattedNumber(price, accuracy)}
+      <TitledCell title={formattedNumber(order.price, accuracy)}>
+        {formattedNumber(order.price, accuracy)}
       </TitledCell>
       <TitledCell>
-        {formattedNumber(volume, baseAssetAccuracy)} {baseAssetName}
+        {formattedNumber(order.volume, baseAssetAccuracy)} {baseAssetName}
       </TitledCell>
       <TitledCell>
-        {formattedNumber(filled, baseAssetAccuracy)} ({formattedNumber(
-          filledPercent,
+        {formattedNumber(order.filled, baseAssetAccuracy)} ({formattedNumber(
+          order.filledPercent,
           0,
           {style: 'percent'}
         )})
@@ -80,7 +82,7 @@ const OrderListItem: React.SFC<OrderActions & OrderListItemProps> = ({
       <TitledCell>
         {formattedNumber(roundedValue, quoteAssetAccuracy)} {quoteAssetName}
       </TitledCell>
-      <TitledCell>{createdAt.toLocaleString()}</TitledCell>
+      <TitledCell>{order.createdAt.toLocaleString()}</TitledCell>
       <Cell w={OrderCellWidth.Actions}>
         <span onClick={handleEditOrder}>
           <Icon name={'edit-alt'} />

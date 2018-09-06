@@ -10,6 +10,7 @@ import {
   OrderModel,
   OrderType
 } from '../index';
+import {IRestOrderModel} from '../orderModel';
 import WatchlistModel from '../watchlistModel';
 
 export const mapToBarFromRest = ({
@@ -99,16 +100,23 @@ export const mapToLimitOrder = ({
   Volume,
   RemainingVolume,
   Price,
-  AssetPairId
-}: any) =>
+  AssetPairId,
+  LowerLimitPrice,
+  LowerPrice,
+  UpperPrice,
+  UpperLimitPrice,
+  Type
+}: IRestOrderModel) =>
   new OrderModel({
     createdAt: new Date(CreateDateTime),
     id: Id,
-    price: Number(Price),
+    price: Price || LowerPrice! || UpperPrice!,
     side: OrderAction,
     symbol: AssetPairId,
     volume: Volume || Voume,
-    remainingVolume: RemainingVolume
+    remainingVolume: RemainingVolume,
+    stopPrice: LowerLimitPrice! || UpperLimitPrice!,
+    type: Type
   });
 
 export const filterByInstrumentsAndMapToLimitOrder = (

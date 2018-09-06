@@ -1,6 +1,6 @@
 import {mount} from 'enzyme';
 import React from 'react';
-import {OrderType, Side} from '../../../models';
+import {OrderTitle, OrderType, Side} from '../../../models';
 import Order from '../Order';
 
 const mockOrderBlock = `<div
@@ -28,6 +28,11 @@ describe('<Order>', () => {
   let disclaimedAssets: string[];
   let getConfirmationMessage: () => string;
   let getOrderRequestBody: () => any;
+  let baseAssetId: string;
+  let assetPairId: string;
+  let quoteAssetId: string;
+  let quoteAssetName: string;
+  let baseAssetName: string;
 
   const getTestOrder = () => (
     <Order
@@ -41,6 +46,11 @@ describe('<Order>', () => {
       disclaimedAssets={disclaimedAssets}
       getConfirmationMessage={getConfirmationMessage}
       getOrderRequestBody={getOrderRequestBody}
+      baseAssetId={baseAssetId}
+      assetPairId={assetPairId}
+      quoteAssetId={quoteAssetId}
+      quoteAssetName={quoteAssetName}
+      baseAssetName={baseAssetName}
     />
   );
 
@@ -55,6 +65,11 @@ describe('<Order>', () => {
     disclaimedAssets = [];
     getConfirmationMessage = jest.fn();
     getOrderRequestBody = jest.fn();
+    baseAssetId = 'BTC';
+    assetPairId = 'BTCUSD';
+    quoteAssetId = 'USD';
+    quoteAssetName = 'USD';
+    baseAssetName = 'BTC';
   });
 
   describe('method render', () => {
@@ -78,9 +93,9 @@ describe('<Order>', () => {
       const limitMarket = buttons.at(0).props() as any;
       const marketMarket = buttons.at(1).props() as any;
       const stopLimitMarket = buttons.at(2).props() as any;
-      expect(limitMarket.title).toBe(OrderType.Limit);
-      expect(marketMarket.title).toBe(OrderType.Market);
-      expect(stopLimitMarket.title).toBe(OrderType.StopLimit);
+      expect(limitMarket.title).toBe(OrderTitle.Limit);
+      expect(marketMarket.title).toBe(OrderTitle.Market);
+      expect(stopLimitMarket.title).toBe(OrderTitle.StopLimit);
     });
 
     it('should render OrderMarket by default', () => {

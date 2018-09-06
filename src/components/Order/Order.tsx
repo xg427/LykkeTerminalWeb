@@ -1,4 +1,7 @@
 import * as React from 'react';
+import {OrderRequestBody, StopLimitRequestBody} from '../../api/orderApi';
+import {IPercentage, Percentage} from '../../constants/ordersPercentage';
+import {keys, OrderTitle, OrderType} from '../../models';
 import {AnalyticsEvents} from '../../constants/analyticsEvents';
 import {Percentage} from '../../constants/ordersPercentage';
 import {keys} from '../../models';
@@ -8,6 +11,7 @@ import InstrumentModel from '../../models/instrumentModel';
 import Side from '../../models/side';
 import {AnalyticsService} from '../../services/analyticsService';
 import {StorageUtils} from '../../utils/index';
+import {setActivePercentage} from '../../utils/order';
 import {formattedNumber} from '../../utils/localFormatted/localFormatted';
 import {precisionFloor} from '../../utils/math';
 import {resetPercentage, setActivePercentage} from '../../utils/order';
@@ -18,10 +22,6 @@ import {Disclaimer} from './Disclaimer';
 import {OrderLimit, OrderMarket, StopLimitOrder} from './index';
 import MarketChoiceButton from './MarketChoiceButton';
 import {Actions, Markets, Reset} from './styles';
-
-import {OrderRequestBody} from '../../api/orderApi';
-import {IPercentage, Percentage} from '../../constants/ordersPercentage';
-import {setActivePercentage} from '../../utils/order';
 
 const confirmStorage = StorageUtils(keys.confirmReminder);
 
@@ -35,11 +35,11 @@ interface OrderState {
   percents: IPercentage[];
 }
 
-interface OrderProps {
+export interface OrderProps {
   placeOrder: (
     currentMarket: OrderType,
     body: OrderRequestBody
-  ) => Promise<any>;
+  ) => Promise<void>;
   setMarket: (value: OrderType) => void;
   setSide: (side: Side) => void;
   currentMarket: OrderType;
@@ -47,8 +47,19 @@ interface OrderProps {
   resetOrder: () => void;
   isDisclaimerShown: boolean;
   disclaimedAssets: string[];
-  getConfirmationMessage: () => string;
-  getOrderRequestBody: () => OrderRequestBody;
+  getConfirmationMessage: (
+    baseAssetName: string,
+    quoteAssetName: string
+  ) => string;
+  getOrderRequestBody: (
+    baseAssetId: string,
+    assetPairId: string
+  ) => OrderRequestBody | StopLimitRequestBody;
+  baseAssetId: string;
+  assetPairId: string;
+  quoteAssetId: string;
+  quoteAssetName: string;
+  baseAssetName: string;
 }
 
 class Order extends React.Component<OrderProps, OrderState> {
@@ -128,9 +139,12 @@ class Order extends React.Component<OrderProps, OrderState> {
   };
 
   handleButtonClick = () => {
+    const {baseAssetId, assetPairId} = this.props;
     const isConfirm = confirmStorage.get() as string;
     if (!JSON.parse(isConfirm)) {
-      return this.applyOrder(this.props.getOrderRequestBody());
+      return this.applyOrder(
+        this.props.getOrderRequestBody(baseAssetId, assetPairId)
+      );
     }
     this.setState({
       isConfirmModalOpen: true
@@ -138,7 +152,10 @@ class Order extends React.Component<OrderProps, OrderState> {
   };
 
   handleStopLimitButtonClick = () => {
-    return this.applyOrder(this.props.getOrderRequestBody());
+    const {baseAssetId, assetPairId} = this.props;
+    return this.applyOrder(
+      this.props.getOrderRequestBody(baseAssetId, assetPairId)
+    );
   };
 
   handleUpdatePercentState = (
@@ -174,33 +191,28 @@ class Order extends React.Component<OrderProps, OrderState> {
       isDisclaimerShown,
       disclaimedAssets,
       currentMarket,
-      isCurrentSideSell
       isCurrentSideSell,
-      handlePriceChange,
-      handleQuantityChange,
-      handlePriceArrowClick,
-      handleQuantityArrowClick,
-      handleMarketQuantityArrowClick,
-      setMarketTotal,
-      marketTotalPrice,
-      isEnoughLiquidity
+      baseAssetId,
+      assetPairId,
+      baseAssetName,
+      quoteAssetName
     } = this.props;
 
     return (
       <React.Fragment>
         <Markets>
           <MarketChoiceButton
-            title={LIMIT}
+            title={OrderTitle.Limit}
             isActive={currentMarket === LIMIT}
             click={this.handleMarketClick(LIMIT)}
           />
           <MarketChoiceButton
-            title={MARKET}
+            title={OrderTitle.Market}
             isActive={currentMarket === MARKET}
             click={this.handleMarketClick(MARKET)}
           />
           <MarketChoiceButton
-            title={STOP_LIMIT}
+            title={OrderTitle.StopLimit}
             isActive={currentMarket === STOP_LIMIT}
             click={this.handleMarketClick(STOP_LIMIT)}
           />
@@ -256,9 +268,16 @@ class Order extends React.Component<OrderProps, OrderState> {
         {this.state.isConfirmModalOpen && (
           <ConfirmModal
             // tslint:disable-next-line:jsx-no-lambda
-            onApply={() => this.applyOrder(this.props.getOrderRequestBody())}
+            onApply={() =>
+              this.applyOrder(
+                this.props.getOrderRequestBody(baseAssetId, assetPairId)
+              )
+            }
             onClose={this.closeConfirmModal}
-            message={this.props.getConfirmationMessage()}
+            message={this.props.getConfirmationMessage(
+              baseAssetName,
+              quoteAssetName
+            )}
           />
         )}
         {isDisclaimerShown &&

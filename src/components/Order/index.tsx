@@ -1,6 +1,7 @@
 import {pathOr} from 'rambda';
 import withAuth from '../Auth/withAuth';
 import {connect} from '../connect';
+import Order, {OrderProps} from './Order';
 import {withKyc} from '../Kyc';
 import Order from './Order';
 import OrderLimit from './OrderLimit';
@@ -14,10 +15,15 @@ import {ArrowDirection} from '../../models';
 
 import {IPercentage} from '../../constants/ordersPercentage';
 
-const ConnectedOrder = connect(
+const ConnectedOrder = connect<OrderProps>(
   ({
     orderStore: {placeOrder},
-    uiStore: {readOnlyMode, isDisclaimerShown, disclaimedAssets},
+    uiStore: {
+      readOnlyMode,
+      isDisclaimerShown,
+      disclaimedAssets,
+      selectedInstrument
+    },
     referenceStore,
     uiOrderStore: {
       getPriceAccuracy,
@@ -45,7 +51,11 @@ const ConnectedOrder = connect(
     isDisclaimerShown,
     disclaimedAssets,
     getOrderRequestBody,
-    getConfirmationMessage
+    getConfirmationMessage,
+    baseAssetId: pathOr('', ['baseAsset', 'id'], selectedInstrument),
+    assetPairId: pathOr('', ['id'], selectedInstrument),
+    quoteAssetName: pathOr(2, ['quoteAsset', 'name'], selectedInstrument),
+    baseAssetName: pathOr(2, ['baseAsset', 'name'], selectedInstrument)
   }),
   withAuth(withKyc(Order))
 );
@@ -75,9 +85,13 @@ export interface CommonOrderProps {
   percents: IPercentage[];
   resetPercents: () => void;
   handleButtonClick: () => void;
-  getConfirmButtonMessage: () => string;
+  getConfirmButtonMessage: (baseAssetName: string) => string;
   isButtonDisable: boolean;
-  isOrderInvalid: () => boolean;
+  isOrderInvalid: (
+    quoteAssetAccuracy: number,
+    baseAssetId?: string,
+    quoteAssetId?: string
+  ) => boolean;
 }
 
 const ConnectedOrderCommonProps = connect(

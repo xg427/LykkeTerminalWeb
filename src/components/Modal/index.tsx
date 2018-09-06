@@ -1,6 +1,6 @@
 import {connect} from '../connect';
 import EditOrder, {EditOrderProps} from './EditOrder';
-import QRModal from './QRModal';
+import QRModal, {QRModalProps} from './QRModal';
 import withModal from './withModal';
 
 import OrderLimit from '../Order/OrderLimit';
@@ -24,7 +24,9 @@ const ConnectedEditOrderModal = connect(
       setPriceAccuracy,
       setSide,
       getOrderRequestBody,
-      setMarket
+      setMarket,
+      isLimitInvalid,
+      isStopLimitInvalid
     }
   }) => ({
     editOrder,
@@ -37,7 +39,9 @@ const ConnectedEditOrderModal = connect(
     setPriceAccuracy,
     setSide,
     getOrderRequestBody,
-    setMarket
+    setMarket,
+    isLimitInvalid,
+    isStopLimitInvalid
   }),
   withModal<EditOrderProps>(EditOrder)
 );
@@ -53,7 +57,6 @@ const ConnectedEditLimitOrder = connect(
       handleAmountChange,
       handleAmountArrowClick,
       handleLimitPercentageChange,
-      isLimitInvalid,
       getConfirmButtonMessage
     }
   }) => ({
@@ -65,7 +68,6 @@ const ConnectedEditLimitOrder = connect(
     onAmountChange: handleAmountChange,
     onAmountArrowClick: handleAmountArrowClick,
     handlePercentageChange: handleLimitPercentageChange,
-    isOrderInvalid: isLimitInvalid,
     getConfirmButtonMessage
   }),
   OrderLimit
@@ -85,7 +87,6 @@ const ConnectedEditStopLimitOrder = connect(
       handleAmountChange,
       handleAmountArrowClick,
       handleStopLimitPercentageChange,
-      isStopLimitInvalid,
       getConfirmButtonMessage
     }
   }) => ({
@@ -100,15 +101,19 @@ const ConnectedEditStopLimitOrder = connect(
     onStopPriceChange: handleStopPriceChange,
     onStopPriceArrowClick: handleStopPriceArrowClick,
     handlePercentageChange: handleStopLimitPercentageChange,
-    isOrderInvalid: isStopLimitInvalid,
     getConfirmButtonMessage
   }),
   StopLimitOrder
 );
 
-const ConnectedQRModal = connect(
-  ({sessionStore: {getQrId}}) => ({
-    qrId: getQrId()
+const ConnectedQRModal = connect<QRModalProps>(
+  ({
+    sessionStore: {getQrId, continueInReadOnlyMode},
+    modalStore: {setQRModalState}
+  }) => ({
+    qrId: getQrId(),
+    setQRModalState,
+    continueInReadOnlyMode
   }),
   withModal(QRModal)
 );

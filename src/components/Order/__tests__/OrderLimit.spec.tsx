@@ -1,9 +1,8 @@
 import {mount, shallow} from 'enzyme';
 import * as React from 'react';
-import OrderLimit from '../OrderLimit';
-import {OrderInputs} from '../../../models';
-import formattedNumber from '../../../utils/localFormatted/localFormatted';
 import {keys} from '../../../constants/keyBoardKeys';
+import {OrderInputs} from '../../../models';
+import OrderLimit from '../OrderLimit';
 
 describe('<OrderLimit>', () => {
   const onPriceArrowClick = jest.fn();
@@ -133,9 +132,7 @@ describe('<OrderLimit>', () => {
       const orderTotal = shallow(getTestOrderLimit()).find('OrderTotal');
       const orderAmount = orderTotal.find('OrderTotal').find('Amount');
       expect(orderAmount).toHaveLength(1);
-      expect(orderAmount.html()).toContain(
-        `${formattedNumber(limitAmount, quoteAssetAccuracy)} ${quoteAssetName}`
-      );
+      expect(orderAmount.html()).toContain(`25.00 USD`);
     });
   });
 
@@ -187,10 +184,7 @@ describe('<OrderLimit>', () => {
     const wrapper = shallow(getTestOrderLimit());
     expect(wrapper.find('Available')).toHaveLength(1);
     expect(wrapper.find('Available').html()).toContain(
-      `${formattedNumber(
-        balance || 0,
-        balanceAccuracy
-      )} ${availableAssetName} available`
+      `1,000.00 BTC available`
     );
   });
 

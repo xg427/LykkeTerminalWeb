@@ -1,11 +1,15 @@
+import {curry} from 'rambda';
 import * as React from 'react';
+import {IPercentage} from '../../constants/ordersPercentage';
 import {ArrowDirection, OrderInputs} from '../../models';
 import {AnalyticsEvents} from '../../constants/analyticsEvents';
 import {OrderInputs} from '../../models';
 import {AnalyticsService} from '../../services/analyticsService';
 import {formattedNumber} from '../../utils/localFormatted/localFormatted';
+import {precisionFloor} from '../../utils/math';
 import NumberInput from '../NumberInput/NumberInput';
 import {CommonOrderProps} from './index';
+import OrderConfirmButton from './OrderConfirmButton';
 import OrderPercentage from './OrderPercentage';
 import {
   Action,
@@ -16,11 +20,6 @@ import {
   OrderTitle,
   OrderTotal
 } from './styles';
-
-import {IPercentage} from '../../constants/ordersPercentage';
-
-import {curry} from 'rambda';
-import OrderConfirmButton from './OrderConfirmButton';
 
 // tslint:disable-next-line:no-var-requires
 const {Flex} = require('grid-styled');
@@ -85,7 +84,7 @@ const OrderLimit: React.SFC<LimitOrderProps> = ({
   };
 
   const isOrderValuesInvalid = () => {
-    return isButtonDisable || isOrderInvalid();
+    return isButtonDisable || isOrderInvalid(quoteAssetAccuracy);
   };
 
   const handlePercentageChange = () => {
@@ -136,7 +135,11 @@ const OrderLimit: React.SFC<LimitOrderProps> = ({
       <OrderTotal>
         <OrderTitle>Total</OrderTitle>
         <Amount>
-          {formattedNumber(limitAmount, quoteAssetAccuracy)} {quoteAssetName}
+          {formattedNumber(
+            precisionFloor(limitAmount, quoteAssetAccuracy),
+            quoteAssetAccuracy
+          )}{' '}
+          {quoteAssetName}
         </Amount>
       </OrderTotal>
 
@@ -144,7 +147,7 @@ const OrderLimit: React.SFC<LimitOrderProps> = ({
         <OrderConfirmButton
           isDisable={isOrderValuesInvalid()}
           type={'button'}
-          message={getConfirmButtonMessage()}
+          message={getConfirmButtonMessage(baseAssetName)}
           onClick={handleButtonClick}
         />
       </OrderButton>

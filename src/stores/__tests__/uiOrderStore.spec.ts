@@ -1,3 +1,5 @@
+import {OrderRequestBody, StopLimitRequestBody} from '../../api/orderApi';
+import {ArrowDirection, OrderType, Side} from '../../models';
 import {pathOr} from 'rambda';
 import {
   ArrowDirection,
@@ -341,13 +343,17 @@ describe('uiOrder store', () => {
     });
 
     describe('stop limit validation', () => {
+      const quoteAssetAccuracy = 2;
+
       it('should return false if stop limit order is valid', () => {
         uiOrderStore.setSide(Side.Sell);
         uiOrderStore.setStopPriceValue('2');
         uiOrderStore.setPriceValue('2');
         uiOrderStore.setAmountValue('2');
         uiOrderStore.rootStore.orderBookStore.bestBidPrice = 3;
-        expect(uiOrderStore.isStopLimitInvalid(100)).toBeFalsy();
+        expect(
+          uiOrderStore.isStopLimitInvalid(100, quoteAssetAccuracy)
+        ).toBeFalsy();
       });
 
       it('should return true if stop price is valid for buy side', () => {
@@ -370,20 +376,28 @@ describe('uiOrder store', () => {
         uiOrderStore.setSide(Side.Sell);
         uiOrderStore.setAmountValue('1');
         uiOrderStore.setPriceValue('1');
-        expect(uiOrderStore.isFlooredStopLimitAmountValid()).toBeTruthy();
+        expect(
+          uiOrderStore.isFlooredStopLimitAmountValid(quoteAssetAccuracy)
+        ).toBeTruthy();
 
         uiOrderStore.setSide(Side.Buy);
-        expect(uiOrderStore.isFlooredStopLimitAmountValid()).toBeTruthy();
+        expect(
+          uiOrderStore.isFlooredStopLimitAmountValid(quoteAssetAccuracy)
+        ).toBeTruthy();
       });
 
       it('should return false for invalid floored stop price amount value', () => {
         uiOrderStore.setSide(Side.Sell);
         uiOrderStore.setAmountValue('0');
         uiOrderStore.setPriceValue('1');
-        expect(uiOrderStore.isFlooredStopLimitAmountValid()).toBeFalsy();
+        expect(
+          uiOrderStore.isFlooredStopLimitAmountValid(quoteAssetAccuracy)
+        ).toBeFalsy();
 
         uiOrderStore.setSide(Side.Buy);
-        expect(uiOrderStore.isFlooredStopLimitAmountValid()).toBeFalsy();
+        expect(
+          uiOrderStore.isFlooredStopLimitAmountValid(quoteAssetAccuracy)
+        ).toBeFalsy();
       });
 
       it('should return false if stop price is invalid for sell side', () => {
@@ -414,7 +428,9 @@ describe('uiOrder store', () => {
           uiOrderStore.setStopPriceValue('0');
           uiOrderStore.setPriceValue('2');
           uiOrderStore.setAmountValue('2');
-          expect(uiOrderStore.isStopLimitInvalid(100)).toBeTruthy();
+          expect(
+            uiOrderStore.isStopLimitInvalid(100, quoteAssetAccuracy)
+          ).toBeTruthy();
         });
 
         it('price is invalid', () => {
@@ -422,7 +438,9 @@ describe('uiOrder store', () => {
           uiOrderStore.setStopPriceValue('2');
           uiOrderStore.setPriceValue('0');
           uiOrderStore.setAmountValue('2');
-          expect(uiOrderStore.isStopLimitInvalid(100)).toBeTruthy();
+          expect(
+            uiOrderStore.isStopLimitInvalid(100, quoteAssetAccuracy)
+          ).toBeTruthy();
         });
 
         it('amount is invalid', () => {
@@ -430,7 +448,9 @@ describe('uiOrder store', () => {
           uiOrderStore.setStopPriceValue('2');
           uiOrderStore.setPriceValue('2');
           uiOrderStore.setAmountValue('0');
-          expect(uiOrderStore.isStopLimitInvalid(100)).toBeTruthy();
+          expect(
+            uiOrderStore.isStopLimitInvalid(100, quoteAssetAccuracy)
+          ).toBeTruthy();
         });
 
         it('amount is greater than base asset balance', () => {
@@ -438,7 +458,9 @@ describe('uiOrder store', () => {
           uiOrderStore.setStopPriceValue('2');
           uiOrderStore.setPriceValue('2');
           uiOrderStore.setAmountValue('220');
-          expect(uiOrderStore.isStopLimitInvalid(100)).toBeTruthy();
+          expect(
+            uiOrderStore.isStopLimitInvalid(100, quoteAssetAccuracy)
+          ).toBeTruthy();
         });
 
         it('limit total amount is greater than base asset balance', () => {
@@ -446,15 +468,28 @@ describe('uiOrder store', () => {
           uiOrderStore.setStopPriceValue('2');
           uiOrderStore.setPriceValue('2');
           uiOrderStore.setAmountValue('220');
-          expect(uiOrderStore.isStopLimitInvalid(100)).toBeTruthy();
+          expect(
+            uiOrderStore.isStopLimitInvalid(100, quoteAssetAccuracy)
+          ).toBeTruthy();
         });
       });
     });
 
     describe('market order validation', () => {
+      const baseAssetId = 'BTC';
+      const quoteAssetId = 'USD';
+      const quoteAssetAccuracy = 2;
+
       it('should return true if amount value has default value', () => {
         expect(uiOrderStore.amountValue).toBe(DEFAULT_INPUT_VALUE);
-        expect(uiOrderStore.isMarketInvalid(mainAssetBalance)).toBeTruthy();
+        expect(
+          uiOrderStore.isMarketInvalid(
+            mainAssetBalance,
+            baseAssetId,
+            quoteAssetId,
+            quoteAssetAccuracy
+          )
+        ).toBeTruthy();
       });
 
       it('should return true if amount is greater than baseAssetBalance for sell side', () => {
@@ -463,7 +498,14 @@ describe('uiOrder store', () => {
         expect(parseFloat(uiOrderStore.amountValue)).toBeGreaterThan(
           mainAssetBalance
         );
-        expect(uiOrderStore.isMarketInvalid(mainAssetBalance)).toBeTruthy();
+        expect(
+          uiOrderStore.isMarketInvalid(
+            mainAssetBalance,
+            baseAssetId,
+            quoteAssetId,
+            quoteAssetAccuracy
+          )
+        ).toBeTruthy();
       });
 
       it('should return true if quantity is greater than converted balance for buy side', () => {
@@ -475,61 +517,72 @@ describe('uiOrder store', () => {
         expect(parseFloat(uiOrderStore.amountValue)).toBeGreaterThan(
           precisionFloor(+convertedBalance, uiOrderStore.getAmountAccuracy())
         );
-        expect(uiOrderStore.isMarketInvalid(mainAssetBalance)).toBeTruthy();
+        expect(
+          uiOrderStore.isMarketInvalid(
+            mainAssetBalance,
+            baseAssetId,
+            quoteAssetId,
+            quoteAssetAccuracy
+          )
+        ).toBeTruthy();
       });
 
       it('should return true for valid floored market value', () => {
         uiOrderStore.setSide(Side.Sell);
         uiOrderStore.rootStore.orderBookStore.bestBidPrice = 1;
         uiOrderStore.setAmountValue('1');
-        expect(uiOrderStore.isFlooredMarketAmountValid()).toBeTruthy();
+        expect(
+          uiOrderStore.isFlooredMarketAmountValid(quoteAssetAccuracy)
+        ).toBeTruthy();
       });
 
       it('should return false for valid floored market value', () => {
         uiOrderStore.setAmountValue('0');
-        expect(uiOrderStore.isFlooredMarketAmountValid()).toBeFalsy();
+        expect(
+          uiOrderStore.isFlooredMarketAmountValid(quoteAssetAccuracy)
+        ).toBeFalsy();
       });
     });
 
     describe('limit order validation', () => {
+      const quoteAssetAccuracy = 2;
+
       it('should return true if quantity value is equal 0', () => {
-        const isInvalid = uiOrderStore.isLimitInvalid(mainAssetBalance);
+        const isInvalid = uiOrderStore.isLimitInvalid(
+          mainAssetBalance,
+          quoteAssetAccuracy
+        );
         expect(isInvalid).toBeTruthy();
       });
 
       it('should return true if price value is equal 0', () => {
-        const isInvalid = uiOrderStore.isLimitInvalid(mainAssetBalance);
+        const isInvalid = uiOrderStore.isLimitInvalid(
+          mainAssetBalance,
+          quoteAssetAccuracy
+        );
         expect(isInvalid).toBeTruthy();
       });
 
       it('should return true for valid floored limit amount value', () => {
         uiOrderStore.setPriceValue('2');
         uiOrderStore.setAmountValue('1');
-        expect(uiOrderStore.isFlooredLimitAmountValid()).toBeTruthy();
+        expect(
+          uiOrderStore.isFlooredLimitAmountValid(quoteAssetAccuracy)
+        ).toBeTruthy();
       });
 
       it('should return false for valid floored limit amount value', () => {
         uiOrderStore.setPriceValue('2');
         uiOrderStore.setAmountValue('0');
-        expect(uiOrderStore.isFlooredLimitAmountValid()).toBeFalsy();
+        expect(
+          uiOrderStore.isFlooredLimitAmountValid(quoteAssetAccuracy)
+        ).toBeFalsy();
       });
     });
 
     describe('messages', () => {
       it('should return message for confirm button', () => {
-        uiOrderStore.rootStore.uiStore.selectedInstrument = new InstrumentModel(
-          {
-            baseAsset: new AssetModel({name: 'BTC'}),
-            id: 'BTCUSD',
-            quoteAsset: new AssetModel({name: 'USD'})
-          }
-        );
-
-        const assetName = pathOr(
-          '',
-          ['baseAsset', 'name'],
-          uiOrderStore.rootStore.uiStore.selectedInstrument!
-        );
+        const baseAssetName = 'BTC';
 
         const amountValue = '5.568';
         const amountAccuracy = 3;
@@ -537,19 +590,14 @@ describe('uiOrder store', () => {
         uiOrderStore.setSide(Side.Sell);
         uiOrderStore.setAmountValue(amountValue);
         uiOrderStore.setAmountAccuracy(amountAccuracy);
-        expect(uiOrderStore.getConfirmButtonMessage()).toBe(
-          `${Side.Sell} ${amount} ${assetName}`
+        expect(uiOrderStore.getConfirmButtonMessage(baseAssetName)).toBe(
+          `${Side.Sell} ${amount} BTC`
         );
       });
 
       it('should return confirmation message', () => {
-        uiOrderStore.rootStore.uiStore.selectedInstrument = new InstrumentModel(
-          {
-            baseAsset: new AssetModel({name: 'BTC'}),
-            id: 'BTCUSD',
-            quoteAsset: new AssetModel({name: 'USD'})
-          }
-        );
+        const baseAssetName = 'BTC';
+        const quoteAssetName = 'USD';
 
         uiOrderStore.setMarket(OrderType.Market);
         const amountValue = '5.568';
@@ -566,39 +614,33 @@ describe('uiOrder store', () => {
 
         let messageSuffix = 'at the market price';
 
-        expect(uiOrderStore.getConfirmationMessage()).toBe(
-          `${Side.Sell.toLowerCase()} ${amount} BTC ${messageSuffix}`
-        );
+        expect(
+          uiOrderStore.getConfirmationMessage(baseAssetName, quoteAssetName)
+        ).toBe(`${Side.Sell.toLowerCase()} ${amount} BTC ${messageSuffix}`);
 
         messageSuffix = `at the price of ${price} USD`;
         uiOrderStore.setMarket(OrderType.Limit);
-        expect(uiOrderStore.getConfirmationMessage()).toBe(
-          `${Side.Sell.toLowerCase()} ${amount} BTC ${messageSuffix}`
-        );
+        expect(
+          uiOrderStore.getConfirmationMessage(baseAssetName, quoteAssetName)
+        ).toBe(`${Side.Sell.toLowerCase()} ${amount} BTC ${messageSuffix}`);
       });
     });
 
     describe('request body', () => {
       const baseAssetName = 'BTC';
       const quoteAssetName = 'USD';
+      const assetPairId = `${baseAssetName}${quoteAssetName}`;
       const amountValue = '5';
       const priceValue = '10';
-
-      beforeEach(() => {
-        uiOrderStore.rootStore.uiStore.selectedInstrument = new InstrumentModel(
-          {
-            baseAsset: new AssetModel({name: baseAssetName, id: baseAssetName}),
-            id: `${baseAssetName}${quoteAssetName}`,
-            quoteAsset: new AssetModel({name: quoteAssetName})
-          }
-        );
-      });
 
       it('should return body for market order', () => {
         uiOrderStore.setMarket(OrderType.Market);
         uiOrderStore.setSide(Side.Sell);
         uiOrderStore.setAmountValue(amountValue);
-        const requestBody = uiOrderStore.getOrderRequestBody();
+        const requestBody = uiOrderStore.getOrderRequestBody(
+          baseAssetName,
+          assetPairId
+        ) as OrderRequestBody;
         expect(requestBody.AssetId).toBe(baseAssetName);
         expect(requestBody.AssetPairId).toBe(
           `${baseAssetName}${quoteAssetName}`
@@ -612,7 +654,10 @@ describe('uiOrder store', () => {
         uiOrderStore.setSide(Side.Buy);
         uiOrderStore.setAmountValue(amountValue);
         uiOrderStore.setPriceValue(priceValue);
-        const requestBody = uiOrderStore.getOrderRequestBody();
+        const requestBody = uiOrderStore.getOrderRequestBody(
+          baseAssetName,
+          assetPairId
+        ) as OrderRequestBody;
         expect(requestBody.AssetId).toBe(baseAssetName);
         expect(requestBody.AssetPairId).toBe(
           `${baseAssetName}${quoteAssetName}`
@@ -620,6 +665,58 @@ describe('uiOrder store', () => {
         expect(requestBody.OrderAction).toBe(Side.Buy);
         expect(requestBody.Volume).toBe(parseFloat(amountValue));
         expect(requestBody.Price).toBe(parseFloat(priceValue));
+      });
+
+      describe('stop limit', () => {
+        const stopPrice = '100';
+
+        it('should return price body for sell direction', () => {
+          uiOrderStore.setMarket(OrderType.StopLimit);
+          uiOrderStore.setSide(Side.Sell);
+          uiOrderStore.setPriceValue(priceValue);
+          uiOrderStore.setStopPriceValue(stopPrice);
+
+          const priceBody = uiOrderStore.getPriceBodyForStopLimitOrder();
+          expect(priceBody.UpperLimitPrice).toBeNull();
+          expect(priceBody.UpperPrice).toBeNull();
+          expect(priceBody.LowerLimitPrice).toBe(parseFloat(stopPrice));
+          expect(priceBody.LowerPrice).toBe(parseFloat(priceValue));
+        });
+
+        it('should return price body for buy direction', () => {
+          uiOrderStore.setMarket(OrderType.StopLimit);
+          uiOrderStore.setSide(Side.Buy);
+          uiOrderStore.setPriceValue(priceValue);
+          uiOrderStore.setStopPriceValue(stopPrice);
+
+          const priceBody = uiOrderStore.getPriceBodyForStopLimitOrder();
+          expect(priceBody.UpperLimitPrice).toBe(parseFloat(stopPrice));
+          expect(priceBody.UpperPrice).toBe(parseFloat(priceValue));
+          expect(priceBody.LowerLimitPrice).toBeNull();
+          expect(priceBody.LowerPrice).toBeNull();
+        });
+
+        it('should return body for stop limit request', () => {
+          uiOrderStore.setMarket(OrderType.StopLimit);
+          uiOrderStore.setSide(Side.Buy);
+          uiOrderStore.setAmountValue(amountValue);
+          uiOrderStore.setPriceValue(priceValue);
+          uiOrderStore.setStopPriceValue(stopPrice);
+
+          const requestBody = uiOrderStore.getOrderRequestBody(
+            baseAssetName,
+            assetPairId
+          ) as StopLimitRequestBody;
+          expect(requestBody.AssetPairId).toBe(
+            `${baseAssetName}${quoteAssetName}`
+          );
+          expect(requestBody.OrderAction).toBe(Side.Buy);
+          expect(requestBody.Volume).toBe(parseFloat(amountValue));
+          expect(requestBody.UpperLimitPrice).toBe(parseFloat(stopPrice));
+          expect(requestBody.UpperPrice).toBe(parseFloat(priceValue));
+          expect(requestBody.LowerLimitPrice).toBeNull();
+          expect(requestBody.LowerPrice).toBeNull();
+        });
       });
     });
   });

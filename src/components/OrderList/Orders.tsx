@@ -1,5 +1,7 @@
 import {HBar} from '@lykkex/react-components';
 import * as React from 'react';
+import {OrderModel, OrderType, SortDirection} from '../../models';
+import {HBar} from '../Bar';
 import {AnalyticsEvents} from '../../constants/analyticsEvents';
 import place from '../../constants/places';
 import {OrderModel, SortDirection} from '../../models';
@@ -62,7 +64,7 @@ class Blotter extends React.Component<OrdersProps, OrdersState> {
   handleEditOrder = (order: OrderModel) => (id: string) => {
     this.currentEditingOrder = order;
 
-    if (order) {
+    if (order.type === OrderType.Limit) {
       this.setState({
         isLimitEditModal: true
       });
@@ -75,7 +77,8 @@ class Blotter extends React.Component<OrdersProps, OrdersState> {
 
   handleCloseEditModal = () => {
     this.setState({
-      isLimitEditModal: false
+      isLimitEditModal: false,
+      isStopLimitEditModal: false
     });
   };
 

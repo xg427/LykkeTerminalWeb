@@ -20,6 +20,7 @@ import OrderConfirmButton from './OrderConfirmButton';
 import './style.css';
 
 import {Dialog} from '@lykkex/react-components';
+import {precisionFloor} from '../../utils/math';
 
 // tslint:disable-next-line:no-var-requires
 const {Flex} = require('grid-styled');
@@ -84,7 +85,8 @@ class StopLimitOrder extends React.Component<
   };
 
   isOrderInvalid = () => {
-    return this.props.isButtonDisable || this.props.isOrderInvalid();
+    const {isButtonDisable, isOrderInvalid, quoteAssetAccuracy} = this.props;
+    return isButtonDisable || isOrderInvalid(quoteAssetAccuracy);
   };
 
   handleConfirmButtonClick = () => {
@@ -174,7 +176,10 @@ class StopLimitOrder extends React.Component<
         <OrderTotal>
           <OrderTitle>Total</OrderTitle>
           <Amount>
-            {formattedNumber(stopLimitAmount, quoteAssetAccuracy)}{' '}
+            {formattedNumber(
+              precisionFloor(stopLimitAmount, quoteAssetAccuracy),
+              quoteAssetAccuracy
+            )}{' '}
             {quoteAssetName}
           </Amount>
         </OrderTotal>
@@ -183,7 +188,7 @@ class StopLimitOrder extends React.Component<
           <OrderConfirmButton
             isDisable={this.isOrderInvalid()}
             type={'button'}
-            message={this.props.getConfirmButtonMessage()}
+            message={this.props.getConfirmButtonMessage(baseAssetName)}
             onClick={this.handleConfirmButtonClick}
           />
         </OrderButton>

@@ -1,7 +1,7 @@
 enum OrderType {
   Market = 'Market',
   Limit = 'Limit',
-  StopLimit = 'Stop Limit'
+  StopLimit = 'StopLimit'
 }
 
 enum OrderInputs {
@@ -18,4 +18,10 @@ enum OrderStatus {
   Rejected = 'Rejected'
 }
 
-export {OrderType, OrderInputs, OrderStatus};
+enum OrderTitle {
+  Market = 'Market',
+  Limit = 'Limit',
+  StopLimit = 'Stop Limit'
+}
+
+export {OrderType, OrderInputs, OrderStatus, OrderTitle};

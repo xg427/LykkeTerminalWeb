@@ -51,7 +51,8 @@ const OrderMarket: React.SFC<MarketOrderProps> = ({
   handleButtonClick,
   getConfirmButtonMessage,
   isOrderInvalid,
-  isButtonDisable
+  isButtonDisable,
+  quoteAssetAccuracy
 }) => {
   const handleArrowClick = (operation: ArrowDirection) => () => {
     onAmountArrowClick(operation);
@@ -77,7 +78,10 @@ const OrderMarket: React.SFC<MarketOrderProps> = ({
   };
 
   const isOrderValuesInvalid = () => {
-    return isButtonDisable || isOrderInvalid();
+    return (
+      isButtonDisable ||
+      isOrderInvalid(quoteAssetAccuracy, baseAssetId, quoteAssetId)
+    );
   };
 
   return (
@@ -124,7 +128,7 @@ const OrderMarket: React.SFC<MarketOrderProps> = ({
         <OrderConfirmButton
           isDisable={isOrderValuesInvalid() || !isEnoughLiquidity}
           type={'button'}
-          message={getConfirmButtonMessage()}
+          message={getConfirmButtonMessage(baseAssetName)}
           onClick={handleButtonClick}
         />
       </OrderButton>

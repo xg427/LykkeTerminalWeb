@@ -1,5 +1,5 @@
 import {computed, observable} from 'mobx';
-import {curry, pathOr} from 'rambda';
+import {curry} from 'rambda';
 import {OrderType} from '../models';
 import ArrowDirection from '../models/arrowDirection';
 import Side from '../models/side';
@@ -23,7 +23,7 @@ import {
 } from '../utils/order';
 import {BaseStore, RootStore} from './index';
 
-import {OrderRequestBody} from '../api/orderApi';
+import {OrderRequestBody, StopLimitRequestBody} from '../api/orderApi';
 
 const MARKET_TOTAL_DEBOUNCE = 1000;
 
@@ -57,9 +57,7 @@ class UiOrderStore extends BaseStore {
 
   @computed
   get stopLimitAmount() {
-    return this.side === Side.Sell
-      ? +this.priceValue * +this.amountValue
-      : +this.amountValue / +this.priceValue;
+    return +this.priceValue * +this.amountValue;
   }
 
   @computed
@@ -232,29 +230,33 @@ class UiOrderStore extends BaseStore {
     return getPercentsOf(percents, convertedBalance, this.getAmountAccuracy());
   };
 
-  getSpecificOrderValidationChecking = (mainAssetBalance: number) => {
+  getSpecificOrderValidationChecking = (mainAssetBalance: number) => (
+    quoteAssetAccuracy: number,
+    baseAssetId?: string,
+    quoteAssetId?: string
+  ) => {
     switch (this.market) {
       case OrderType.Market:
-        return () => this.isMarketInvalid(mainAssetBalance);
+        return this.isMarketInvalid(
+          mainAssetBalance,
+          baseAssetId!,
+          quoteAssetId!,
+          quoteAssetAccuracy
+        );
       case OrderType.StopLimit:
-        return () => this.isStopLimitInvalid(mainAssetBalance);
+        return this.isStopLimitInvalid(mainAssetBalance, quoteAssetAccuracy);
       case OrderType.Limit:
-        return () => this.isLimitInvalid(mainAssetBalance);
+        return this.isLimitInvalid(mainAssetBalance, quoteAssetAccuracy);
     }
   };
 
-  isFlooredLimitAmountValid = () => {
-    const accuracy = pathOr(
-      2,
-      ['quoteAsset', 'accuracy'],
-      this.rootStore.uiStore.selectedInstrument
-    );
+  isFlooredLimitAmountValid = (accuracy: number) => {
     return precisionFloor(this.limitAmount, accuracy) > 0;
   };
 
-  isLimitInvalid = (mainAssetBalance: number) => {
+  isLimitInvalid = (mainAssetBalance: number, quoteAssetAccuracy: number) => {
     return (
-      !this.isFlooredLimitAmountValid() ||
+      !this.isFlooredLimitAmountValid(quoteAssetAccuracy) ||
       !+this.priceValue ||
       !+this.amountValue ||
       isAmountExceedLimitBalance(
@@ -268,28 +270,18 @@ class UiOrderStore extends BaseStore {
     );
   };
 
-  isFlooredMarketAmountValid = () => {
-    const accuracy = pathOr(
-      2,
-      ['quoteAsset', 'accuracy'],
-      this.rootStore.uiStore.selectedInstrument
-    );
+  isFlooredMarketAmountValid = (accuracy: number) => {
     return precisionFloor(this.marketAmount, accuracy) > 0;
   };
 
-  isMarketInvalid = (mainAssetBalance: number) => {
-    const baseAssetId = pathOr(
-      '',
-      ['baseAsset', 'id'],
-      this.rootStore.uiStore.selectedInstrument
-    );
-    const quoteAssetId = pathOr(
-      '',
-      ['quoteAsset', 'id'],
-      this.rootStore.uiStore.selectedInstrument
-    );
+  isMarketInvalid = (
+    mainAssetBalance: number,
+    baseAssetId: string,
+    quoteAssetId: string,
+    quoteAssetAccuracy: number
+  ) => {
     return (
-      !this.isFlooredMarketAmountValid() ||
+      !this.isFlooredMarketAmountValid(quoteAssetAccuracy) ||
       !+this.amountValue ||
       this.isAmountExceedMarketBalance(
         mainAssetBalance,
@@ -299,12 +291,7 @@ class UiOrderStore extends BaseStore {
     );
   };
 
-  isFlooredStopLimitAmountValid = () => {
-    const accuracy = pathOr(
-      2,
-      ['quoteAsset', 'accuracy'],
-      this.rootStore.uiStore.selectedInstrument
-    );
+  isFlooredStopLimitAmountValid = (accuracy: number) => {
     return precisionFloor(this.stopLimitAmount, accuracy) > 0;
   };
 
@@ -317,9 +304,12 @@ class UiOrderStore extends BaseStore {
           +this.priceValue >= +this.stopPriceValue;
   };
 
-  isStopLimitInvalid = (mainAssetBalance: number) => {
+  isStopLimitInvalid = (
+    mainAssetBalance: number,
+    quoteAssetAccuracy: number
+  ) => {
     return (
-      !this.isFlooredStopLimitAmountValid() ||
+      !this.isFlooredStopLimitAmountValid(quoteAssetAccuracy) ||
       !this.isStopPriceValid() ||
       !+this.priceValue ||
       !+this.amountValue ||
@@ -356,17 +346,12 @@ class UiOrderStore extends BaseStore {
     }
   };
 
-  getConfirmButtonMessage = () => {
-    const assetName = pathOr(
-      '',
-      ['baseAsset', 'name'],
-      this.rootStore.uiStore.selectedInstrument!
-    );
+  getConfirmButtonMessage = (baseAssetName: string) => {
     const amount = formattedNumber(+this.amountValue, this.amountAccuracy);
-    return `${this.side} ${amount} ${assetName}`;
+    return `${this.side} ${amount} ${baseAssetName}`;
   };
 
-  getConfirmationMessage = () => {
+  getConfirmationMessage = (baseAssetName: string, quoteAssetName: string) => {
     const displayedPrice = formattedNumber(
       +parseFloat(this.priceValue),
       this.priceAccuracy
@@ -377,17 +362,6 @@ class UiOrderStore extends BaseStore {
       this.amountAccuracy
     );
 
-    const quoteAssetName = pathOr(
-      '',
-      ['quoteAsset', 'name'],
-      this.rootStore.uiStore.selectedInstrument
-    );
-    const baseAssetName = pathOr(
-      '',
-      ['baseAsset', 'name'],
-      this.rootStore.uiStore.selectedInstrument
-    );
-
     const messageSuffix =
       this.market === OrderType.Market
         ? 'at the market price'
@@ -395,28 +369,24 @@ class UiOrderStore extends BaseStore {
     return `${this.side.toLowerCase()} ${displayedQuantity} ${baseAssetName} ${messageSuffix}`;
   };
 
-  getOrderRequestBody = (): OrderRequestBody => {
+  getOrderRequestBody = (
+    baseAssetId: string,
+    assetPairId: string
+  ): OrderRequestBody | StopLimitRequestBody => {
     switch (this.market) {
       case OrderType.Market:
-        return this.getMarketRequestBody();
+        return this.getMarketRequestBody(baseAssetId, assetPairId);
       case OrderType.StopLimit:
-        return this.getStopLimitRequestBody();
+        return this.getStopLimitRequestBody(assetPairId);
       case OrderType.Limit:
-        return this.getLimitRequestBody();
+        return this.getLimitRequestBody(baseAssetId, assetPairId);
     }
   };
 
-  getMarketRequestBody = (): OrderRequestBody => {
-    const baseAssetId = pathOr(
-      '',
-      ['baseAsset', 'id'],
-      this.rootStore.uiStore.selectedInstrument
-    );
-    const assetPairId = pathOr(
-      '',
-      ['id'],
-      this.rootStore.uiStore.selectedInstrument
-    );
+  getMarketRequestBody = (
+    baseAssetId: string,
+    assetPairId: string
+  ): OrderRequestBody => {
     return {
       AssetId: baseAssetId,
       AssetPairId: assetPairId,
@@ -425,17 +395,10 @@ class UiOrderStore extends BaseStore {
     };
   };
 
-  getLimitRequestBody = (): OrderRequestBody => {
-    const baseAssetId = pathOr(
-      '',
-      ['baseAsset', 'id'],
-      this.rootStore.uiStore.selectedInstrument
-    );
-    const assetPairId = pathOr(
-      '',
-      ['id'],
-      this.rootStore.uiStore.selectedInstrument
-    );
+  getLimitRequestBody = (
+    baseAssetId: string,
+    assetPairId: string
+  ): OrderRequestBody => {
     return {
       AssetId: baseAssetId,
       AssetPairId: assetPairId,
@@ -445,14 +408,32 @@ class UiOrderStore extends BaseStore {
     };
   };
 
-  getStopLimitRequestBody = (): OrderRequestBody => {
+  getStopLimitRequestBody = (assetPairId: string): StopLimitRequestBody => {
     return {
-      AssetId: '',
-      AssetPairId: '',
+      AssetPairId: assetPairId,
       OrderAction: this.side,
       Volume: parseFloat(this.amountValue),
-      Price: parseFloat(this.priceValue)
+      ...this.getPriceBodyForStopLimitOrder()
     };
+  };
+
+  getPriceBodyForStopLimitOrder = () => {
+    const stopPrice = parseFloat(this.stopPriceValue);
+    const limitPrice = parseFloat(this.priceValue);
+
+    return this.isCurrentSideSell
+      ? {
+          LowerPrice: limitPrice,
+          LowerLimitPrice: stopPrice,
+          UpperPrice: null,
+          UpperLimitPrice: null
+        }
+      : {
+          LowerPrice: null,
+          LowerLimitPrice: null,
+          UpperPrice: limitPrice,
+          UpperLimitPrice: stopPrice
+        };
   };
 
   setMarketTotal = (

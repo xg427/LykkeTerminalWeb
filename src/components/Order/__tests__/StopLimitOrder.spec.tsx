@@ -3,7 +3,6 @@ import * as React from 'react';
 
 import {keys} from '../../../constants/keyBoardKeys';
 import {OrderInputs} from '../../../models';
-import formattedNumber from '../../../utils/localFormatted/localFormatted';
 import StopLimitOrder from '../StopLimitOrder';
 
 describe('<StopLimitOrder>', () => {
@@ -170,12 +169,7 @@ describe('<StopLimitOrder>', () => {
       const orderTotal = shallow(getTestStopLimitOrder()).find('OrderTotal');
       const orderAmount = orderTotal.find('OrderTotal').find('Amount');
       expect(orderAmount).toHaveLength(1);
-      expect(orderAmount.html()).toContain(
-        `${formattedNumber(
-          stopLimitAmount,
-          quoteAssetAccuracy
-        )} ${quoteAssetName}`
-      );
+      expect(orderAmount.html()).toContain(`25.00 USD`);
     });
   });
 

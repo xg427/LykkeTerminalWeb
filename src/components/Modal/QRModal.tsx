@@ -1,6 +1,6 @@
 import QRCode from 'qrcode.react';
 import * as React from 'react';
-import ModalModel from '../../models/modalModel';
+import ModalMessages from '../../constants/modalMessages';
 import ModalHeader from './ModalHeader/ModalHeader';
 import {
   ModalBody,
@@ -11,34 +11,36 @@ import {
   SessionQRConfirm
 } from './styles';
 
-interface QRModalProps {
-  modal: ModalModel;
+export interface QRModalProps {
+  setQRModalState: (state: boolean) => void;
   qrId: string;
+  continueInReadOnlyMode: () => void;
 }
 
 const QRModal: React.SFC<QRModalProps> = ({
-  modal: {cancelAction, close, message},
-  qrId
+  setQRModalState,
+  qrId,
+  continueInReadOnlyMode
 }: QRModalProps) => {
   const handleContinue = () => {
-    cancelAction();
-    close();
+    setQRModalState(false);
+    continueInReadOnlyMode();
   };
 
   return (
     <SessionQRConfirm>
       <ModalHeader onClick={handleContinue}>
-        <ModalTitle>{message.title}</ModalTitle>
+        <ModalTitle>{ModalMessages.qr.title}</ModalTitle>
       </ModalHeader>
       <ModalBody>
-        <div style={{width: '300px'}}>{message.body}</div>
+        <div style={{width: '300px'}}>{ModalMessages.qr.body}</div>
       </ModalBody>
       <QRBody>
         <QRCodeWrapper>
           <QRCode size={160} value={qrId} />
         </QRCodeWrapper>
       </QRBody>
-      <QRButton onClick={handleContinue}>{message.button}</QRButton>
+      <QRButton onClick={handleContinue}>{ModalMessages.qr.button}</QRButton>
     </SessionQRConfirm>
   );
 };

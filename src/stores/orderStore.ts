@@ -1,7 +1,12 @@
-import OrderApi, {OrderRequestBody} from '../api/orderApi';
+import OrderApi, {
+  OrderRequestBody,
+  RequestBody,
+  StopLimitRequestBody
+} from '../api/orderApi';
 import * as topics from '../api/topics';
 import messages from '../constants/notificationMessages';
 import {ApiError, levels} from '../models';
+import {OrderModel, OrderStatus, OrderType} from '../models';
 import {OrderModel, OrderType} from '../models';
 import logger from '../Logger';
 import {levels} from '../models';
@@ -31,25 +36,30 @@ class OrderStore extends BaseStore {
     this.modalStore = this.rootStore.modalStore;
   }
 
-  placeOrder = async (orderType: string, body: OrderRequestBody) => {
+  placeOrder = async (orderType: OrderType, body: RequestBody) => {
     switch (orderType) {
       case OrderType.Market:
         return this.api
-          .placeMarket(body)
+          .placeMarket(body as OrderRequestBody)
           .then(this.orderPlacedSuccessfully, this.orderPlacedUnsuccessfully)
           .then(() => Promise.resolve());
       case OrderType.Limit:
         return this.api
-          .placeLimit(body)
+          .placeLimit(body as OrderRequestBody)
           .then(
-            (orderId: any) => this.optimisticOrderAdding(orderId, body),
+            (orderId: any) =>
+              this.optimisticOrderAdding(orderId, body as OrderRequestBody),
             this.orderPlacedUnsuccessfully
           );
       case OrderType.StopLimit:
         return this.api
-          .placeStopLimit(body)
+          .placeStopLimit(body as StopLimitRequestBody)
           .then(
-            (orderId: string) => this.optimisticOrderAdding(orderId, body),
+            (orderId: string) =>
+              this.optimisticStopLimitOrderAdding(
+                orderId,
+                body as StopLimitRequestBody
+              ),
             this.orderPlacedUnsuccessfully
           );
     }
@@ -63,17 +73,40 @@ class OrderStore extends BaseStore {
       Volume: body.Volume,
       RemainingVolume: body.Volume,
       Price: body.Price,
-      AssetPairId: body.AssetPairId
+      AssetPairId: body.AssetPairId,
+      Type: OrderType.Limit
     });
     if (addedOrder) {
       this.orderPlacedSuccessfully();
     }
   };
 
-  editOrder = async (body: any, id: string) =>
+  optimisticStopLimitOrderAdding = (
+    orderId: string,
+    body: StopLimitRequestBody
+  ) => {
+    const addedOrder = this.rootStore.orderListStore.addOrder({
+      Id: orderId,
+      CreateDateTime: new Date(),
+      OrderAction: body.OrderAction,
+      Volume: body.Volume,
+      RemainingVolume: body.Volume,
+      AssetPairId: body.AssetPairId,
+      Type: OrderType.StopLimit,
+      LowerPrice: body.LowerPrice,
+      LowerLimitPrice: body.LowerLimitPrice,
+      UpperPrice: body.UpperPrice,
+      UpperLimitPrice: body.UpperLimitPrice
+    });
+    if (addedOrder) {
+      this.orderPlacedSuccessfully();
+    }
+  };
+
+  editOrder = async (body: RequestBody, id: string, orderType: OrderType) =>
     this.api
       .cancelOrder(id)
-      .then(() => this.api.placeLimit(body))
+      .then(() => this.placeOrder(orderType, body))
       .catch(this.orderPlacedUnsuccessfully);
 
   cancelOrder = async (id: string) => {
@@ -213,6 +246,9 @@ class OrderStore extends BaseStore {
             }
             break;
         }
+      } else {
+        const message = errorObject[key];
+        this.notificationStore.addNotification(levels.error, `${message}`);
       }
     }
   };

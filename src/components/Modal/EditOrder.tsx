@@ -1,4 +1,4 @@
-import {pathOr} from 'rambda';
+import {curry, pathOr} from 'rambda';
 import * as React from 'react';
 import {AnalyticsEvents} from '../../constants/analyticsEvents';
 import {Percentage} from '../../constants/ordersPercentage';
@@ -30,13 +30,20 @@ import OrderLimit from '../Order/OrderLimit';
 import ModalHeader from './ModalHeader/ModalHeader';
 import {EditActionTitle, EditModal, EditTitle} from './styles';
 
-import {OrderRequestBody} from '../../api/orderApi';
-import {EditStopLimitOrder} from './index';
+import {
+  OrderRequestBody,
+  RequestBody,
+  StopLimitRequestBody
+} from '../../api/orderApi';
+import {EditLimitOrder, EditStopLimitOrder} from './index';
+
+const EDIT_LIMIT_TITLE = 'Edit Limit Order';
+const EDIT_STOP_LIMIT_TITLE = 'Edit Stop Limit Order';
 
 export interface EditOrderProps {
-  getInstrumentById: any;
-  editOrder: any;
-  availableBalances: any;
+  getInstrumentById: (id: string) => InstrumentModel;
+  editOrder: (body: RequestBody, id: string, type: OrderType) => Promise<void>;
+  availableBalances: AssetBalanceModel[];
   order: OrderModel;
   onClose: () => void;
   setPriceValueWithFixed: (value: number) => void;
@@ -45,8 +52,13 @@ export interface EditOrderProps {
   setAmountAccuracy: (accuracy: number) => void;
   setPriceAccuracy: (accuracy: number) => void;
   setSide: (side: Side) => void;
-  getOrderRequestBody: () => OrderRequestBody;
+  getOrderRequestBody: (
+    baseAssetId: string,
+    assetPairId: string
+  ) => OrderRequestBody | StopLimitRequestBody;
   setMarket: (market: OrderType) => void;
+  isLimitInvalid: (balance: number, accuracy: number) => boolean;
+  isStopLimitInvalid: (balance: number, accuracy: number) => boolean;
 }
 
 interface EditOrderState {
@@ -55,24 +67,27 @@ interface EditOrderState {
 }
 
 class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
-  private readonly action: string;
-  private readonly accuracy: {
+  state = {
+    pendingOrder: false,
+    percents: Percentage.map(p => Object.assign({}, {...p}))
+  };
+
+  private action: string;
+  private accuracy: {
     priceAccuracy: number;
     amountAccuracy: number;
     quoteAssetAccuracy: number;
   };
-  private readonly baseAssetName: string = '';
-  private readonly quoteAssetName: string = '';
-  private readonly baseAssetId: string = '';
-  private readonly quoteAssetId: string = '';
-  private readonly assetPairId: string = '';
-  private readonly isSellActive: boolean;
-  private readonly balance: number = 0;
+  private baseAssetName: string = '';
+  private quoteAssetName: string = '';
+  private baseAssetId: string = '';
+  private quoteAssetId: string = '';
+  private assetPairId: string = '';
+  private isSellActive: boolean;
+  private balance: number = 0;
   private balanceAccuracy: number;
 
-  constructor(props: EditOrderProps) {
-    super(props);
-
+  componentWillMount() {
     const {order, getInstrumentById, availableBalances} = this.props;
     const currentInstrument = getInstrumentById(order.symbol);
 
@@ -86,11 +101,6 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
       )
     };
 
-    this.state = {
-      pendingOrder: false,
-      percents: Percentage.map(p => Object.assign({}, {...p}))
-    };
-
     this.baseAssetName = currentInstrument.baseAsset.name;
     this.quoteAssetName = currentInstrument.quoteAsset.name;
     this.baseAssetId = currentInstrument.baseAsset.id;
@@ -99,15 +109,24 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
     this.assetPairId = currentInstrument.id;
     this.isSellActive = this.action === Side.Sell;
 
-    this.setEditingLimitOrders(currentInstrument, order);
-    this.props.setMarket(OrderType.Limit);
+    let currentMarket: OrderType;
+
+    if (this.props.order.type === OrderType.Limit) {
+      this.setEditingLimitOrders(currentInstrument, order);
+      currentMarket = OrderType.Limit;
+    } else {
+      this.setEditingStopLimitOrders(currentInstrument, order);
+      currentMarket = OrderType.StopLimit;
+    }
+
+    this.props.setMarket(currentMarket);
 
     const assetId = this.isSellActive ? this.baseAssetId : this.quoteAssetId;
     const asset: AssetBalanceModel = availableBalances.find(
       (b: AssetBalanceModel) => {
         return b.id === assetId;
       }
-    );
+    )!;
     const reserved = this.isSellActive
       ? order.volume
       : order.volume * order.price;
@@ -121,14 +140,20 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
     currentInstrument: InstrumentModel,
     order: OrderModel
   ) => {
-    this.props.setPriceAccuracy(pathOr(2, ['accuracy'], currentInstrument));
-    this.props.setAmountAccuracy(
-      pathOr(2, ['baseAsset', 'accuracy'], currentInstrument)
-    );
+    const {
+      setPriceAccuracy,
+      setAmountAccuracy,
+      setPriceValueWithFixed,
+      setAmountValueWithFixed,
+      setSide
+    } = this.props;
 
-    this.props.setPriceValueWithFixed(order.price);
-    this.props.setAmountValueWithFixed(order.remainingVolume);
-    this.props.setSide(order.side);
+    setPriceAccuracy(pathOr(2, ['accuracy'], currentInstrument));
+    setAmountAccuracy(pathOr(2, ['baseAsset', 'accuracy'], currentInstrument));
+
+    setPriceValueWithFixed(order.price);
+    setAmountValueWithFixed(order.remainingVolume);
+    setSide(order.side);
   };
 
   setEditingStopLimitOrders = (
@@ -136,7 +161,7 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
     order: OrderModel
   ) => {
     this.setEditingLimitOrders(currentInstrument, order);
-    this.props.setStopPriceValueWithFixed(order.price);
+    this.props.setStopPriceValueWithFixed(order.stopPrice!);
   };
 
   handleUpdatePercentState = (
@@ -162,11 +187,12 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
   };
 
   handleEditOrder = () => {
+    const {getOrderRequestBody, order: {id, type}} = this.props;
     this.toggleDisableBtn(true);
-    const body = this.props.getOrderRequestBody();
+    const body = getOrderRequestBody(this.baseAssetId, this.assetPairId);
 
     this.props
-      .editOrder(body, this.props.order.id)
+      .editOrder(body, id, type)
       .then(this.handleClose)
       .catch(() => this.toggleDisableBtn(false));
     AnalyticsService.track(AnalyticsEvents.FinishOrderEdit);
@@ -184,49 +210,61 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
   };
 
   render() {
+    const isOrderLimit = this.props.order.type === OrderType.Limit;
     return (
       <EditModal isSell={this.isSellActive}>
         <ModalHeader onClick={this.handleClose}>
           <EditActionTitle isSell={this.isSellActive}>
             {this.action}
           </EditActionTitle>
-          <EditTitle>Edit Limit Order</EditTitle>
+          <EditTitle>
+            {isOrderLimit ? EDIT_LIMIT_TITLE : EDIT_STOP_LIMIT_TITLE}
+          </EditTitle>
         </ModalHeader>
-        {/*<EditLimitOrder*/}
-        {/*percents={this.state.percents}*/}
-        {/*updatePercentState={this.handleUpdatePercentState}*/}
-        {/*balance={this.balance}*/}
-        {/*balanceAccuracy={this.balanceAccuracy}*/}
-        {/*isCurrentSideSell={this.isSellActive}*/}
-        {/*baseAssetId={this.baseAssetId}*/}
-        {/*quoteAssetId={this.quoteAssetId}*/}
-        {/*availableAssetName={this.isSellActive ? this.baseAssetName : this.quoteAssetName}*/}
-        {/*baseAssetName={this.baseAssetName}*/}
-        {/*quoteAssetName={this.quoteAssetName}*/}
-        {/*quoteAssetAccuracy={this.accuracy.quoteAssetAccuracy}*/}
-        {/*resetPercents={this.resetPercents}*/}
-        {/*handleButtonClick={this.handleEditOrder}*/}
-        {/*isButtonDisable={this.state.pendingOrder}*/}
-        {/*/>*/}
 
-        <EditStopLimitOrder
-          percents={this.state.percents}
-          updatePercentState={this.handleUpdatePercentState}
-          balance={this.balance}
-          balanceAccuracy={this.balanceAccuracy}
-          isCurrentSideSell={this.isSellActive}
-          baseAssetId={this.baseAssetId}
-          quoteAssetId={this.quoteAssetId}
-          availableAssetName={
-            this.isSellActive ? this.baseAssetName : this.quoteAssetName
-          }
-          baseAssetName={this.baseAssetName}
-          quoteAssetName={this.quoteAssetName}
-          quoteAssetAccuracy={this.accuracy.quoteAssetAccuracy}
-          resetPercents={this.resetPercents}
-          handleButtonClick={this.handleEditOrder}
-          isButtonDisable={this.state.pendingOrder}
-        />
+        {isOrderLimit && (
+          <EditLimitOrder
+            percents={this.state.percents}
+            updatePercentState={this.handleUpdatePercentState}
+            balance={this.balance}
+            balanceAccuracy={this.balanceAccuracy}
+            isCurrentSideSell={this.isSellActive}
+            baseAssetId={this.baseAssetId}
+            quoteAssetId={this.quoteAssetId}
+            availableAssetName={
+              this.isSellActive ? this.baseAssetName : this.quoteAssetName
+            }
+            baseAssetName={this.baseAssetName}
+            quoteAssetName={this.quoteAssetName}
+            quoteAssetAccuracy={this.accuracy.quoteAssetAccuracy}
+            resetPercents={this.resetPercents}
+            handleButtonClick={this.handleEditOrder}
+            isButtonDisable={this.state.pendingOrder}
+            isOrderInvalid={curry(this.props.isLimitInvalid)(this.balance)}
+          />
+        )}
+
+        {!isOrderLimit && (
+          <EditStopLimitOrder
+            percents={this.state.percents}
+            updatePercentState={this.handleUpdatePercentState}
+            balance={this.balance}
+            balanceAccuracy={this.balanceAccuracy}
+            isCurrentSideSell={this.isSellActive}
+            baseAssetId={this.baseAssetId}
+            quoteAssetId={this.quoteAssetId}
+            availableAssetName={
+              this.isSellActive ? this.baseAssetName : this.quoteAssetName
+            }
+            baseAssetName={this.baseAssetName}
+            quoteAssetName={this.quoteAssetName}
+            quoteAssetAccuracy={this.accuracy.quoteAssetAccuracy}
+            resetPercents={this.resetPercents}
+            handleButtonClick={this.handleEditOrder}
+            isButtonDisable={this.state.pendingOrder}
+            isOrderInvalid={curry(this.props.isStopLimitInvalid)(this.balance)}
+          />
+        )}
       </EditModal>
     );
   }
