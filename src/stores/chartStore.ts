@@ -41,10 +41,10 @@ class ChartStore extends BaseStore {
       // tslint:disable-next-line:no-unused-expression
       this.getWs() && this.getWs().unsubscribe(s);
     });
-    await Promise.all(subscriptions);
     if (this.subscriptions.size > 0) {
       this.subscriptions.clear();
     }
+    await Promise.all(subscriptions);
   };
 
   getDatafeed = () => {

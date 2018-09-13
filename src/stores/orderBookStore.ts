@@ -250,11 +250,10 @@ class OrderBookStore extends BaseStore {
       // tslint:disable-next-line:no-unused-expression
       this.getWs() && this.getWs().unsubscribe(s);
     });
-    await Promise.all(promises);
-
     if (this.subscriptions.size > 0) {
       this.subscriptions.clear();
     }
+    await Promise.all(promises);
   };
 
   setOrderPrice = (value: number, side: Side) => {
