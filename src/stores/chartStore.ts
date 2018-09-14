@@ -38,8 +38,10 @@ class ChartStore extends BaseStore {
 
   unsubscribeFromCandle = async () => {
     const subscriptions = Array.from(this.subscriptions).map(s => {
-      // tslint:disable-next-line:no-unused-expression
-      this.getWs() && this.getWs().unsubscribe(s);
+      if (!this.getWs() || !s.active) {
+        return Promise.resolve();
+      }
+      return this.getWs().unsubscribe(s);
     });
     if (this.subscriptions.size > 0) {
       this.subscriptions.clear();

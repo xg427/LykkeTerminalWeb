@@ -247,8 +247,10 @@ class OrderBookStore extends BaseStore {
 
   unsubscribe = async () => {
     const promises = Array.from(this.subscriptions).map(s => {
-      // tslint:disable-next-line:no-unused-expression
-      this.getWs() && this.getWs().unsubscribe(s);
+      if (!this.getWs() || !s.active) {
+        return Promise.resolve();
+      }
+      return this.getWs().unsubscribe(s);
     });
     if (this.subscriptions.size > 0) {
       this.subscriptions.clear();
@@ -276,10 +278,10 @@ class OrderBookStore extends BaseStore {
     })(type)(value, side);
   };
 
-  reset = () => {
+  reset = async () => {
     this.rawBids = this.rawAsks = [];
     this.spanMultiplierIdx = 0;
-    this.unsubscribe();
+    await this.unsubscribe();
   };
 }
 

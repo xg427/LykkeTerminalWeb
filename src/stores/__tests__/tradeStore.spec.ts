@@ -1,4 +1,5 @@
 import {Subscription} from 'autobahn';
+import {SessionMock} from '../../../mocks/autobahnSessionMock';
 import * as topics from '../../api/topics';
 import {
   AssetModel,
@@ -199,8 +200,16 @@ describe('trade store', () => {
 
   describe('method unsubscribeFromPublicTrades', () => {
     let unsubscribe: () => void;
-    function* getSubscriptions() {
-      yield new Subscription('first');
+
+    function getSubscriptions() {
+      const subscription = new Subscription(
+        'first',
+        undefined,
+        {},
+        SessionMock
+      );
+      subscription.active = true;
+      return Promise.resolve(subscription);
     }
     beforeEach(() => {
       unsubscribe = jest.fn();
