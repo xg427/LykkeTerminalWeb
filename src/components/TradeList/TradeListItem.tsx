@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {TradesCellWidth} from '.';
 import {TradeModel} from '../../models/index';
-import {feeAssetFromSide} from '../../models/tradeModel.mapper';
+import {feeAssetFromSide} from '../../models/mappers/tradeModelMapper';
 import {formattedNumber} from '../../utils/localFormatted/localFormatted';
 import {Cell, ColoredText} from '../Table/styles';
 import TitledCell from '../Table/TitledCell';

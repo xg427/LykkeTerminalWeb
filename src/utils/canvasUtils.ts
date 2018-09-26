@@ -204,8 +204,8 @@ export const defineCanvasScale = (
   canvas.width = oldWidth * ratio;
   canvas.height = oldHeight * ratio;
 
-  canvas.style.width = oldWidth + 'px';
-  canvas.style.height = oldHeight + 'px';
+  canvas.style.width = canvas.width + 'px';
+  canvas.style.height = canvas.height + 'px';
 
   ctx.scale(ratio, ratio);
 };

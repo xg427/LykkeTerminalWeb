@@ -1,5 +1,6 @@
 import {colors} from '../../components/styled';
 import {
+  defineCanvasScale,
   drawArea,
   drawCircle,
   drawLine,
@@ -10,12 +11,12 @@ import {
 } from '../canvasUtils';
 
 describe(' canvas utils', () => {
+  let canvas: any;
   let context: CanvasRenderingContext2D;
 
   beforeEach(() => {
-    context = document
-      .createElement('canvas')
-      .getContext('2d') as CanvasRenderingContext2D;
+    canvas = document.createElement('canvas');
+    context = canvas.getContext('2d') as CanvasRenderingContext2D;
   });
 
   const color = '#ffffff';
@@ -177,6 +178,20 @@ describe(' canvas utils', () => {
     expect(context.closePath).toHaveBeenCalled();
     expect(context.fill).toHaveBeenCalled();
     expect(context.stroke).toHaveBeenCalled();
+  });
+
+  describe('method defineCanvasScale', () => {
+    it('should set canvas dimensions from params if device pixel ratio not set', () => {
+      const canvasWidth = 1000;
+      const canvasHeight = 500;
+      const resultWidth = 1000;
+      const resultHeight = 500;
+      defineCanvasScale(context, canvas, canvasWidth, canvasHeight);
+      expect(canvas.width).toEqual(resultWidth);
+      expect(canvas.height).toEqual(resultHeight);
+      expect(canvas.style.width).toEqual(resultWidth + 'px');
+      expect(canvas.style.height).toEqual(resultHeight + 'px');
+    });
   });
 
   describe('method fitString', () => {

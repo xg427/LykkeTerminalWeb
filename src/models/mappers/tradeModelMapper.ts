@@ -1,10 +1,8 @@
 import {add, reject, uniq, without} from 'rambda';
-import {FeeType, InstrumentModel, Side, TradeModel} from '.';
-import {precisionCeil, precisionFloor} from '../utils/math';
-import {mapHistoryTypeToOrderType} from './mappers';
-import SideDirection from './sideDirection';
-
-// TODO: move it to the mappers directory
+import {FeeType, InstrumentModel, Side, TradeModel} from '..';
+import {precisionCeil, precisionFloor} from '../../utils/math';
+import {mapHistoryTypeToOrderType} from '../mappers';
+import SideDirection from '../sideDirection';
 
 interface TradeValue {
   volume: number;

@@ -130,7 +130,7 @@ describe('order utils', () => {
 
     it('should be invalid if the total price slightly differs from the available amount and direction is buy', () => {
       const amountTaken = 2050.353;
-      quantityValue = (amountTaken * 1.000001 / 5848.989).toFixed(8);
+      quantityValue = ((amountTaken * 1.000001) / 5848.989).toFixed(8);
       priceValue = '5848.989';
       isSell = false;
       const isInvalid = isAmountExceedLimitBalance(
@@ -166,6 +166,11 @@ describe('order utils', () => {
       const index = 1;
       setActivePercentage(percentage, index);
       expect(percentage[index].isActive).toBeTruthy();
+    });
+
+    it('should set percentage to 100 if index is not passed', () => {
+      const result = setActivePercentage([]);
+      expect(result.percents).toBe(100);
     });
 
     it('should return dto with chosen percent and updated arr', () => {

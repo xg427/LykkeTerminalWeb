@@ -1,8 +1,6 @@
 import {
   getPostDecimalsLength,
-  getRestErrorMessage,
   getTrailingZeroOppositePosition,
-  getWampErrorMessage,
   hasTrailingZeroes,
   isOnlyNumbers,
   substringDot,
@@ -30,6 +28,11 @@ describe('string utils', () => {
 
   it('should return string without last dot symbol', () => {
     const customNumber = '123.';
+    expect(substringDot(customNumber)).toBe('123');
+  });
+
+  it('should return same string if it does not contain dot symbol', () => {
+    const customNumber = '123';
     expect(substringDot(customNumber)).toBe('123');
   });
 
@@ -61,20 +64,6 @@ describe('string utils', () => {
     const customNumber = '-0.2';
     const returned = substringMinus(customNumber);
     expect(substringZero(returned)).toBe(customNumber.substring(1));
-  });
-
-  it('should return splitted string', () => {
-    const message = 'ReservedVolumeHigherThanBalance';
-    expect(getWampErrorMessage(message)).toBe(
-      'reserved volume higher than balance'
-    );
-  });
-
-  it('should return string from rest error object', () => {
-    const restMessage = {id: ['Value to small', 'Please, try again']};
-    expect(getRestErrorMessage(restMessage)).toBe(
-      'Value to small. Please, try again'
-    );
   });
 
   describe('trailing zeroes checking', () => {

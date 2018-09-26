@@ -1,11 +1,11 @@
 import {InstrumentModel, OrderType} from '..';
-import SideDirection from '../sideDirection';
 import {
   aggregateTradesByTimestamp,
   fromRestToTrade,
   fromWampToTrade,
   mapToEffectivePrice
-} from '../tradeModel.mapper';
+} from '../mappers/tradeModelMapper';
+import SideDirection from '../sideDirection';
 
 describe('trade model mapper', () => {
   describe('mapToEffectivePrice', () => {

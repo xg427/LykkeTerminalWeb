@@ -2,6 +2,7 @@ import ArrowDirection from '../../models/arrowDirection';
 import {onArrowClick, onValueChange} from '../inputNumber';
 import {
   getPostDecimalsLength,
+  substringDot,
   substringLastSome,
   substringZero
 } from '../string';
@@ -57,6 +58,12 @@ describe('input with type number functionality', () => {
       customValue
     );
     expect(result).toBe(customValue);
+  });
+
+  it('should remove dot from integer value if accuracy is zero', () => {
+    const customValue = '0.';
+    onValueChange((value: string) => (result = value), () => 0, customValue);
+    expect(result).toBe(substringDot(customValue));
   });
 
   it('should cut last some digits if digits length greater than accuracy', () => {

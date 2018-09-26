@@ -8,7 +8,7 @@ import {
 } from '../../models/index';
 import {RootStore, TradeStore} from '../index';
 
-jest.mock('../../models/tradeModel.mapper', () => ({
+jest.mock('../../models/mappers/tradeModelMapper', () => ({
   fromWampToTrade: jest.fn(),
   fromWampToPublicTrade: jest.fn()
 }));

@@ -36,25 +36,6 @@ export const isOnlyNumbers = (str: any) => {
   return !isNaN(str - parseFloat(str));
 };
 
-export const getWampErrorMessage = (message: string) =>
-  message
-    .split(/(?=[A-Z])/)
-    .join(' ')
-    .toLowerCase();
-
-export const getRestErrorMessage = (message: any) =>
-  (Object as any).values(message)[0].join('. ');
-
-export const toLocaleStringWithAccuracy = (
-  num: number,
-  accuracy: number,
-  options?: any
-) =>
-  num.toLocaleString(undefined, {
-    maximumFractionDigits: accuracy,
-    ...options
-  });
-
 export const hasTrailingZeroes = (s: string) => s[s.length - 1] === '0';
 
 export const getTrailingZeroOppositePosition = (s: string) => {
