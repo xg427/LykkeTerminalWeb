@@ -15,19 +15,19 @@ const OrderPercentage: React.SFC<OrderPercentageProps> = ({
 }) => {
   const handleClick = (index: number) => () => onClick(index);
 
-  const className = classNames({
-    active: isActive,
-    disabled: isDisabled
-  });
+  const getCssClasses = (isActive: boolean) =>
+    classNames({
+      active: isActive,
+      disabled: isDisabled
+    });
 
   return (
     <React.Fragment>
       {percents!.map((item: any, index: number) => (
         <Percent
-          key={index}
-          disabled={isDisabled}
-          className={className}
+          className={getCssClasses(item.isActive)}
           onClick={handleClick(index)}
+          key={index}
         >
           <div>{item.percent}%</div>
         </Percent>
@@ -37,5 +37,5 @@ const OrderPercentage: React.SFC<OrderPercentageProps> = ({
 };
 
 OrderPercentage.displayName = 'OrderPercentage';
-StyledPercent.displayName = 'StyledPercent';
+Percent.displayName = 'Percent';
 export default OrderPercentage;

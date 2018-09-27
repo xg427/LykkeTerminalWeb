@@ -254,7 +254,7 @@ describe('<StopLimitOrder>', () => {
         const wrapper = mount(getTestStopLimitOrder());
         const percent = wrapper
           .find('OrderPercentage')
-          .find('StyledPercent')
+          .find('Percent')
           .first();
 
         percent.simulate('click');
@@ -276,7 +276,7 @@ describe('<StopLimitOrder>', () => {
         const wrapper = mount(getTestStopLimitOrder());
         const percent = wrapper
           .find('OrderPercentage')
-          .find('StyledPercent')
+          .find('Percent')
           .first();
 
         percent.simulate('click');

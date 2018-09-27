@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {AssetBalanceModel, InstrumentModel, Side} from '../../models/index';
 import WalletModel from '../../models/walletModel';
-import {PercentageChangeConfig} from '../../stores/uiOrderStore';
 import {WalletBalanceItem} from './index';
 import {WalletTable} from './styles';
 
@@ -9,7 +8,7 @@ export interface WalletBalanceListProps {
   wallet: WalletModel;
   selectedInstrument: InstrumentModel | null;
   setSide: (side: string) => void;
-  handlePercentageChange: (config: PercentageChangeConfig) => void;
+  handlePercentageChange: (balance: number, percents: number) => void;
 }
 
 const WalletBalanceList: React.SFC<WalletBalanceListProps> = ({
@@ -58,12 +57,7 @@ const WalletBalanceList: React.SFC<WalletBalanceListProps> = ({
 
   const setAmount = (balanceModel: AssetBalanceModel) => {
     if (selectedInstrument) {
-      handlePercentageChange({
-        balance: balanceModel.available,
-        baseAssetId: selectedInstrument.baseAsset.id,
-        quoteAssetId: selectedInstrument.quoteAsset.id,
-        percents: 100
-      });
+      handlePercentageChange(balanceModel.available, 100);
     }
   };
 

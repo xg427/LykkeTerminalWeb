@@ -1,41 +1,24 @@
 import {curry, pathOr} from 'rambda';
 import * as React from 'react';
-import {AnalyticsEvents} from '../../constants/analyticsEvents';
-import {Percentage} from '../../constants/ordersPercentage';
-import {AssetBalanceModel, OrderInputs, OrderModel} from '../../models';
-import Side from '../../models/side';
-import {AnalyticsService} from '../../services/analyticsService';
-import {IPercentage, Percentage} from '../../constants/ordersPercentage';
-import {
-  AssetBalanceModel,
-  InstrumentModel,
-  OrderModel,
-  OrderType
-} from '../../models';
-import Side from '../../models/side';
-import {setActivePercentage} from '../../utils/order';
-  DEFAULT_INPUT_VALUE,
-  onArrowClick,
-  onValueChange
-} from '../../utils/inputNumber';
-import {formattedNumber} from '../../utils/localFormatted/localFormatted';
-import {bigToFixed, precisionFloor} from '../../utils/math';
-import {
-  getPercentOfValueForLimit,
-  isAmountExceedLimitBalance,
-  resetPercentage,
-  setActivePercentage
-} from '../../utils/order';
-import OrderLimit from '../Order/OrderLimit';
-import ModalHeader from './ModalHeader/ModalHeader';
-import {EditActionTitle, EditModal, EditTitle} from './styles';
-
 import {
   OrderRequestBody,
   RequestBody,
   StopLimitRequestBody
 } from '../../api/orderApi';
+import {AnalyticsEvents} from '../../constants/analyticsEvents';
+import {IPercentage, Percentage} from '../../constants/ordersPercentage';
+import {
+  AssetBalanceModel,
+  InstrumentModel,
+  OrderModel,
+  OrderType,
+  Side
+} from '../../models';
+import {AnalyticsService} from '../../services/analyticsService';
+import {setActivePercentage} from '../../utils/order';
 import {EditLimitOrder, EditStopLimitOrder} from './index';
+import ModalHeader from './ModalHeader/ModalHeader';
+import {EditActionTitle, EditModal, EditTitle} from './styles';
 
 const EDIT_LIMIT_TITLE = 'Edit Limit Order';
 const EDIT_STOP_LIMIT_TITLE = 'Edit Stop Limit Order';
@@ -187,7 +170,10 @@ class EditOrder extends React.Component<EditOrderProps, EditOrderState> {
   };
 
   handleEditOrder = () => {
-    const {getOrderRequestBody, order: {id, type}} = this.props;
+    const {
+      getOrderRequestBody,
+      order: {id, type}
+    } = this.props;
     this.toggleDisableBtn(true);
     const body = getOrderRequestBody(this.baseAssetId, this.assetPairId);
 

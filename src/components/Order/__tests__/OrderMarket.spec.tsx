@@ -1,9 +1,9 @@
 import {mount, shallow} from 'enzyme';
 import * as React from 'react';
-import OrderMarket from '../OrderMarket';
-import {OrderInputs} from '../../../models';
-import formattedNumber from '../../../utils/localFormatted/localFormatted';
 import {keys} from '../../../constants/keyBoardKeys';
+import {OrderInputs} from '../../../models';
+import {formattedNumber} from '../../../utils/localFormatted/localFormatted';
+import OrderMarket from '../OrderMarket';
 
 describe('<OrderMarket>', () => {
   const onAmountArrowClick = jest.fn();
@@ -56,6 +56,11 @@ describe('<OrderMarket>', () => {
         isCurrentSideSell={true}
         baseAssetId={baseAssetId}
         quoteAssetId={quoteAssetId}
+        // tslint:disable-next-line:jsx-no-lambda
+        setMarketTotal={() => {
+          return;
+        }}
+        isEnoughLiquidity={true}
       />
     );
   };
@@ -179,7 +184,7 @@ describe('<OrderMarket>', () => {
         const wrapper = mount(getTestOrderMarket());
         const percent = wrapper
           .find('OrderPercentage')
-          .find('StyledPercent')
+          .find('Percent')
           .first();
 
         percent.simulate('click');
@@ -201,7 +206,7 @@ describe('<OrderMarket>', () => {
         const wrapper = mount(getTestOrderMarket());
         const percent = wrapper
           .find('OrderPercentage')
-          .find('StyledPercent')
+          .find('Percent')
           .first();
 
         percent.simulate('click');

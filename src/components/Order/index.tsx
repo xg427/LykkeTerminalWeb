@@ -1,9 +1,8 @@
 import {pathOr} from 'rambda';
 import withAuth from '../Auth/withAuth';
 import {connect} from '../connect';
-import Order, {OrderProps} from './Order';
 import {withKyc} from '../Kyc';
-import Order from './Order';
+import Order, {OrderProps} from './Order';
 import OrderLimit from './OrderLimit';
 import OrderMarket from './OrderMarket';
 import StopLimitOrder from './StopLimitOrder';
@@ -34,10 +33,10 @@ const ConnectedOrder = connect<OrderProps>(
       setSide,
       resetOrder,
       getConfirmationMessage,
-      getOrderRequestBody
+      getOrderRequestBody,
+      getAnalyticTracker
     },
-    authStore: {isAuth, isKycPassed},
-    marketStore: {convert}
+    authStore: {isAuth, isKycPassed}
   }) => ({
     placeOrder,
     isAuth,
@@ -55,7 +54,8 @@ const ConnectedOrder = connect<OrderProps>(
     baseAssetId: pathOr('', ['baseAsset', 'id'], selectedInstrument),
     assetPairId: pathOr('', ['id'], selectedInstrument),
     quoteAssetName: pathOr(2, ['quoteAsset', 'name'], selectedInstrument),
-    baseAssetName: pathOr(2, ['baseAsset', 'name'], selectedInstrument)
+    baseAssetName: pathOr(2, ['baseAsset', 'name'], selectedInstrument),
+    orderAnalyticTracker: getAnalyticTracker()
   }),
   withAuth(withKyc(Order))
 );
@@ -127,7 +127,8 @@ const ConnectedOrderCommonProps = connect(
     getConfirmButtonMessage,
     isOrderInvalid: getSpecificOrderValidationChecking(
       isCurrentSideSell ? baseAssetBalance : quoteAssetBalance
-    )
+    ),
+    isCurrentSideSell
   }),
   CommonOrder
 );
@@ -152,9 +153,18 @@ const ConnectedLimitOrder = connect(
 );
 
 const ConnectedMarketOrder = connect(
-  ({uiOrderStore: {handleMarketPercentageChange, marketAmount}}) => ({
+  ({
+    uiOrderStore: {
+      handleMarketPercentageChange,
+      marketAmount,
+      setMarketTotal,
+      isEnoughLiquidity
+    }
+  }) => ({
     handlePercentageChange: handleMarketPercentageChange,
-    marketAmount
+    marketAmount,
+    setMarketTotal,
+    isEnoughLiquidity
   }),
   withOrderConnectedProps(OrderMarket)
 );

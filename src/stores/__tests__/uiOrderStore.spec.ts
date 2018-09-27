@@ -1,16 +1,7 @@
 import {OrderRequestBody, StopLimitRequestBody} from '../../api/orderApi';
-import {ArrowDirection, OrderType, Side} from '../../models';
-import {pathOr} from 'rambda';
-import {
-  ArrowDirection,
-  AssetModel,
-  InstrumentModel,
-  OrderType,
-  Side
-} from '../../models';
 import {ArrowDirection, Order, OrderType, Side} from '../../models';
 import {DEFAULT_INPUT_VALUE} from '../../utils/inputNumber';
-import formattedNumber from '../../utils/localFormatted/localFormatted';
+import {formattedNumber} from '../../utils/localFormatted/localFormatted';
 import {getPercentsOf, precisionFloor} from '../../utils/math';
 import {RootStore, UiOrderStore} from '../index';
 
@@ -182,14 +173,15 @@ describe('uiOrder store', () => {
       expect(uiOrderStore.market).toBe(OrderType.StopLimit);
     });
 
-    it('should set buy side by default', () => {
-      expect(uiOrderStore.isCurrentSideSell).toBeFalsy();
+    it('should set sell side by default', () => {
+      expect(uiOrderStore.isCurrentSideSell).toBeTruthy();
     });
 
     it('should change order side', () => {
-      expect(uiOrderStore.isCurrentSideSell).toBeFalsy();
       uiOrderStore.setSide(Side.Sell);
       expect(uiOrderStore.isCurrentSideSell).toBeTruthy();
+      uiOrderStore.setSide(Side.Buy);
+      expect(uiOrderStore.isCurrentSideSell).toBeFalsy();
     });
 
     it('should change stop price value', () => {
@@ -199,6 +191,7 @@ describe('uiOrder store', () => {
     });
 
     it('should change price, reset volume, set order type to limit and change the side if market is not limit', () => {
+      uiOrderStore.setSide(Side.Buy);
       expect(uiOrderStore.isCurrentSideSell).toBeFalsy();
       expect(uiOrderStore.priceValue).toBe(DEFAULT_INPUT_VALUE);
       uiOrderStore.setMarket(OrderType.Market);
@@ -217,6 +210,7 @@ describe('uiOrder store', () => {
     });
 
     it('should change price and change the side if market is limit', () => {
+      uiOrderStore.setSide(Side.Buy);
       expect(uiOrderStore.isCurrentSideSell).toBeFalsy();
       expect(uiOrderStore.priceValue).toBe(DEFAULT_INPUT_VALUE);
 
@@ -230,6 +224,7 @@ describe('uiOrder store', () => {
     });
 
     it('should change volume, set order type to market, change the order side', () => {
+      uiOrderStore.setSide(Side.Buy);
       expect(uiOrderStore.isCurrentSideSell).toBeFalsy();
       expect(uiOrderStore.amountValue).toBe(DEFAULT_INPUT_VALUE);
       expect(uiOrderStore.market).toBe(OrderType.Limit);
@@ -284,12 +279,7 @@ describe('uiOrder store', () => {
       const percents = 30;
       uiOrderStore.setSide(Side.Sell);
       uiOrderStore.setMarket(OrderType.Market);
-      uiOrderStore.handleMarketPercentageChange(
-        balance,
-        'BTC',
-        'USD',
-        percents
-      );
+      uiOrderStore.handleMarketPercentageChange(balance, percents);
       expect(uiOrderStore.amountValue).toBe(
         getPercentsOf(
           percents,
@@ -308,12 +298,7 @@ describe('uiOrder store', () => {
       ];
       uiOrderStore.setSide(Side.Buy);
       uiOrderStore.setMarket(OrderType.Market);
-      uiOrderStore.handleMarketPercentageChange(
-        balance,
-        'BTC',
-        'USD',
-        percents
-      );
+      uiOrderStore.handleMarketPercentageChange(balance, percents);
       expect(uiOrderStore.amountValue).toBe(
         getPercentsOf(
           percents,
@@ -405,10 +390,6 @@ describe('uiOrder store', () => {
         uiOrderStore.setStopPriceValue('2');
         uiOrderStore.rootStore.orderBookStore.bestBidPrice = 1;
         expect(uiOrderStore.isStopPriceValid()).toBeFalsy();
-
-        uiOrderStore.setStopPriceValue('0');
-        uiOrderStore.setPriceValue('2');
-        expect(uiOrderStore.isStopPriceValid()).toBeFalsy();
       });
 
       it('should return false if stop price is invalid for buy side', () => {
@@ -417,22 +398,9 @@ describe('uiOrder store', () => {
         uiOrderStore.setPriceValue('2');
         uiOrderStore.rootStore.orderBookStore.bestAskPrice = 1;
         expect(uiOrderStore.isStopPriceValid()).toBeFalsy();
-
-        uiOrderStore.setStopPriceValue('3');
-        expect(uiOrderStore.isStopPriceValid()).toBeFalsy();
       });
 
       describe('invalid', () => {
-        it('stop price is invalid', () => {
-          uiOrderStore.setSide(Side.Sell);
-          uiOrderStore.setStopPriceValue('0');
-          uiOrderStore.setPriceValue('2');
-          uiOrderStore.setAmountValue('2');
-          expect(
-            uiOrderStore.isStopLimitInvalid(100, quoteAssetAccuracy)
-          ).toBeTruthy();
-        });
-
         it('price is invalid', () => {
           uiOrderStore.setSide(Side.Sell);
           uiOrderStore.setStopPriceValue('2');

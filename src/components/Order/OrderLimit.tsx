@@ -1,9 +1,8 @@
 import {curry} from 'rambda';
 import * as React from 'react';
+import {AnalyticsEvents} from '../../constants/analyticsEvents';
 import {IPercentage} from '../../constants/ordersPercentage';
 import {ArrowDirection, OrderInputs} from '../../models';
-import {AnalyticsEvents} from '../../constants/analyticsEvents';
-import {OrderInputs} from '../../models';
 import {AnalyticsService} from '../../services/analyticsService';
 import {formattedNumber} from '../../utils/localFormatted/localFormatted';
 import {precisionFloor} from '../../utils/math';
@@ -81,20 +80,11 @@ const OrderLimit: React.SFC<LimitOrderProps> = ({
 
     const curriedAmountUpdating = curry(handlePercentageChange)(balance);
     updatePercentState(curriedAmountUpdating, index);
+    AnalyticsService.track(AnalyticsEvents.ClickOnAvailable('Limit'));
   };
 
   const isOrderValuesInvalid = () => {
     return isButtonDisable || isOrderInvalid(quoteAssetAccuracy);
-  };
-
-  const handlePercentageChange = () => {
-    onHandlePercentageChange()();
-    AnalyticsService.track(AnalyticsEvents.ClickOnAvailable('Limit'));
-  };
-
-  const reset = () => {
-    onReset();
-    AnalyticsService.track(AnalyticsEvents.ClickOnReset);
   };
 
   return (
@@ -113,7 +103,8 @@ const OrderLimit: React.SFC<LimitOrderProps> = ({
       <InputControl>
         <Flex justify={'space-between'} style={{marginBottom: '7px'}}>
           <Action>{`Amount (${baseAssetName})`}</Action>
-          <Available disabled={!balance} onClick={handlePercentageChange}>
+          {/* tslint:disable-next-line:jsx-no-lambda */}
+          <Available onClick={() => handlePercentsClick()}>
             {formattedNumber(balance || 0, balanceAccuracy)}{' '}
             {availableAssetName} available
           </Available>

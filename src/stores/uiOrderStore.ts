@@ -1,21 +1,19 @@
 import {computed, observable} from 'mobx';
 import {curry} from 'rambda';
-import {OrderType} from '../models';
-import ArrowDirection from '../models/arrowDirection';
-import Side from '../models/side';
-import {curry} from 'rambda';
+import {OrderRequestBody, StopLimitRequestBody} from '../api/orderApi';
+import {AnalyticsEvents} from '../constants/analyticsEvents';
 import {ArrowDirection, OrderType, Side} from '../models';
 import {
   getMaxAvailableVolume,
   mapToEffectivePrice
 } from '../models/mappers/orderMapper';
+import {AnalyticsService} from '../services/analyticsService';
 import {
   DEFAULT_INPUT_VALUE,
   onArrowClick,
   onValueChange
 } from '../utils/inputNumber';
-import formattedNumber from '../utils/localFormatted/localFormatted';
-import {getPercentsOf, precisionFloor} from '../utils/math';
+import {formattedNumber} from '../utils/localFormatted/localFormatted';
 import {bigToFixed, getPercentsOf, precisionFloor} from '../utils/math';
 import {
   getPercentOfValueForLimit,
@@ -23,16 +21,7 @@ import {
 } from '../utils/order';
 import {BaseStore, RootStore} from './index';
 
-import {OrderRequestBody, StopLimitRequestBody} from '../api/orderApi';
-
 const MARKET_TOTAL_DEBOUNCE = 1000;
-
-export interface PercentageChangeConfig {
-  balance: number;
-  baseAssetId: string;
-  quoteAssetId: string;
-  percents: number;
-}
 
 class UiOrderStore extends BaseStore {
   @computed
@@ -140,8 +129,8 @@ class UiOrderStore extends BaseStore {
     (this.priceValue = !price
       ? DEFAULT_INPUT_VALUE
       : bigToFixed(price, this.priceAccuracy).toString());
-  setQuantityValueWithFixed = (amount: number | string) =>
-    (this.quantityValue = !quantity
+  setAmountValueWithFixed = (amount: number | string) =>
+    (this.amountValue = !amount
       ? DEFAULT_INPUT_VALUE
       : bigToFixed(amount, this.amountAccuracy).toString());
   setStopPriceValueWithFixed = (stopPrice: number) =>
@@ -181,6 +170,17 @@ class UiOrderStore extends BaseStore {
     this.setMarketTotal(volume, side);
   };
 
+  getPercentChangeHandle = () => {
+    switch (this.market) {
+      case OrderType.Limit:
+        return this.handleLimitPercentageChange;
+      case OrderType.StopLimit:
+        return this.handleStopLimitPercentageChange;
+      case OrderType.Market:
+        return this.handleMarketPercentageChange;
+    }
+  };
+
   handleLimitPercentageChange = (balance: number, percents: number) => {
     this.setAmountValueWithFixed(
       this.onPercentChangeForLimit(percents, balance, this.side)
@@ -193,33 +193,18 @@ class UiOrderStore extends BaseStore {
     );
   };
 
-  handleMarketPercentageChange = (
-    balance: number,
-    quoteAssetId: string,
-    baseAssetId: string,
-    percents: number
-  ) => {
+  handleMarketPercentageChange = (balance: number, percents: number) => {
     this.setAmountValueWithFixed(
-      this.onPercentChangeForMarket(
-        percents,
-        balance,
-        quoteAssetId,
-        baseAssetId
-      )
+      this.onPercentChangeForMarket(percents, balance)
     );
   };
 
   handleMarketQuantityArrowClick = (operation: ArrowDirection) => {
-    this.handleQuantityArrowClick(operation);
-    this.setMarketTotal(this.quantityValue, this.side, true);
+    this.handleAmountArrowClick(operation);
+    this.setMarketTotal(this.amountValue, this.side, true);
   };
 
-  onPercentChangeForMarket = (
-    percents: number,
-    value: number,
-    quoteAssetId: string,
-    baseAssetId: string
-  ) => {
+  onPercentChangeForMarket = (percents: number, value: number) => {
     if (this.isCurrentSideSell) {
       return getPercentsOf(percents, value, this.getAmountAccuracy());
     }
@@ -298,10 +283,8 @@ class UiOrderStore extends BaseStore {
   isStopPriceValid = () => {
     const {bestAskPrice, bestBidPrice} = this.rootStore.orderBookStore;
     return this.isCurrentSideSell
-      ? +this.stopPriceValue < bestBidPrice &&
-          +this.priceValue <= +this.stopPriceValue
-      : +this.stopPriceValue > bestAskPrice &&
-          +this.priceValue >= +this.stopPriceValue;
+      ? +this.stopPriceValue < bestBidPrice
+      : +this.stopPriceValue > bestAskPrice;
   };
 
   isStopLimitInvalid = (
@@ -367,6 +350,64 @@ class UiOrderStore extends BaseStore {
         ? 'at the market price'
         : `at the price of ${displayedPrice} ${quoteAssetName}`;
     return `${this.side.toLowerCase()} ${displayedQuantity} ${baseAssetName} ${messageSuffix}`;
+  };
+
+  getAnalyticTracker = () => {
+    switch (this.market) {
+      case OrderType.Market:
+        return this.marketOrderTracker;
+      case OrderType.StopLimit:
+        return this.stopLimitTracker;
+      case OrderType.Limit:
+        return this.limitTracker;
+    }
+  };
+
+  limitTracker = (body: OrderRequestBody) => {
+    const {
+      marketStore: {convert},
+      uiStore: {selectedInstrument},
+      referenceStore: {getInstrumentById}
+    } = this.rootStore;
+
+    const amountInBase = formattedNumber(
+      convert(
+        body.Volume * (body.Price as number),
+        selectedInstrument!.quoteAsset.id,
+        selectedInstrument!.baseAsset.id,
+        getInstrumentById
+      ),
+      selectedInstrument!.baseAsset.accuracy
+    );
+    AnalyticsService.track(
+      AnalyticsEvents.OrderPlaced(
+        amountInBase,
+        body.OrderAction,
+        OrderType.Limit
+      )
+    );
+  };
+
+  stopLimitTracker = (body: StopLimitRequestBody) => {
+    AnalyticsService.track(
+      AnalyticsEvents.StopLimitOrderPlaced(
+        `${body.LowerPrice}` || `${body.UpperPrice}`,
+        `${body.LowerLimitPrice}` || `${body.UpperLimitPrice}`,
+        `${body.Volume}`,
+        body.OrderAction,
+        OrderType.StopLimit
+      )
+    );
+  };
+
+  marketOrderTracker = (body: OrderRequestBody) => {
+    AnalyticsService.track(
+      AnalyticsEvents.OrderPlaced(
+        `${body.Volume}`,
+        body.OrderAction,
+        OrderType.Market
+      )
+    );
   };
 
   getOrderRequestBody = (
@@ -438,7 +479,7 @@ class UiOrderStore extends BaseStore {
 
   setMarketTotal = (
     operationVolume?: any,
-    operationType?: Side,
+    operationType: Side = this.side,
     debounce?: boolean
   ) => {
     if (operationVolume === '') {
@@ -488,6 +529,7 @@ class UiOrderStore extends BaseStore {
     this.setStopPriceValue(DEFAULT_INPUT_VALUE);
     const mid = await this.rootStore.orderBookStore.mid();
     this.setPriceValueWithFixed(mid);
+    this.resetMarketTotal();
   };
 
   // tslint:disable-next-line:no-empty

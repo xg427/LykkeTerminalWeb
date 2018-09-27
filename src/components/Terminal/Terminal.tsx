@@ -21,14 +21,10 @@ import {
 } from '../../stores';
 import {getHashCode} from '../../utils/hashcode';
 import {StorageUtils} from '../../utils/index';
-import {Header} from '../Header';
-import {Modals} from '../Modal';
-import {MyWallets} from '../MyWallets';
 import ApplicationLink from '../ApplicationLink/ApplicationLink';
-import Backdrop from '../Backdrop/Backdrop';
 import {Footer} from '../Footer';
 import {Header as SubHeader} from '../Header';
-import Modal from '../Modal/Modal';
+import {Modals} from '../Modal';
 import {NotificationList} from '../Notification';
 import {Order} from '../Order';
 import OrderBook from '../OrderBook';

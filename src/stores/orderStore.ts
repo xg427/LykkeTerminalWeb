@@ -5,16 +5,9 @@ import OrderApi, {
 } from '../api/orderApi';
 import * as topics from '../api/topics';
 import messages from '../constants/notificationMessages';
-import {ApiError, levels} from '../models';
-import {OrderModel, OrderStatus, OrderType} from '../models';
-import {OrderModel, OrderType} from '../models';
 import logger from '../Logger';
-import {levels} from '../models';
-import {OrderType} from '../models';
-import Types from '../models/modals';
-import {OrderStatus} from '../models/orderType';
+import {ApiError, levels, OrderStatus, OrderType} from '../models';
 import {BaseStore, RootStore} from './index';
-import ModalStore from './modalStore';
 import NotificationStore from './notificationStore';
 
 const errorOrNoop = (error: string) => {
@@ -27,13 +20,11 @@ const errorOrNoop = (error: string) => {
 
 // tslint:disable:no-console
 class OrderStore extends BaseStore {
-  private readonly modalStore: ModalStore;
   private readonly notificationStore: NotificationStore;
 
   constructor(store: RootStore, private readonly api: OrderApi) {
     super(store);
     this.notificationStore = this.rootStore.notificationStore;
-    this.modalStore = this.rootStore.modalStore;
   }
 
   placeOrder = async (orderType: OrderType, body: RequestBody) => {

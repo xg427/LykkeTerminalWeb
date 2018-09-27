@@ -149,7 +149,12 @@ describe('orderMapper', () => {
         Volume: 2,
         RemainingVolume: 3,
         Price: 4,
-        AssetPairId: '5'
+        AssetPairId: '5',
+        Type: OrderType.Limit,
+        LowerPrice: 2,
+        UpperPrice: 2,
+        LowerLimitPrice: 2,
+        UpperLimitPrice: 2
       };
 
       const mappedObject = orderMapper.mapToLimitOrder(rawObject);

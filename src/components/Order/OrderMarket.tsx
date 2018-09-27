@@ -1,22 +1,19 @@
+import {curry} from 'rambda';
 import * as React from 'react';
+import indicativeTotalHint from '../../constants/indicativeTotalHint';
 import {ArrowDirection, OrderInputs} from '../../models';
-import formattedNumber from '../../utils/localFormatted/localFormatted';
+import {formattedNumber} from '../../utils/localFormatted/localFormatted';
 import NumberInput from '../NumberInput/NumberInput';
 import {CommonOrderProps} from './index';
-import OrderPercentage from './OrderPercentage';
-import {Available, InputControl, OrderButton, OrderTitle} from './styles';
-
-import {curry} from 'rambda';
 import OrderConfirmButton from './OrderConfirmButton';
+import OrderPercentage from './OrderPercentage';
 import {
-  Action,
   Available,
   InputControl,
   MarketAmount,
-  MarketConfirmButton,
+  OrderButton,
   OrderTitle,
-  Reset,
-  Total,
+  OrderTotal,
   TotalHint
 } from './styles';
 
@@ -32,6 +29,8 @@ interface MarketOrderProps extends CommonOrderProps {
   ) => void;
   marketAmount: number;
   setMarketTotal: (volume?: any, action?: string, debounce?: boolean) => void;
+  isEnoughLiquidity: boolean;
+  isCurrentSideSell: boolean;
 }
 
 const OrderMarket: React.SFC<MarketOrderProps> = ({
@@ -52,7 +51,11 @@ const OrderMarket: React.SFC<MarketOrderProps> = ({
   getConfirmButtonMessage,
   isOrderInvalid,
   isButtonDisable,
-  quoteAssetAccuracy
+  quoteAssetAccuracy,
+  setMarketTotal,
+  isEnoughLiquidity,
+  quoteAssetName,
+  isCurrentSideSell
 }) => {
   const handleArrowClick = (operation: ArrowDirection) => () => {
     onAmountArrowClick(operation);
@@ -60,6 +63,7 @@ const OrderMarket: React.SFC<MarketOrderProps> = ({
   };
 
   const handleChange = () => (e: any) => {
+    setMarketTotal(e.target.value);
     onAmountChange(e.target.value);
     resetPercents();
   };
@@ -69,18 +73,15 @@ const OrderMarket: React.SFC<MarketOrderProps> = ({
       return;
     }
 
-    const curriedAmountUpdating = curry(handlePercentageChange)(
-      balance,
-      quoteAssetId,
-      baseAssetId
-    );
+    const curriedAmountUpdating = curry(handlePercentageChange)(balance);
     updatePercentState(curriedAmountUpdating, index);
   };
 
   const isOrderValuesInvalid = () => {
     return (
       isButtonDisable ||
-      isOrderInvalid(quoteAssetAccuracy, baseAssetId, quoteAssetId)
+      isOrderInvalid(quoteAssetAccuracy, baseAssetId, quoteAssetId) ||
+      isEnoughLiquidity
     );
   };
 
@@ -110,23 +111,23 @@ const OrderMarket: React.SFC<MarketOrderProps> = ({
         />
       </Flex>
 
-      <Total>
+      <OrderTotal>
         <OrderTitle className={'estimated-total'}>Estimated total</OrderTitle>
         <MarketAmount available={isEnoughLiquidity}>
           {isEnoughLiquidity ? `${amount} ${quoteAssetName}` : '--'}
           <TotalHint>
             {isEnoughLiquidity
-              ? action === Side.Sell
+              ? isCurrentSideSell
                 ? indicativeTotalHint.sell
                 : indicativeTotalHint.buy
               : indicativeTotalHint.na}
           </TotalHint>
         </MarketAmount>
-      </Total>
+      </OrderTotal>
 
       <OrderButton>
         <OrderConfirmButton
-          isDisable={isOrderValuesInvalid() || !isEnoughLiquidity}
+          isDisable={isOrderValuesInvalid()}
           type={'button'}
           message={getConfirmButtonMessage(baseAssetName)}
           onClick={handleButtonClick}

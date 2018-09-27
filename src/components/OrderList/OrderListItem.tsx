@@ -1,7 +1,6 @@
 import * as React from 'react';
-import {InstrumentModel, OrderModel, OrderType, Side} from '../../models';
 import {AnalyticsEvents} from '../../constants/analyticsEvents';
-import {InstrumentModel, OrderModel, Side} from '../../models';
+import {InstrumentModel, OrderModel, OrderType, Side} from '../../models';
 import {AnalyticsService} from '../../services/analyticsService';
 import {formattedNumber} from '../../utils/localFormatted/localFormatted';
 import {precisionCeil, precisionFloor} from '../../utils/math';

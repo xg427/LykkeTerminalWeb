@@ -38,14 +38,6 @@ describe('<NumberInput>', () => {
     expect(wrapper.find('StyledInputNumberComponent')).toHaveLength(1);
   });
 
-  it('should contain up and down arrows', () => {
-    const wrapper = shallow(
-      getTestNumberInput(id, value, handleChange, handleArrowClick)
-    );
-    expect(wrapper.find('span.up')).toHaveLength(1);
-    expect(wrapper.find('span.down')).toHaveLength(1);
-  });
-
   it('should have placeholder with 0.00 value', () => {
     const wrapper = shallow(
       getTestNumberInput(id, value, handleChange, handleArrowClick)
@@ -109,36 +101,6 @@ describe('<NumberInput>', () => {
       );
       const input = wrapper.find('StyledInput');
       input.simulate('keyDown', event);
-      expect(arrowDirection).toBe(ArrowDirection.Down);
-    });
-
-    it('should handle click event on up span', () => {
-      let arrowDirection = '';
-
-      const handleArrowClickEvent = (ad: ArrowDirection) => () => {
-        arrowDirection = ad;
-      };
-
-      const wrapper = shallow(
-        getTestNumberInput(id, value, handleChange, handleArrowClickEvent)
-      );
-      const input = wrapper.find('span.up');
-      input.simulate('click', {});
-      expect(arrowDirection).toBe(ArrowDirection.Up);
-    });
-
-    it('should handle click event on down span', () => {
-      let arrowDirection = '';
-
-      const handleArrowClickEvent = (ad: ArrowDirection) => () => {
-        arrowDirection = ad;
-      };
-
-      const wrapper = shallow(
-        getTestNumberInput(id, value, handleChange, handleArrowClickEvent)
-      );
-      const input = wrapper.find('span.down');
-      input.simulate('click', {});
       expect(arrowDirection).toBe(ArrowDirection.Down);
     });
   });

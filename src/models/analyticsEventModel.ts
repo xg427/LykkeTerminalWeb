@@ -1,4 +1,4 @@
-import {InstrumentModel} from '.';
+import {InstrumentModel, OrderType, Side} from '.';
 
 export interface AnalyticsEventDetailsModel {
   category: string;
@@ -21,11 +21,19 @@ export interface AnalyticsUserIdentifyTraitsModel {
 export interface AnalyticsEventsModel {
   SwitchToLimitOrder: AnalyticsEventModel;
   SwitchToMarketOrder: AnalyticsEventModel;
+  SwitchToStopLimitOrder: AnalyticsEventModel;
   SideSwitch: (side: string) => AnalyticsEventModel;
   OrderPlaced: (
     amount: string,
     side: string,
     type: string
+  ) => AnalyticsEventModel;
+  StopLimitOrderPlaced: (
+    stopPrice: string,
+    limitPrice: string,
+    volume: string,
+    side: Side,
+    type: OrderType
   ) => AnalyticsEventModel;
   LogOut: AnalyticsEventModel;
   SwitchToDepth: AnalyticsEventModel;

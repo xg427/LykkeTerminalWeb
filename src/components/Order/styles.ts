@@ -79,7 +79,7 @@ export const MarketProperty = styled.div.attrs({
   style: (props: any) => ({
     borderBottomColor: props.isActive ? colors.blue : 'transparent',
     color: props.isActive ? colors.snowWhite : colors.coolGrey,
-    fontWeight: props.isActive ? 600 : 'normal'
+    fontWeight: props.isActive ? 600 : 100
   })
 })`
   cursor: pointer;
@@ -315,13 +315,7 @@ export const Percent = styled.div`
       }
     }
   }
-`;
-
-export const AdvancedShowButton = styled.div.attrs({
-  style: (props: any) => ({
-    display: props.isActive ? 'block' : 'none'
-  })
-})`` as any;
+` as any;
 
 DisclaimerNotification.displayName = 'DisclaimerNotification';
 Link.displayName = 'Link';

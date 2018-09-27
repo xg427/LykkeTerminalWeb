@@ -33,6 +33,7 @@ describe('<Order>', () => {
   let quoteAssetId: string;
   let quoteAssetName: string;
   let baseAssetName: string;
+  let analyticTracker: any;
 
   const getTestOrder = () => (
     <Order
@@ -51,6 +52,7 @@ describe('<Order>', () => {
       quoteAssetId={quoteAssetId}
       quoteAssetName={quoteAssetName}
       baseAssetName={baseAssetName}
+      orderAnalyticTracker={analyticTracker}
     />
   );
 
@@ -70,6 +72,7 @@ describe('<Order>', () => {
     quoteAssetId = 'USD';
     quoteAssetName = 'USD';
     baseAssetName = 'BTC';
+    analyticTracker = jest.fn();
   });
 
   describe('method render', () => {
@@ -81,8 +84,8 @@ describe('<Order>', () => {
     it('should render Buy and Sell option buttons in correct order', () => {
       const wrapper = mount(getTestOrder());
       const buttons = wrapper.find('ActionChoiceButton');
-      const sellButtonProps = buttons.at(0).props() as any;
-      const buyButtonProps = buttons.at(1).props() as any;
+      const sellButtonProps = buttons.at(1).props() as any;
+      const buyButtonProps = buttons.at(0).props() as any;
       expect(sellButtonProps.title).toBe('Sell');
       expect(buyButtonProps.title).toBe('Buy');
     });
@@ -130,15 +133,6 @@ describe('<Order>', () => {
       expect(confirmModal).toHaveLength(0);
     });
 
-    it('should render WithModal', () => {
-      const wrapper = mount(getTestOrder());
-      wrapper.setState({
-        isConfirmModalOpen: true
-      });
-      const confirmModal = wrapper.find('WithModal');
-      expect(confirmModal).toHaveLength(1);
-    });
-
     it('should not render Disclaimer', () => {
       const wrapper = mount(getTestOrder());
       const disclaimer = wrapper.find('DisclaimerNotification');
@@ -184,11 +178,11 @@ describe('<Order>', () => {
       it('should call setSide with clicked side', () => {
         const wrapper = mount(getTestOrder());
         const buttons = wrapper.find('ActionChoiceButton');
-        const sellButton = buttons.at(0).find('ActionProperty');
+        const sellButton = buttons.at(1).find('ActionProperty');
         sellButton.simulate('click');
         expect(setSide).toHaveBeenCalledWith(Side.Sell);
 
-        const buyButton = buttons.at(1).find('ActionProperty');
+        const buyButton = buttons.at(0).find('ActionProperty');
         buyButton.simulate('click');
         expect(setSide).toHaveBeenCalledWith(Side.Buy);
       });

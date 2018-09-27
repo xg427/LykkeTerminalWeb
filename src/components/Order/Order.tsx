@@ -1,20 +1,11 @@
 import * as React from 'react';
 import {OrderRequestBody, StopLimitRequestBody} from '../../api/orderApi';
-import {IPercentage, Percentage} from '../../constants/ordersPercentage';
-import {keys, OrderTitle, OrderType} from '../../models';
 import {AnalyticsEvents} from '../../constants/analyticsEvents';
-import {Percentage} from '../../constants/ordersPercentage';
-import {keys} from '../../models';
-import {OrderType} from '../../models';
-import {AssetModel, OrderInputs, OrderType} from '../../models';
-import InstrumentModel from '../../models/instrumentModel';
-import Side from '../../models/side';
+import {IPercentage, Percentage} from '../../constants/ordersPercentage';
+import {keys, OrderTitle, OrderType, Side} from '../../models';
 import {AnalyticsService} from '../../services/analyticsService';
 import {StorageUtils} from '../../utils/index';
 import {setActivePercentage} from '../../utils/order';
-import {formattedNumber} from '../../utils/localFormatted/localFormatted';
-import {precisionFloor} from '../../utils/math';
-import {resetPercentage, setActivePercentage} from '../../utils/order';
 import withScroll from '../CustomScrollbar/withScroll';
 import ConfirmModal from '../Modal/ConfirmModal';
 import ActionChoiceButton from './ActionChoiceButton';
@@ -60,6 +51,7 @@ export interface OrderProps {
   quoteAssetId: string;
   quoteAssetName: string;
   baseAssetName: string;
+  orderAnalyticTracker: (body: OrderRequestBody | StopLimitRequestBody) => void;
 }
 
 class Order extends React.Component<OrderProps, OrderState> {
@@ -78,26 +70,22 @@ class Order extends React.Component<OrderProps, OrderState> {
 
   handleSideClick = (side: Side) => () => {
     this.props.setSide(side);
-    this.props.setMarketTotal(null, side);
-    this.setState({
-      percents: percentage
-    });
-
     AnalyticsService.track(AnalyticsEvents.SideSwitch(side));
   };
 
   handleMarketClick = (market: OrderType) => () => {
     this.reset();
     this.props.setMarket(market);
-    this.setState({
-      percents: percentage
-    });
+
     switch (market) {
       case LIMIT:
         AnalyticsService.track(AnalyticsEvents.SwitchToLimitOrder);
         break;
       case MARKET:
         AnalyticsService.track(AnalyticsEvents.SwitchToMarketOrder);
+        break;
+      case STOP_LIMIT:
+        AnalyticsService.track(AnalyticsEvents.SwitchToStopLimitOrder);
         break;
     }
   };
@@ -115,19 +103,7 @@ class Order extends React.Component<OrderProps, OrderState> {
       .placeOrder(this.props.currentMarket, body)
       .then(() => {
         this.disableButton(false);
-
-        const amountInBase = formattedNumber(
-          convert(
-            parseFloat(quantity) * parseFloat(price),
-            quoteAssetId,
-            baseAsset.id,
-            getInstrumentById
-          ),
-          baseAsset.accuracy
-        );
-        AnalyticsService.track(
-          AnalyticsEvents.OrderPlaced(amountInBase, action, currentMarket)
-        );
+        this.props.orderAnalyticTracker(body);
       })
       .catch(() => this.disableButton(false));
   };
@@ -181,9 +157,9 @@ class Order extends React.Component<OrderProps, OrderState> {
   };
 
   reset = () => {
-    this.props.resetMarketTotal();
     this.props.resetOrder();
     this.resetPercents();
+    AnalyticsService.track(AnalyticsEvents.ClickOnReset);
   };
 
   render() {
@@ -222,12 +198,12 @@ class Order extends React.Component<OrderProps, OrderState> {
           <ActionChoiceButton
             title={Side.Buy}
             click={this.handleSideClick(Side.Buy)}
-            isActive={!isCurrentSideSell}
+            isActive={isCurrentSideSell}
           />
           <ActionChoiceButton
             title={Side.Sell}
             click={this.handleSideClick(Side.Sell)}
-            isActive={isCurrentSideSell}
+            isActive={!isCurrentSideSell}
           />
         </Actions>
 

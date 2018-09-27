@@ -1,4 +1,4 @@
-import {InstrumentModel} from '../models';
+import {InstrumentModel, OrderType, Side} from '../models';
 import {AnalyticsEventsModel} from '../models/analyticsEventModel';
 import place from './places';
 
@@ -13,7 +13,16 @@ export const AnalyticsEvents: AnalyticsEventsModel = {
       category,
       location: place.order,
       type: button,
-      info: 'Market'
+      info: 'Limit'
+    }
+  },
+  SwitchToStopLimitOrder: {
+    title: 'Change Order Type',
+    details: {
+      category,
+      location: place.order,
+      type: button,
+      info: 'Stop Limit'
     }
   },
   SwitchToMarketOrder: {
@@ -22,7 +31,7 @@ export const AnalyticsEvents: AnalyticsEventsModel = {
       category,
       location: place.order,
       type: button,
-      info: 'Limit'
+      info: 'Market'
     }
   },
   SideSwitch: (side: string) => ({
@@ -42,6 +51,27 @@ export const AnalyticsEvents: AnalyticsEventsModel = {
       type: button,
       info: {
         amount,
+        side,
+        type
+      }
+    }
+  }),
+  StopLimitOrderPlaced: (
+    stopPrice: string,
+    limitPrice: string,
+    volume: string,
+    side: Side,
+    type: OrderType
+  ) => ({
+    title: 'Placed New Stop Limit Order',
+    details: {
+      category,
+      location: place.order,
+      type: button,
+      info: {
+        stopPrice,
+        limitPrice,
+        volume,
         side,
         type
       }

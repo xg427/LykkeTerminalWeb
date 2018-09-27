@@ -1,4 +1,4 @@
-import {action, runInAction} from 'mobx';
+import {action, computed, runInAction} from 'mobx';
 import {add, pathOr} from 'rambda';
 import {BalanceListApi} from '../api/index';
 import * as topics from '../api/topics';
@@ -40,11 +40,6 @@ class BalanceListStore extends BaseStore {
   @computed
   get tradingWalletBalances() {
     return (this.tradingWallet && this.tradingWallet.balances) || [];
-  }
-
-  @computed
-  get tradingWallet() {
-    return find(w => w.type === WalletType.Trading, this.walletList);
   }
 
   constructor(store: RootStore, private readonly api: BalanceListApi) {

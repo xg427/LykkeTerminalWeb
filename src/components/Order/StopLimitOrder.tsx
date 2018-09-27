@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {ArrowDirection, OrderInputs} from '../../models';
-import formattedNumber from '../../utils/localFormatted/localFormatted';
+import {formattedNumber} from '../../utils/localFormatted/localFormatted';
 import NumberInput from '../NumberInput/NumberInput';
 import {
   Amount,

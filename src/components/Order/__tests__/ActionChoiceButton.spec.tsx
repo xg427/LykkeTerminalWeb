@@ -49,5 +49,9 @@ describe('<ActionChoiceButton>', () => {
       );
       actionProperty = wrapper.find('ActionButton').find('ActionProperty');
     });
+
+    it('should render ActionProperty', () => {
+      expect(actionProperty).toHaveLength(1);
+    });
   });
 });

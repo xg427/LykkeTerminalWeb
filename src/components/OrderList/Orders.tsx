@@ -1,10 +1,8 @@
 import {HBar} from '@lykkex/react-components';
 import * as React from 'react';
-import {OrderModel, OrderType, SortDirection} from '../../models';
-import {HBar} from '../Bar';
 import {AnalyticsEvents} from '../../constants/analyticsEvents';
 import place from '../../constants/places';
-import {OrderModel, SortDirection} from '../../models';
+import {OrderModel, OrderType, SortDirection} from '../../models';
 import {AnalyticsService} from '../../services/analyticsService';
 import {EditOrder} from '../Modal';
 import {

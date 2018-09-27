@@ -4,7 +4,7 @@ import {OrderType} from './orderType';
 
 export interface IRestOrderModel {
   Id: string;
-  CreateDateTime: string;
+  CreateDateTime: number;
   Volume: number;
   Voume: number;
   RemainingVolume: number;

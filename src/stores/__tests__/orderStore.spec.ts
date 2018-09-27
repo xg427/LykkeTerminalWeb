@@ -20,7 +20,6 @@ describe('order store', () => {
     api.cancelAllOrders = jest.fn();
 
     rootStore.notificationStore.addNotification = jest.fn();
-    rootStore.modalStore.addModal = jest.fn();
     rootStore.uiStore.selectedInstrument = new InstrumentModel({
       id: 'BTCUSD'
     });
@@ -87,7 +86,9 @@ describe('order store', () => {
       });
 
       await orderStore.cancelOrder(orderId);
-      expect(rootStore.modalStore.addModal).toHaveBeenCalled();
+      expect(
+        rootStore.modalStore.getSessionConfirmationModalState()
+      ).toBeTruthy();
     });
   });
 
